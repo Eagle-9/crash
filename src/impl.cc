@@ -30,6 +30,8 @@ std::unordered_map<std::string, std::string> dict =
     // todo: add more words (min. 30)
 };
 
+//* function implementation
+
 // this takes no arguments, as it uses 'line' as it's input.
 // 'line' should be the parsed line from 'parse()'
 std::string process()
@@ -47,9 +49,6 @@ std::string process()
     current_line.clear();
     return res;
 }
-
-// temp
-#include <iostream>
 
 // commented in header
 std::string parse(std::string line)
