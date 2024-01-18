@@ -110,13 +110,18 @@ std::string parse(std::string line)
         // if it's a full line comment, skip the line
         if (comment_start == 0)
         {
-            return PROMPT_NEW;
+            if (!is_continuation)
+            {
+                return PROMPT_NEW;                
+            }
+            line = "";
+        } else {
+            line = line.substr(0, comment_start - 1);
         }
-        line = line.substr(0, comment_start - 1);
     }
 
     // if there's a continuation
-    if (line[line.length() - 1] == '\\')
+    if ( line != "" && line[line.length() - 1] == '\\')
     {
         line.pop_back();
         is_continuation = true;
