@@ -116,7 +116,7 @@ std::string parse(std::string line)
             }
             line = "";
         } else {
-            line = line.substr(0, comment_start - 1);
+            line = line.substr(0, comment_start);
         }
     }
 
