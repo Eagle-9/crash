@@ -22,12 +22,36 @@ std::string current_line;
 // the three classifications are "person", "place", "thing"
 std::unordered_map<std::string, std::string> dict =
 {
-    { "mason" , "person" },
-    { "paris" , "place"  },
-    { "this"  , "thing"  },
-    { "i"     , "person" },
-    { "lines" , "thing"  }
-    // todo: add more words (min. 30)
+    {"mason","person"},
+    {"indianapolis","place"},
+    {"compiler","thing"},
+    {"i","person"},
+    {"paris","place"},
+    {"duck","thing"},
+    {"john","person"},
+    {"cedar lake","place"},
+    {"dinosaur","thing"},
+    {"nick","person"},
+    {"boston","place"},
+    {"computer","thing"},
+    {"dylan","person"},
+    {"london","place"},
+    {"lego","thing"},
+    {"jeff","person"},
+    {"beijing","place"},
+    {"bottle","thing"},
+    {"kim","person"},
+    {"tokyo","place"},
+    {"camera","thing"},
+    {"washington","person"},
+    {"delhi","place"},
+    {"lines","thing"},
+    {"andy","person"},
+    {"orlando","place"},
+    {"calculator","thing"},
+    {"linus","person"},
+    {"gary","place"},
+    {"semicolon","thing"}
 };
 
 //* function implementation
