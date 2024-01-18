@@ -13,7 +13,7 @@ int main()
     for (;;)
     {
         // get the line from user
-        std:;getline(std::cin, line);
+        std::getline(std::cin, line);
 
         // if exit, exit
         if (line == "exit")
