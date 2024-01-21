@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
+#include <iostream>
 
 //* state info
 
@@ -83,7 +84,22 @@ std::string parse(std::string line)
         return PROMPT_NEW;
     }
 
-    // todo: remove extra whitespace from the line
+    // Dylan: Remove extra whitespace from the line.
+    std::string tempLine;
+    for (size_t i = 0; i < line.length(); i++){
+        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
+            //First check to make sure we are not at the end of the line
+            if (i+1 < line.length()){
+                //If the next character is not a space/tab, we can add a space.
+                if (line[i+1] != ' ' && line[i+1] != '\t'){
+                    tempLine += ' ';
+                }
+            }
+        }else{ //The character was not a space or tab, so just add it
+            tempLine += line[i];
+        }
+    }
+    line = tempLine;
 
     // to store the comment start location
     size_t comment_start = std::string::npos;
