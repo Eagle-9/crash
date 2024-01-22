@@ -85,10 +85,11 @@ std::string parse(std::string line)
 
     // Dylan: Remove extra whitespace from the line.
     std::string tempLine;
+    bool encounteredFirstChar = false;
     for (size_t i = 0; i < line.length(); i++){
         if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
-            //First check to make sure we are not at the end of the line
-            if (i+1 < line.length()){
+            //First check to make sure we are not at the end of the line and we have had a character
+            if (i+1 < line.length() && encounteredFirstChar){
                 //If the next character is not a space/tab, we can add a space.
                 if (line[i+1] != ' ' && line[i+1] != '\t'){
                     tempLine += ' ';
@@ -96,6 +97,7 @@ std::string parse(std::string line)
             }
         }else{ //The character was not a space or tab, so just add it
             tempLine += line[i];
+            encounteredFirstChar = true;
         }
     }
     line = tempLine;
