@@ -19,5 +19,8 @@ const std::string PROMPT_CNT = ">>> ";
 // the form from "logical line"
 std::string parse(std::string line);
 
+// converts a string to lowercase
+std::string strToLowerCase(std::string line);
+
 // for testing: get the current state of the classifier
 std::string _get_current();
