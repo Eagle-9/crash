@@ -63,8 +63,14 @@ std::string process()
     // todo: process parsed line
     std::string res;
 
-    //temp
+    //get parsed line
     res = current_line;
+
+    //split the current line by ' '
+    res = res.substr(0, res.find(' '));
+	    
+    //use the first word as res
+    //get class from dictionary and append
 
     // add prompt to end of response
     res += PROMPT_NEW;
