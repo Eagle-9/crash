@@ -158,6 +158,18 @@ std::string parse(std::string line)
     return process();
 }
 
+std::string strToLowerCase(std::string line) {
+//this turns a string to lower case
+
+  for (int i = 0; (unsigned)i < line.size(); i++) {
+    //convert character to lower case
+    line[i] = tolower(line[i]);
+  }//end for
+
+  return line;
+
+}//end strToLowerCase
+
 // commented in header
 std::string _get_current()
 {
