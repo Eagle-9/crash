@@ -12,7 +12,7 @@
 #pragma once
 #include <string>
 
-const std::string PROMPT_NEW = "\n$ ";
+const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";
 
 // parse input (take each line and convert it to

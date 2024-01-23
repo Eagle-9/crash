@@ -86,6 +86,7 @@ std::string process()
     }//end if
 
     // add prompt to end of response
+    res += "\n";
     res += PROMPT_NEW;
     
     // clear current line + return
