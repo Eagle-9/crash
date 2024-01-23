@@ -14,6 +14,8 @@ int main()
     {
         // get the line from user
         std::getline(std::cin, line);
+	
+	line = strToLowerCase(line);
 
         // if exit, exit
         if (line == "exit")
