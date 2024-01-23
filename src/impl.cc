@@ -63,8 +63,27 @@ std::string process()
     // todo: process parsed line
     std::string res;
 
-    //temp
+    //get parsed line
     res = current_line;
+
+    //split the current line by ' ' and set res to first word
+    res = res.substr(0, res.find(' '));
+
+    //if the map returns a key
+    if (dict.count(res)) {
+        
+	//get class from dictionary
+        std::string lineClassName = dict.at(res);
+    
+	//append class to line
+    	res = res + " " + lineClassName;
+
+    } else {
+    
+	//not in dictionary
+	res = res + " external";
+    
+    }//end if
 
     // add prompt to end of response
     res += PROMPT_NEW;
