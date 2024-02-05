@@ -8,7 +8,11 @@
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
-
+#define PERSON "person"
+#define PLACE "place"
+#define THING "thing"
+#define INTERNAL "internal"
+#define KEYWORD "keyword"
 //* state info
 
 // if we're currently in a continuation
@@ -22,36 +26,36 @@ std::string current_line;
 // the three classifications are "person", "place", "thing"
 std::unordered_map<std::string, std::string> dict =
 {
-    {"mason","person"},
-    {"indianapolis","place"},
-    {"compiler","thing"},
-    {"i","person"},
-    {"paris","place"},
-    {"duck","thing"},
-    {"john","person"},
-    {"cedar lake","place"},
-    {"dinosaur","thing"},
-    {"nick","person"},
-    {"boston","place"},
-    {"computer","thing"},
-    {"dylan","person"},
-    {"london","place"},
-    {"lego","thing"},
-    {"jeff","person"},
-    {"beijing","place"},
-    {"bottle","thing"},
-    {"kim","person"},
-    {"tokyo","place"},
-    {"camera","thing"},
-    {"washington","person"},
-    {"delhi","place"},
-    {"lines","thing"},
-    {"andy","person"},
-    {"orlando","place"},
-    {"calculator","thing"},
-    {"linus","person"},
-    {"gary","place"},
-    {"semicolon","thing"}
+    {"mason",PERSON},
+    {"indianapolis",PLACE},
+    {"compiler",THING},
+    {"i",PERSON},
+    {"paris",PLACE},
+    {"duck",THING},
+    {"john",PERSON},
+    {"cedar lake",PLACE},
+    {"dinosaur",THING},
+    {"nick",PERSON},
+    {"boston",PLACE},
+    {"computer",THING},
+    {"dylan",PERSON},
+    {"london",PLACE},
+    {"lego",THING},
+    {"jeff",PERSON},
+    {"beijing",PLACE},
+    {"bottle",THING},
+    {"kim",PERSON},
+    {"tokyo",PLACE},
+    {"camera",THING},
+    {"washington",PERSON},
+    {"delhi",PLACE},
+    {"lines",THING},
+    {"andy",PERSON},
+    {"orlando",PLACE},
+    {"calculator",THING},
+    {"linus",PERSON},
+    {"gary",PLACE},
+    {"semicolon",THING}
 };
 
 //* function implementation
