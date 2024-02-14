@@ -119,7 +119,7 @@ std::string process()
         }
     }
     //The above loop only adds an argument if there is a space, so we need this to get the inital arg.
-    if (res.length() != 0){
+    if (res != ""){
         args.emplace_back(tempArg);
     }
 
