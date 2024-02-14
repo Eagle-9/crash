@@ -102,14 +102,30 @@ std::unordered_map<std::string, std::string> dict =
 // 'line' should be the parsed line from 'parse()'
 std::string process()
 {
-    // todo: process parsed line
     std::string res;
+    std::vector<std::string> args;
 
     //get parsed line
     res = current_line;
 
-    //split the current line by ' ' and set res to first word
-    res = res.substr(0, res.find(' '));
+    //Go through every character in the line, split them into args
+    std::string tempArg;
+    for(size_t i=0; i < res.length(); i++){
+        if (!checkMetacharacter(res, i)){ //If not a meta character, add to tempArg
+            tempArg = tempArg + res[i];
+        }else{ //We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
+            args.emplace_back(tempArg);
+            tempArg = "";
+        }
+    }
+    //The above loop only adds an argument if there is a space, so we need this to get the inital arg.
+    if (res != ""){
+        args.emplace_back(tempArg);
+    }
+    /* Debug code to print out arguments. Can be removed without issue.*/
+    for (size_t i = 0; i < args.size(); i++){
+        std::cout << "ARG[" << i << "]: " << args[i] << std::endl;;
+    }
 
     //if the map returns a key
     if (dict.count(res)) {
@@ -145,25 +161,6 @@ std::string parse(std::string line)
         return PROMPT_NEW;
     }
 
-    // Dylan: Remove extra whitespace from the line.
-    std::string tempLine;
-    bool encounteredFirstChar = false;
-    for (size_t i = 0; i < line.length(); i++){
-        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
-            //First check to make sure we are not at the end of the line and we have had a character
-            if (i+1 < line.length() && encounteredFirstChar){
-                //If the next character is not a space/tab, we can add a space.
-                if (line[i+1] != ' ' && line[i+1] != '\t'){
-                    tempLine += ' ';
-                }
-            }
-        }else{ //The character was not a space or tab, so just add it
-            tempLine += line[i];
-            encounteredFirstChar = true;
-        }
-    }
-    line = tempLine;
-
     // to store the comment start location
     size_t comment_start = std::string::npos;
     // for char in line, search for a comment start location
@@ -198,6 +195,24 @@ std::string parse(std::string line)
             line = line.substr(0, comment_start);
         }
     }
+    // Dylan: Remove extra whitespace from the line.
+    std::string tempLine;
+    bool encounteredFirstChar = false;
+    for (size_t i = 0; i < line.length(); i++){
+        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
+            //First check to make sure we are not at the end of the line and we have had a character
+            if (i+1 < line.length() && encounteredFirstChar){
+                //If the next character is not a space/tab, we can add a space.
+                if (line[i+1] != ' ' && line[i+1] != '\t'){
+                    tempLine += ' ';
+                }
+            }
+        }else{ //The character was not a space or tab, so just add it
+            tempLine += line[i];
+            encounteredFirstChar = true;
+        }
+    }
+    line = tempLine;
 
     // if there's a continuation
     if ( line != "" && line[line.length() - 1] == '\\')
@@ -231,6 +246,35 @@ std::string strToLowerCase(std::string line) {
   return line;
 
 }//end strToLowerCase
+
+//Check if there is a meta character in the given string at the given position.
+bool checkMetacharacter(std::string inputString, size_t position){
+    //Check if quoted
+    bool quoteLeft = false;
+    bool quoteRight = false;
+    //Make sure position is not at end or start of line.
+    if (position > 0 && position < (inputString.length()-1)){
+        //Check to see if there is a quote left or right of current char.
+        if(inputString[position-1] == '"'){
+            quoteLeft = true;
+        }
+        if(inputString[position+1] == '"'){
+            quoteRight = true;
+        }
+    }
+    if(quoteLeft && quoteRight){
+        return false; //Not a metacharacter as it is quoted.
+    }
+    //Check if metacharacter
+    std::string metaCharacters = "|&;()<> \\";
+    char indivChar = inputString[position];
+    for (size_t i = 0; i < metaCharacters.length(); i++){
+        if (indivChar == metaCharacters[i]){
+            return true; //meta char found
+        }
+    }
+    return false; //did not find a meta char
+}
 
 // commented in header
 std::string _get_current()
