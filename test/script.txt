@@ -1,3 +1,5 @@
+#!./bin/main
+
 ## blank lines are intentional, as they need
 ## to be ignored. Comments are throughout, and
 ## should also be ignored.
@@ -19,5 +21,3 @@ Lines with a "#" should still be included.
 ## test false continuation in comment
 # this line should not be continued as a comment \
 I am glad this line is still included.
-
-exit
