@@ -285,15 +285,30 @@ std::string _get_current()
 //CD COMMANDS
 
 std::string builtin_cd(int argc, std::string* argv) {
-  
+  	//cd function
+	
+	std::string key = "";
+	if (argc >= 2) { //checks to make sure there is enough arguments
+		key = argv[1]; //sets key to flag
+	}
+
+	//if argument is -{n}, convert to string to select from table
+	if(isdigit(argv[1][1])) {
+		key = "-{n}";
+	}
+
 	//table to store all flags in
 	std::unordered_map<std::string, void (*)(int argc, std::string* argv)> cd_table; //key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 	
 	cd_table["-h"] = cd_help_message; //displays a simple help message
 	cd_table["-H"] = cd_help_message; //displays a full help message
+	cd_table["-l"] = NULL; //Display a history list
+	cd_table["-{n}"] = NULL; //Change current directory to nth element
+       	cd_table["-c"] = NULL; //clean the directory history 
+	cd_table["-s"] = NULL; //suppress the directory history
 
 	//access table
-	cd_table[argv[1]](argc, argv);
+	cd_table[key](argc, argv);
 
 	return " ";
 }
