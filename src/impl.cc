@@ -5,10 +5,16 @@
  *
  */
 
+#include <iostream>
+#include <string>
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
-
+#define PERSON "person"
+#define PLACE "place"
+#define THING "thing"
+#define INTERNAL "internal"
+#define KEYWORD "keyword"
 //* state info
 
 // if we're currently in a continuation
@@ -22,36 +28,72 @@ std::string current_line;
 // the three classifications are "person", "place", "thing"
 std::unordered_map<std::string, std::string> dict =
 {
-    {"mason","person"},
-    {"indianapolis","place"},
-    {"compiler","thing"},
-    {"i","person"},
-    {"paris","place"},
-    {"duck","thing"},
-    {"john","person"},
-    {"cedar lake","place"},
-    {"dinosaur","thing"},
-    {"nick","person"},
-    {"boston","place"},
-    {"computer","thing"},
-    {"dylan","person"},
-    {"london","place"},
-    {"lego","thing"},
-    {"jeff","person"},
-    {"beijing","place"},
-    {"bottle","thing"},
-    {"kim","person"},
-    {"tokyo","place"},
-    {"camera","thing"},
-    {"washington","person"},
-    {"delhi","place"},
-    {"lines","thing"},
-    {"andy","person"},
-    {"orlando","place"},
-    {"calculator","thing"},
-    {"linus","person"},
-    {"gary","place"},
-    {"semicolon","thing"}
+    {"mason",PERSON},
+    {"indianapolis",PLACE},
+    {"compiler",THING},
+    {"i",PERSON},
+    {"paris",PLACE},
+    {"duck",THING},
+    {"john",PERSON},
+    {"cedar lake",PLACE},
+    {"dinosaur",THING},
+    {"nick",PERSON},
+    {"boston",PLACE},
+    {"computer",THING},
+    {"dylan",PERSON},
+    {"london",PLACE},
+    {"lego",THING},
+    {"jeff",PERSON},
+    {"beijing",PLACE},
+    {"bottle",THING},
+    {"kim",PERSON},
+    {"tokyo",PLACE},
+    {"camera",THING},
+    {"washington",PERSON},
+    {"delhi",PLACE},
+    {"lines",THING},
+    {"andy",PERSON},
+    {"orlando",PLACE},
+    {"calculator",THING},
+    {"linus",PERSON},
+    {"gary",PLACE},
+    {"semicolon",THING},
+    {"alias",INTERNAL},
+    {"bg",INTERNAL},
+    {"cd",INTERNAL},
+    {"eval",INTERNAL},
+    {"exec",INTERNAL},
+    {"exit",INTERNAL},
+    {"export",INTERNAL},
+    {"fc",INTERNAL},
+    {"fg",INTERNAL},
+    {"help",INTERNAL},
+    {"history",INTERNAL},
+    {"jobs",INTERNAL},
+    {"let",INTERNAL},
+    {"local",INTERNAL},
+    {"logout",INTERNAL},
+    {"read",INTERNAL},
+    {"set",INTERNAL},
+    {"shift",INTERNAL},
+    {"shopt",INTERNAL},
+    {"source",INTERNAL},
+    {"unalias",INTERNAL},
+    {"break",KEYWORD},
+    {"continue",KEYWORD},
+    {"do",KEYWORD},
+    {"else",KEYWORD},
+    {"elseif",KEYWORD},
+    {"end",KEYWORD},
+    {"endif",KEYWORD},
+    {"for",KEYWORD},
+    {"function",KEYWORD},
+    {"if",KEYWORD},
+    {"in",KEYWORD},
+    {"return",KEYWORD},
+    {"then",KEYWORD},
+    {"until",KEYWORD},
+    {"while",KEYWORD}
 };
 
 //* function implementation
@@ -63,10 +105,30 @@ std::string process()
     // todo: process parsed line
     std::string res;
 
-    //temp
+    //get parsed line
     res = current_line;
 
+    //split the current line by ' ' and set res to first word
+    res = res.substr(0, res.find(' '));
+
+    //if the map returns a key
+    if (dict.count(res)) {
+        
+	//get class from dictionary
+        std::string lineClassName = dict.at(res);
+    
+	//append class to line
+    	res = res + " " + lineClassName;
+
+    } else {
+    
+	//not in dictionary
+	res = res + " external";
+    
+    }//end if
+
     // add prompt to end of response
+    res += "\n";
     res += PROMPT_NEW;
     
     // clear current line + return
@@ -83,7 +145,24 @@ std::string parse(std::string line)
         return PROMPT_NEW;
     }
 
-    // todo: remove extra whitespace from the line
+    // Dylan: Remove extra whitespace from the line.
+    std::string tempLine;
+    bool encounteredFirstChar = false;
+    for (size_t i = 0; i < line.length(); i++){
+        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
+            //First check to make sure we are not at the end of the line and we have had a character
+            if (i+1 < line.length() && encounteredFirstChar){
+                //If the next character is not a space/tab, we can add a space.
+                if (line[i+1] != ' ' && line[i+1] != '\t'){
+                    tempLine += ' ';
+                }
+            }
+        }else{ //The character was not a space or tab, so just add it
+            tempLine += line[i];
+            encounteredFirstChar = true;
+        }
+    }
+    line = tempLine;
 
     // to store the comment start location
     size_t comment_start = std::string::npos;
@@ -141,8 +220,42 @@ std::string parse(std::string line)
     return process();
 }
 
+std::string strToLowerCase(std::string line) {
+//this turns a string to lower case
+
+  for (int i = 0; (unsigned)i < line.size(); i++) {
+    //convert character to lower case
+    line[i] = tolower(line[i]);
+  }//end for
+
+  return line;
+
+}//end strToLowerCase
+
 // commented in header
 std::string _get_current()
 {
     return current_line;
+}
+
+//CD COMMANDS
+
+int cd_help_message(std::string arg) {
+
+  //simple help message
+  std::string simpleHelp = "To change directory, input 'cd DIR' where DIR is the desired directory's address";
+          
+  //full help message
+  std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'cd'\n\ncd [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] (DIR)\n\nGeneral Use\n\nChange the current directory to DIR. The default DIR is the current directory so that it is identical to the pwd command in typical Linux shells\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the current directories with serial numbers. With the optional N it displays only the last N entries\n-{n} : Change the current directory to the n-th entry in the history list\n-c : Clean the directory history\n-s : Suppress the directory history by eliminating duplicated directories. The order of the history must be maintained. The latest entry must be kept for same directories";
+                      
+  //differentiate between simple and complex help message
+   if (arg == "h") {
+    std::cout << simpleHelp << std::endl; //simple help message
+  } else if (arg == "H") {
+    std::cout << fullHelp << std::endl; //full help message
+  } else {
+    std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; //not a known command
+  }
+
+  return 0;
 }
