@@ -24,3 +24,10 @@ std::string strToLowerCase(std::string line);
 
 // for testing: get the current state of the classifier
 std::string _get_current();
+
+//cd commands builtin
+
+//int builtin_cd
+
+//help message for cd passing h or H
+int cd_help_message(std::string arg);

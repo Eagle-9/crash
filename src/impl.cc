@@ -5,6 +5,8 @@
  *
  */
 
+#include <iostream>
+#include <string>
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
@@ -234,4 +236,26 @@ std::string strToLowerCase(std::string line) {
 std::string _get_current()
 {
     return current_line;
+}
+
+//CD COMMANDS
+
+int cd_help_message(std::string arg) {
+
+  //simple help message
+  std::string simpleHelp = "To change directory, input 'cd DIR' where DIR is the desired directory's address";
+          
+  //full help message
+  std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'cd'\n\ncd [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] (DIR)\n\nGeneral Use\n\nChange the current directory to DIR. The default DIR is the current directory so that it is identical to the pwd command in typical Linux shells\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the current directories with serial numbers. With the optional N it displays only the last N entries\n-{n} : Change the current directory to the n-th entry in the history list\n-c : Clean the directory history\n-s : Suppress the directory history by eliminating duplicated directories. The order of the history must be maintained. The latest entry must be kept for same directories";
+                      
+  //differentiate between simple and complex help message
+   if (arg == "h") {
+    std::cout << simpleHelp << std::endl; //simple help message
+  } else if (arg == "H") {
+    std::cout << fullHelp << std::endl; //full help message
+  } else {
+    std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; //not a known command
+  }
+
+  return 0;
 }
