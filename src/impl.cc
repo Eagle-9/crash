@@ -284,6 +284,14 @@ std::string _get_current()
 
 //CD COMMANDS
 
+std::string builtin_cd(int argc, std::string* argv) {
+  
+	//table to store all flags in
+	std::unordered_map<std::string, void (*)(int argc, std::string* argv)> cd_table; //key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+	std::cout << "under construction" << std::endl;
+	return " ";
+}
+
 int cd_help_message(std::string arg) {
 
   //simple help message

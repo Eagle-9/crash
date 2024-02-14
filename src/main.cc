@@ -26,6 +26,15 @@ int main()
             break;
         }
 
+
+	//TEST FOR CD REMOVE
+	if (line == "cd") {
+	  //test
+	  std::string testLine[2] = {"cd","-h"};
+
+	  builtin_cd(2, testLine);
+	}//end line
+
         // parse the line
         std::cout << parse(line);
 
