@@ -122,10 +122,10 @@ std::string process()
     if (res != ""){
         args.emplace_back(tempArg);
     }
-
+    /* Debug code to print out arguments. Can be removed without issue.
     for (size_t i = 0; i < args.size(); i++){
         std::cout << "ARG[" << i << "]: " << args[i] << std::endl;;
-    }
+    }*/
 
     //if the map returns a key
     if (dict.count(res)) {
