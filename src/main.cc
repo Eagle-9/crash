@@ -18,6 +18,9 @@ int main()
 	    line = strToLowerCase(line);
 
         // if exit, exit
+        /* TODO: This probably needs to be implemented as it's own internal command
+            At least that is how professor Kim had it.
+        */
         if (line == "exit")
         {
             break;

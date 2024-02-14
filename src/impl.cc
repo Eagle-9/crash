@@ -102,14 +102,30 @@ std::unordered_map<std::string, std::string> dict =
 // 'line' should be the parsed line from 'parse()'
 std::string process()
 {
-    // todo: process parsed line
     std::string res;
+    std::vector<std::string> args;
 
     //get parsed line
     res = current_line;
 
-    //split the current line by ' ' and set res to first word
-    res = res.substr(0, res.find(' '));
+    //Go through every character in the line, split them into args
+    std::string tempArg;
+    for(size_t i=0; i < res.length(); i++){
+        if (res[i] != ' '){ //If the current space isn't blank, add to tempArg
+            tempArg = tempArg + res[i];
+        }else{ //We hit a blank space, so we split the line. Add current arg to args, reset temp arg.
+            args.emplace_back(tempArg);
+            tempArg = "";
+        }
+    }
+    //The above loop only adds an argument if there is a space, so we need this to get the inital arg.
+    if (res.length() != 0){
+        args.emplace_back(tempArg);
+    }
+
+    for (size_t i = 0; i < args.size(); i++){
+        std::cout << "ARG[" << i << "]: " << args[i] << std::endl;;
+    }
 
     //if the map returns a key
     if (dict.count(res)) {
