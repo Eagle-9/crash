@@ -1,0 +1,23 @@
+#!./bin/main
+
+## blank lines are intentional, as they need
+## to be ignored. Comments are throughout, and
+## should also be ignored.
+
+## test a 'normal' case
+Paris is a beautiful city.
+
+## test blankspace (' ', '\t')
+Mason   doesn't like     extra  spaces
+
+## test continuation
+Lines with a continuation \
+should be concatenated together.
+
+## test inline comments
+This line should end here # because of this comment
+Lines with a "#" should still be included.
+
+## test false continuation in comment
+# this line should not be continued as a comment \
+I am glad this line is still included.
