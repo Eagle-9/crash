@@ -48,11 +48,8 @@ int main(int argc, char** argv)
     std::cout << PROMPT_NEW;
 
     // main loop
-    for (;;)
+    while (std::getline(std::cin, line))
     {
-        // get the line from user
-        std::getline(std::cin, line);
-	
 	    line = strToLowerCase(line);
 
         // if exit, exit

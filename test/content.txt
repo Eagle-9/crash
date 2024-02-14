@@ -19,3 +19,5 @@ Lines with a "#" should still be included.
 ## test false continuation in comment
 # this line should not be continued as a comment \
 I am glad this line is still included.
+
+exit
