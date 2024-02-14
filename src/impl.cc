@@ -266,7 +266,7 @@ bool checkMetacharacter(std::string inputString, size_t position){
         return false; //Not a metacharacter as it is quoted.
     }
     //Check if metacharacter
-    std::string metaCharacters = "|&;()<> ";
+    std::string metaCharacters = "|&;()<> \\";
     char indivChar = inputString[position];
     for (size_t i = 0; i < metaCharacters.length(); i++){
         if (indivChar == metaCharacters[i]){
