@@ -30,7 +30,7 @@ int main()
 	//TEST FOR CD REMOVE
 	if (line == "cd") {
 	  //test
-	  std::string testLine[2] = {"cd","-H"};
+	  std::string testLine[2] = {"cd", "flurff"};
 
 	  builtin_cd(2, testLine);
 	}//end line

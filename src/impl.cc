@@ -306,9 +306,15 @@ std::string builtin_cd(int argc, std::string* argv) {
 	cd_table["-{n}"] = NULL; //Change current directory to nth element
        	cd_table["-c"] = NULL; //clean the directory history 
 	cd_table["-s"] = NULL; //suppress the directory history
-
-	//access table
-	cd_table[key](argc, argv);
+	
+	//make sure key is in table
+	if (cd_table.find(key) != cd_table.end()) {
+		//access table
+		cd_table[key](argc, argv);
+	} else {
+		//not in table
+		std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+	}
 
 	return " ";
 }
