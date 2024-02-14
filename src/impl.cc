@@ -111,9 +111,9 @@ std::string process()
     //Go through every character in the line, split them into args
     std::string tempArg;
     for(size_t i=0; i < res.length(); i++){
-        if (res[i] != ' '){ //If the current space isn't blank, add to tempArg
+        if (!checkMetacharacter(res, i)){ //If not a meta character, add to tempArg
             tempArg = tempArg + res[i];
-        }else{ //We hit a blank space, so we split the line. Add current arg to args, reset temp arg.
+        }else{ //We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
             args.emplace_back(tempArg);
             tempArg = "";
         }
@@ -122,10 +122,10 @@ std::string process()
     if (res != ""){
         args.emplace_back(tempArg);
     }
-    /* Debug code to print out arguments. Can be removed without issue.
+    /* Debug code to print out arguments. Can be removed without issue.*/
     for (size_t i = 0; i < args.size(); i++){
         std::cout << "ARG[" << i << "]: " << args[i] << std::endl;;
-    }*/
+    }
 
     //if the map returns a key
     if (dict.count(res)) {
@@ -246,6 +246,35 @@ std::string strToLowerCase(std::string line) {
   return line;
 
 }//end strToLowerCase
+
+//Check if there is a meta character in the given string at the given position.
+bool checkMetacharacter(std::string inputString, size_t position){
+    //Check if quoted
+    bool quoteLeft = false;
+    bool quoteRight = false;
+    //Make sure position is not at end or start of line.
+    if (position > 0 && position < (inputString.length()-1)){
+        //Check to see if there is a quote left or right of current char.
+        if(inputString[position-1] == '"'){
+            quoteLeft = true;
+        }
+        if(inputString[position+1] == '"'){
+            quoteRight = true;
+        }
+    }
+    if(quoteLeft && quoteRight){
+        return false; //Not a metacharacter as it is quoted.
+    }
+    //Check if metacharacter
+    std::string metaCharacters = "|&;()<> ";
+    char indivChar = inputString[position];
+    for (size_t i = 0; i < metaCharacters.length(); i++){
+        if (indivChar == metaCharacters[i]){
+            return true; //meta char found
+        }
+    }
+    return false; //did not find a meta char
+}
 
 // commented in header
 std::string _get_current()
