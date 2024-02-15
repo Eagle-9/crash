@@ -27,7 +27,11 @@ Make Targets:
 
 The program can be used in two major ways:
 
-
+### Meta characters
+| Character  | Usage |
+| ------ |:-------------:|
+| \      | Continuation         |
+| #      | Comment              |
 
 ### Interactive mode
 
