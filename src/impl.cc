@@ -23,7 +23,7 @@ std::string current_line;
 struct DictStruct
 {
     std::string keyword;
-    void (*functionPointer)(int argc, char *argv[]);
+    int (*function_pointer)(int argc, std::string *argv);
 };
 
 // classification table
@@ -47,7 +47,7 @@ std::unordered_map<std::string, DictStruct> dict =
     {"while", {KEYWORD, nullptr}},
     {"alias", {INTERNAL, nullptr}},
     {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, nullptr}},
+    {"cd", {INTERNAL, *builtin_cd}},
     {"eval", {INTERNAL, nullptr}},
     {"exec", {INTERNAL, nullptr}},
     {"exit", {INTERNAL, nullptr}},
@@ -283,7 +283,7 @@ std::string _get_current()
 
 // CD COMMANDS
 
-std::string builtin_cd(int argc, std::string *argv)
+int builtin_cd(int argc, std::string *argv)
 {
     // cd function
 
@@ -321,7 +321,7 @@ std::string builtin_cd(int argc, std::string *argv)
         std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
     }
 
-    return " ";
+    return 0;
 }
 
 void cd_help_message(int argc, std::string *argv)
