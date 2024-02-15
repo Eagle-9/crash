@@ -10,11 +10,9 @@
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
-#define PERSON "person"
-#define PLACE "place"
-#define THING "thing"
-#define INTERNAL "internal"
 #define KEYWORD "keyword"
+#define INTERNAL "internal"
+#define EXTERNAL "external"
 //* state info
 
 // if we're currently in a continuation
@@ -22,79 +20,55 @@ bool is_continuation = false;
 // the current line
 std::string current_line;
 
-//* const info
+
+
+struct DictStruct {
+    std::string keyword;
+    void (*functionPointer)(int argc, char * argv[]);
+};
 
 // classification table
-// the three classifications are "person", "place", "thing"
-std::unordered_map<std::string, std::string> dict =
-{
-    {"mason",PERSON},
-    {"indianapolis",PLACE},
-    {"compiler",THING},
-    {"i",PERSON},
-    {"paris",PLACE},
-    {"duck",THING},
-    {"john",PERSON},
-    {"cedar lake",PLACE},
-    {"dinosaur",THING},
-    {"nick",PERSON},
-    {"boston",PLACE},
-    {"computer",THING},
-    {"dylan",PERSON},
-    {"london",PLACE},
-    {"lego",THING},
-    {"jeff",PERSON},
-    {"beijing",PLACE},
-    {"bottle",THING},
-    {"kim",PERSON},
-    {"tokyo",PLACE},
-    {"camera",THING},
-    {"washington",PERSON},
-    {"delhi",PLACE},
-    {"lines",THING},
-    {"andy",PERSON},
-    {"orlando",PLACE},
-    {"calculator",THING},
-    {"linus",PERSON},
-    {"gary",PLACE},
-    {"semicolon",THING},
-    {"alias",INTERNAL},
-    {"bg",INTERNAL},
-    {"cd",INTERNAL},
-    {"eval",INTERNAL},
-    {"exec",INTERNAL},
-    {"exit",INTERNAL},
-    {"export",INTERNAL},
-    {"fc",INTERNAL},
-    {"fg",INTERNAL},
-    {"help",INTERNAL},
-    {"history",INTERNAL},
-    {"jobs",INTERNAL},
-    {"let",INTERNAL},
-    {"local",INTERNAL},
-    {"logout",INTERNAL},
-    {"read",INTERNAL},
-    {"set",INTERNAL},
-    {"shift",INTERNAL},
-    {"shopt",INTERNAL},
-    {"source",INTERNAL},
-    {"unalias",INTERNAL},
-    {"break",KEYWORD},
-    {"continue",KEYWORD},
-    {"do",KEYWORD},
-    {"else",KEYWORD},
-    {"elseif",KEYWORD},
-    {"end",KEYWORD},
-    {"endif",KEYWORD},
-    {"for",KEYWORD},
-    {"function",KEYWORD},
-    {"if",KEYWORD},
-    {"in",KEYWORD},
-    {"return",KEYWORD},
-    {"then",KEYWORD},
-    {"until",KEYWORD},
-    {"while",KEYWORD}
+// the three classifications are 
+std::unordered_map<std::string, DictStruct> dict = {
+{"break",{KEYWORD,nullptr}},
+{"continue",{KEYWORD,nullptr}},
+{"do",{KEYWORD,nullptr}},
+{"else",{KEYWORD,nullptr}},
+{"elseif",{KEYWORD,nullptr}},
+{"end",{KEYWORD,nullptr}},
+{"endif",{KEYWORD,nullptr}},
+{"for",{KEYWORD,nullptr}},
+{"function",{KEYWORD,nullptr}},
+{"if",{KEYWORD,nullptr}},
+{"in",{KEYWORD,nullptr}},
+{"return",{KEYWORD,nullptr}},
+{"then",{KEYWORD,nullptr}},
+{"until",{KEYWORD,nullptr}},
+{"while",{KEYWORD,nullptr}},
+{"alias",{INTERNAL,nullptr}},
+{"bg",{INTERNAL,nullptr}},
+{"cd",{INTERNAL,nullptr}},
+{"eval",{INTERNAL,nullptr}},
+{"exec",{INTERNAL,nullptr}},
+{"exit",{INTERNAL,nullptr}},
+{"export",{INTERNAL,nullptr}},
+{"fc",{INTERNAL,nullptr}},
+{"fg",{INTERNAL,nullptr}},
+{"help",{INTERNAL,nullptr}},
+{"history",{INTERNAL,nullptr}},
+{"jobs",{INTERNAL,nullptr}},
+{"let",{INTERNAL,nullptr}},
+{"local",{INTERNAL,nullptr}},
+{"logout",{INTERNAL,nullptr}},
+{"read",{INTERNAL,nullptr}},
+{"set",{INTERNAL,nullptr}},
+{"shift",{INTERNAL,nullptr}},
+{"shopt",{INTERNAL,nullptr}},
+{"source",{INTERNAL,nullptr}},
+{"unalias",{INTERNAL,nullptr}}
 };
+
+
 
 //* function implementation
 
@@ -115,7 +89,7 @@ std::string process()
     if (dict.count(res)) {
         
 	//get class from dictionary
-        std::string lineClassName = dict.at(res);
+        std::string lineClassName = dict.at(res).keyword;
     
 	//append class to line
     	res = res + " " + lineClassName;
