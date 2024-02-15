@@ -76,14 +76,30 @@ std::unordered_map<std::string, DictStruct> dict = {
 // 'line' should be the parsed line from 'parse()'
 std::string process()
 {
-    // todo: process parsed line
     std::string res;
+    std::vector<std::string> args;
 
     //get parsed line
     res = current_line;
 
-    //split the current line by ' ' and set res to first word
-    res = res.substr(0, res.find(' '));
+    //Go through every character in the line, split them into args
+    std::string tempArg;
+    for(size_t i=0; i < res.length(); i++){
+        if (!checkMetacharacter(res, i)){ //If not a meta character, add to tempArg
+            tempArg = tempArg + res[i];
+        }else{ //We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
+            args.emplace_back(tempArg);
+            tempArg = "";
+        }
+    }
+    //The above loop only adds an argument if there is a space, so we need this to get the inital arg.
+    if (res != ""){
+        args.emplace_back(tempArg);
+    }
+    /* Debug code to print out arguments. Can be removed without issue.*/
+    for (size_t i = 0; i < args.size(); i++){
+        std::cout << "ARG[" << i << "]: " << args[i] << std::endl;;
+    }
 
     //if the map returns a key
     if (dict.count(res)) {
@@ -119,25 +135,6 @@ std::string parse(std::string line)
         return PROMPT_NEW;
     }
 
-    // Dylan: Remove extra whitespace from the line.
-    std::string tempLine;
-    bool encounteredFirstChar = false;
-    for (size_t i = 0; i < line.length(); i++){
-        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
-            //First check to make sure we are not at the end of the line and we have had a character
-            if (i+1 < line.length() && encounteredFirstChar){
-                //If the next character is not a space/tab, we can add a space.
-                if (line[i+1] != ' ' && line[i+1] != '\t'){
-                    tempLine += ' ';
-                }
-            }
-        }else{ //The character was not a space or tab, so just add it
-            tempLine += line[i];
-            encounteredFirstChar = true;
-        }
-    }
-    line = tempLine;
-
     // to store the comment start location
     size_t comment_start = std::string::npos;
     // for char in line, search for a comment start location
@@ -172,6 +169,24 @@ std::string parse(std::string line)
             line = line.substr(0, comment_start);
         }
     }
+    // Dylan: Remove extra whitespace from the line.
+    std::string tempLine;
+    bool encounteredFirstChar = false;
+    for (size_t i = 0; i < line.length(); i++){
+        if (line[i] == ' ' || line[i] == '\t'){ //Check and see if we have found a space or tab.
+            //First check to make sure we are not at the end of the line and we have had a character
+            if (i+1 < line.length() && encounteredFirstChar){
+                //If the next character is not a space/tab, we can add a space.
+                if (line[i+1] != ' ' && line[i+1] != '\t'){
+                    tempLine += ' ';
+                }
+            }
+        }else{ //The character was not a space or tab, so just add it
+            tempLine += line[i];
+            encounteredFirstChar = true;
+        }
+    }
+    line = tempLine;
 
     // if there's a continuation
     if ( line != "" && line[line.length() - 1] == '\\')
@@ -206,6 +221,35 @@ std::string strToLowerCase(std::string line) {
 
 }//end strToLowerCase
 
+//Check if there is a meta character in the given string at the given position.
+bool checkMetacharacter(std::string inputString, size_t position){
+    //Check if quoted
+    bool quoteLeft = false;
+    bool quoteRight = false;
+    //Make sure position is not at end or start of line.
+    if (position > 0 && position < (inputString.length()-1)){
+        //Check to see if there is a quote left or right of current char.
+        if(inputString[position-1] == '"'){
+            quoteLeft = true;
+        }
+        if(inputString[position+1] == '"'){
+            quoteRight = true;
+        }
+    }
+    if(quoteLeft && quoteRight){
+        return false; //Not a metacharacter as it is quoted.
+    }
+    //Check if metacharacter
+    std::string metaCharacters = "|&;()<> \\";
+    char indivChar = inputString[position];
+    for (size_t i = 0; i < metaCharacters.length(); i++){
+        if (indivChar == metaCharacters[i]){
+            return true; //meta char found
+        }
+    }
+    return false; //did not find a meta char
+}
+
 // commented in header
 std::string _get_current()
 {
@@ -214,7 +258,42 @@ std::string _get_current()
 
 //CD COMMANDS
 
-int cd_help_message(std::string arg) {
+std::string builtin_cd(int argc, std::string* argv) {
+  	//cd function
+	
+	std::string key = "";
+	if (argc >= 2) { //checks to make sure there is enough arguments
+		key = argv[1]; //sets key to flag
+	}
+
+	//if argument is -{n}, convert to string to select from table
+	if(isdigit(argv[1][1])) {
+		key = "-{n}";
+	}
+
+	//table to store all flags in
+	std::unordered_map<std::string, void (*)(int argc, std::string* argv)> cd_table; //key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+	
+	cd_table["-h"] = cd_help_message; //displays a simple help message
+	cd_table["-H"] = cd_help_message; //displays a full help message
+	cd_table["-l"] = NULL; //Display a history list
+	cd_table["-{n}"] = NULL; //Change current directory to nth element
+       	cd_table["-c"] = NULL; //clean the directory history 
+	cd_table["-s"] = NULL; //suppress the directory history
+	
+	//make sure key is in table
+	if (cd_table.find(key) != cd_table.end()) {
+		//access table
+		cd_table[key](argc, argv);
+	} else {
+		//not in table
+		std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+	}
+
+	return " ";
+}
+
+void cd_help_message(int argc, std::string* argv) {
 
   //simple help message
   std::string simpleHelp = "To change directory, input 'cd DIR' where DIR is the desired directory's address";
@@ -223,13 +302,11 @@ int cd_help_message(std::string arg) {
   std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'cd'\n\ncd [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] (DIR)\n\nGeneral Use\n\nChange the current directory to DIR. The default DIR is the current directory so that it is identical to the pwd command in typical Linux shells\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the current directories with serial numbers. With the optional N it displays only the last N entries\n-{n} : Change the current directory to the n-th entry in the history list\n-c : Clean the directory history\n-s : Suppress the directory history by eliminating duplicated directories. The order of the history must be maintained. The latest entry must be kept for same directories";
                       
   //differentiate between simple and complex help message
-   if (arg == "h") {
+   if (argv[1] == "-h") {
     std::cout << simpleHelp << std::endl; //simple help message
-  } else if (arg == "H") {
+  } else if (argv[1] == "-H") {
     std::cout << fullHelp << std::endl; //full help message
   } else {
     std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; //not a known command
   }
-
-  return 0;
 }
