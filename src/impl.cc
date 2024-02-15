@@ -284,7 +284,42 @@ std::string _get_current()
 
 //CD COMMANDS
 
-int cd_help_message(std::string arg) {
+std::string builtin_cd(int argc, std::string* argv) {
+  	//cd function
+	
+	std::string key = "";
+	if (argc >= 2) { //checks to make sure there is enough arguments
+		key = argv[1]; //sets key to flag
+	}
+
+	//if argument is -{n}, convert to string to select from table
+	if(isdigit(argv[1][1])) {
+		key = "-{n}";
+	}
+
+	//table to store all flags in
+	std::unordered_map<std::string, void (*)(int argc, std::string* argv)> cd_table; //key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+	
+	cd_table["-h"] = cd_help_message; //displays a simple help message
+	cd_table["-H"] = cd_help_message; //displays a full help message
+	cd_table["-l"] = NULL; //Display a history list
+	cd_table["-{n}"] = NULL; //Change current directory to nth element
+       	cd_table["-c"] = NULL; //clean the directory history 
+	cd_table["-s"] = NULL; //suppress the directory history
+	
+	//make sure key is in table
+	if (cd_table.find(key) != cd_table.end()) {
+		//access table
+		cd_table[key](argc, argv);
+	} else {
+		//not in table
+		std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+	}
+
+	return " ";
+}
+
+void cd_help_message(int argc, std::string* argv) {
 
   //simple help message
   std::string simpleHelp = "To change directory, input 'cd DIR' where DIR is the desired directory's address";
@@ -293,13 +328,11 @@ int cd_help_message(std::string arg) {
   std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'cd'\n\ncd [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] (DIR)\n\nGeneral Use\n\nChange the current directory to DIR. The default DIR is the current directory so that it is identical to the pwd command in typical Linux shells\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the current directories with serial numbers. With the optional N it displays only the last N entries\n-{n} : Change the current directory to the n-th entry in the history list\n-c : Clean the directory history\n-s : Suppress the directory history by eliminating duplicated directories. The order of the history must be maintained. The latest entry must be kept for same directories";
                       
   //differentiate between simple and complex help message
-   if (arg == "h") {
+   if (argv[1] == "-h") {
     std::cout << simpleHelp << std::endl; //simple help message
-  } else if (arg == "H") {
+  } else if (argv[1] == "-H") {
     std::cout << fullHelp << std::endl; //full help message
   } else {
     std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; //not a known command
   }
-
-  return 0;
 }

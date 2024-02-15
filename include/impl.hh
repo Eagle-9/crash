@@ -31,6 +31,7 @@ bool checkMetacharacter(std::string inputString, size_t position);
 //cd commands builtin
 
 //int builtin_cd
+std::string builtin_cd(int argc, std::string* argv);
 
 //help message for cd passing h or H
-int cd_help_message(std::string arg);
+void cd_help_message(int argc, std::string* argv);
