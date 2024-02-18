@@ -23,7 +23,7 @@ std::string current_line;
 struct DictStruct
 {
     std::string keyword;
-    int (*function_pointer)(int argc, std::string *argv);
+    int (*function_pointer)(int argc, char ** argv);
 };
 
 // classification table
@@ -283,7 +283,7 @@ std::string _get_current()
 
 // CD COMMANDS
 
-int builtin_cd(int argc, std::string *argv)
+int builtin_cd(int argc, char ** argv)
 {
     // cd function
 
