@@ -314,7 +314,7 @@ int builtin_cd(int argc, char ** argv)
     }
 
     // if argument is -{n}, convert to string to select from table
-    if (isdigit(argv[1][1]))
+    if (argc >=2 && isdigit(argv[1][1]))
     {
         key = "-{n}";
     }
