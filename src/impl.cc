@@ -109,7 +109,7 @@ std::string process()
     argv.reserve(args.size());
 
     /* Debug code to print out arguments. Can be removed without issue.*/
-    for (size_t i = 1; i <= args.size(); i++)
+    for (size_t i = 0; i < args.size(); i++)
     {
         std::cout << "ARG[" << i << "]: " << args[i] << std::endl;
         ;
@@ -124,9 +124,14 @@ std::string process()
 
         // get class from dictionary
         std::string lineClassName = dict.at(res).keyword;
-        std::cout << "HERE" << std::endl;
-        dict.at(res).function_pointer(args.size(), argv.data());
-
+        if(dict.at(res).function_pointer != nullptr)
+        {
+            dict.at(res).function_pointer(args.size(), argv.data());
+        } 
+        else 
+        {
+            std::cout << "NOT YET IMPLEMENTED" << std::endl;
+        }
 
         // append class to line
         res = res + " " + lineClassName;
