@@ -49,7 +49,7 @@ std::unordered_map<std::string, DictStruct> dict =
     {"while", {KEYWORD, nullptr}},
     {"alias", {INTERNAL, nullptr}},
     {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, *builtin_cd}},
+    {"cd", {INTERNAL, builtin_cd}},
     {"eval", {INTERNAL, nullptr}},
     {"exec", {INTERNAL, nullptr}},
     {"exit", {INTERNAL, nullptr}},
@@ -78,6 +78,8 @@ std::string process()
 {
     std::string res;
     std::vector<std::string> args;
+    std::vector<std::vector<char>> holder;
+    std::vector<char*> argv;
 
     // get parsed line
     res = current_line;
@@ -101,11 +103,19 @@ std::string process()
     {
         args.emplace_back(tempArg);
     }
+
+    // resize holder and argv to the args size
+    holder.reserve(args.size());
+    argv.reserve(args.size());
+
     /* Debug code to print out arguments. Can be removed without issue.*/
-    for (size_t i = 0; i < args.size(); i++)
+    for (size_t i = 1; i <= args.size(); i++)
     {
         std::cout << "ARG[" << i << "]: " << args[i] << std::endl;
         ;
+        holder.emplace_back(args[i].begin(), args[i].end());
+        holder.back().push_back('\0');
+        argv.push_back(holder.back().data());
     }
 
     // if the map returns a key
@@ -114,6 +124,9 @@ std::string process()
 
         // get class from dictionary
         std::string lineClassName = dict.at(res).keyword;
+        std::cout << "HERE" << std::endl;
+        dict.at(res).function_pointer(args.size(), argv.data());
+
 
         // append class to line
         res = res + " " + lineClassName;
