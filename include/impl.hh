@@ -37,8 +37,8 @@ int builtin_cd(int argc, char **argv);
 void cd_help_message(int argc, char **argv);
 
 // cd history length
-int cd_history_length(std::string fileName);
+int cd_history_length();
 
 // cd_print_history
-void cd_print_history(std::string filename);
-void cd_print_history(std::string filename, int n);
+void cd_print_history(int argc, char **argv);
+void cd_print_history(int n);

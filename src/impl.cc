@@ -370,7 +370,7 @@ int builtin_cd(int argc, char **argv)
 
     cd_table["-h"] = cd_help_message; // displays a simple help message
     cd_table["-H"] = cd_help_message; // displays a full help message
-    cd_table["-l"] = NULL;            // Display a history list
+    cd_table["-l"] = cd_print_history;            // Display a history list
     cd_table["-{n}"] = NULL;          // Change current directory to nth element
     cd_table["-c"] = NULL;            // clean the directory history
     cd_table["-s"] = NULL;            // suppress the directory history
@@ -415,11 +415,11 @@ void cd_help_message(int argc, char **argv)
 }
 
 
-int cd_history_length(std::string filename)
+int cd_history_length()
 {
     // open up the file
     std::ifstream historyFile;
-    historyFile.open(filename);
+    historyFile.open(HISTORY_FILE);
 
     // lines will be our return value
     int lines = 0;
@@ -438,33 +438,53 @@ int cd_history_length(std::string filename)
     return lines;
 }
 
-void cd_print_history(std::string filename)
+void cd_print_history(int argc, char **argv)
 {
-    // define and open the history file
-    std::ifstream historyFile;
-    historyFile.open(filename);
-
-    // define the line that we will use to get the current line
-    std::string line;
-
-    // print out every line in the file
-    while (!historyFile.eof())
+    // if we have an n for number of lines, we run the other function
+    if(argc >= 3 && isdigit(argv[2][0]))
     {
-        getline(historyFile, line);
-        std::cout << line << std::endl;
+        cd_print_history(argv[2][0] - '0');
     }
-    historyFile.close();
+    else 
+    {
+        // define and open the history file
+        std::ifstream historyFile;
+        historyFile.open(HISTORY_FILE);
+        
+        // check that the file is open
+        if(historyFile.fail())
+        {
+            std::ofstream writeFile;
+            writeFile.open(HISTORY_FILE);
+            writeFile.close();
+            historyFile.open(HISTORY_FILE);
+
+        }
+
+        // define the line that we will use to get the current line
+        std::string line;
+
+        // print out every line in the file
+        while (!historyFile.eof())
+        {
+            getline(historyFile, line);
+            std::cout << line << std::endl;
+        }
+        historyFile.close();
+    }
 }
 
 // this overload will print out the last n lines
-void cd_print_history(std::string filename, int n)
+// it is to be called from the normal cd_print_history
+void cd_print_history(int n)
 {
+    std::cout << "N is " << n << std::endl;
     // get the number of lines in the file
-    int totalLen = cd_history_length(filename);
+    int totalLen = cd_history_length();
 
     // define and open the history file
     std::ifstream historyFile;
-    historyFile.open(filename);
+    historyFile.open(HISTORY_FILE);
 
     // define the line that we will use to get the current line
     std::string line;
