@@ -382,7 +382,7 @@ int builtin_cd(int argc, char ** argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, void (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message; // displays a simple help message
     cd_table["-H"] = cd_help_message; // displays a full help message
@@ -416,7 +416,7 @@ int builtin_cd(int argc, char ** argv)
     return 0;
 }
 
-void cd_help_message(int argc, char ** argv)
+int cd_help_message(int argc, char ** argv)
 {
 
     // simple help message

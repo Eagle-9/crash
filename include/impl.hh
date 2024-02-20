@@ -41,4 +41,4 @@ int builtin_exit(int argc, char ** argv);
 
 
 //help message for cd passing h or H
-void cd_help_message(int argc, char ** argv);
+int cd_help_message(int argc, char ** argv);
