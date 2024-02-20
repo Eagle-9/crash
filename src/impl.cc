@@ -61,7 +61,7 @@ std::unordered_map<std::string, DictStruct> dict =
     {"cd", {INTERNAL, builtin_cd}},
     {"eval", {INTERNAL, nullptr}},
     {"exec", {INTERNAL, nullptr}},
-    {"exit", {INTERNAL, nullptr}},
+    {"exit", {INTERNAL, builtin_exit}},
     {"export", {INTERNAL, nullptr}},
     {"fc", {INTERNAL, nullptr}},
     {"fg", {INTERNAL, nullptr}},
@@ -354,6 +354,12 @@ std::string getNewPrompt(){
 std::string _get_current()
 {
     return current_line;
+}
+
+// exit command
+int builtin_exit(int argc, char** argv)
+{
+    exit(0);
 }
 
 // CD COMMANDS
