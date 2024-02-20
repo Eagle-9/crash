@@ -29,6 +29,7 @@ std::string _get_current();
 // checks if a character is a metacharacter
 bool checkMetacharacter(std::string inputString, size_t position);
 
+
 //Return new prompt
 std::string getNewPrompt();
 
@@ -36,6 +37,7 @@ std::string getNewPrompt();
 
 // int builtin_cd
 int builtin_cd(int argc, char **argv);
+
 
 // help message for cd passing h or H
 void cd_help_message(int argc, char **argv);
