@@ -51,7 +51,7 @@ std::unordered_map<std::string, DictStruct> dict =
     {"while", {KEYWORD, nullptr}},
     {"alias", {INTERNAL, nullptr}},
     {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, *builtin_cd}},
+    {"cd", {INTERNAL, builtin_cd}},
     {"eval", {INTERNAL, nullptr}},
     {"exec", {INTERNAL, nullptr}},
     {"exit", {INTERNAL, nullptr}},
@@ -80,6 +80,8 @@ std::string process()
 {
     std::string res;
     std::vector<std::string> args;
+    std::vector<std::vector<char>> holder;
+    std::vector<char*> argv;
 
     // get parsed line
     res = current_line;
@@ -103,11 +105,19 @@ std::string process()
     {
         args.emplace_back(tempArg);
     }
+
+    // resize holder and argv to the args size
+    holder.reserve(args.size());
+    argv.reserve(args.size());
+
     /* Debug code to print out arguments. Can be removed without issue.*/
     for (size_t i = 0; i < args.size(); i++)
     {
         std::cout << "ARG[" << i << "]: " << args[i] << std::endl;
         ;
+        holder.emplace_back(args[i].begin(), args[i].end());
+        holder.back().push_back('\0');
+        argv.push_back(holder.back().data());
     }
 
     // if the map returns a key
@@ -116,6 +126,14 @@ std::string process()
 
         // get class from dictionary
         std::string lineClassName = dict.at(res).keyword;
+        if(dict.at(res).function_pointer != nullptr)
+        {
+            dict.at(res).function_pointer(args.size(), argv.data());
+        } 
+        else 
+        {
+            std::cout << "NOT YET IMPLEMENTED" << std::endl;
+        }
 
         // append class to line
         res = res + " " + lineClassName;
@@ -298,7 +316,8 @@ int builtin_cd(int argc, char ** argv)
     }
 
     // if argument is -{n}, convert to string to select from table
-    if (isdigit(argv[1][1]))
+    // note: this works primarily because of short circuit evaluation
+    if (argc >=2 && isdigit(argv[1][1]))
     {
         key = "-{n}";
     }
