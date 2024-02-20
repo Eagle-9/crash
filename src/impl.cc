@@ -188,7 +188,7 @@ std::string process()
 
     // add prompt to end of response
     res += "\n";
-    res += PROMPT_NEW;
+    res += getNewPrompt();
 
     // clear current line + return
     current_line.clear();
@@ -201,7 +201,7 @@ std::string parse(std::string line)
     // if there's a blank line
     if (line.length() == 0)
     {
-        return PROMPT_NEW;
+        return getNewPrompt();
     }
 
     // to store the comment start location
@@ -231,7 +231,7 @@ std::string parse(std::string line)
         {
             if (!is_continuation)
             {
-                return PROMPT_NEW;
+                return getNewPrompt();
             }
             line = "";
         }
@@ -321,6 +321,11 @@ bool checkMetacharacter(std::string inputString, size_t position)
         }
     }
     return false; // did not find a meta char
+}
+std::string getNewPrompt(){
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    return "CRASH " + std::string(cwd) + PROMPT_NEW;
 }
 
 // commented in header
