@@ -476,7 +476,6 @@ void cd_print_history(int argc, char **argv)
 // it is to be called from the normal cd_print_history
 void cd_print_history(int n)
 {
-    std::cout << "N is " << n << std::endl;
     // get the number of lines in the file
     int totalLen = cd_history_length();
 
