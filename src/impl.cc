@@ -119,14 +119,14 @@ std::string process()
     }
 
     // if the map returns a key
-    if (dict.count(res))
+    if (dict.count(args[0]))
     {
 
         // get class from dictionary
-        std::string lineClassName = dict.at(res).keyword;
-        if(dict.at(res).function_pointer != nullptr)
+        std::string lineClassName = dict.at(args[0]).keyword;
+        if(dict.at(args[0]).function_pointer != nullptr)
         {
-            dict.at(res).function_pointer(args.size(), argv.data());
+            dict.at(args[0]).function_pointer(args.size(), argv.data());
         } 
         else 
         {
