@@ -364,6 +364,14 @@ int builtin_cd(int argc, char ** argv)
         // access table
         cd_table[key](argc, argv);
     }
+    else if (key[0] != '-')
+    {
+        if (chdir(key.c_str()) != 0)
+        {
+            std::cout << "err\n";
+        }
+
+    }
     else
     {
         // not in table
