@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <sstream>
 #include <sys/wait.h> // for wait()
-#include <unistd.h> // for exec()
+#include <unistd.h>   // for exec()
 #include <sys/stat.h>
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
@@ -31,50 +31,49 @@ std::string current_line;
 struct DictStruct
 {
     std::string keyword;
-    int (*function_pointer)(int argc, char ** argv);
+    int (*function_pointer)(int argc, char **argv);
 };
 
 // classification table
 // the three classifications are
-std::unordered_map<std::string, DictStruct> dict = 
-{
-    {"break", {KEYWORD, nullptr}},
-    {"continue", {KEYWORD, nullptr}},
-    {"do", {KEYWORD, nullptr}},
-    {"else", {KEYWORD, nullptr}},
-    {"elseif", {KEYWORD, nullptr}},
-    {"end", {KEYWORD, nullptr}},
-    {"endif", {KEYWORD, nullptr}},
-    {"for", {KEYWORD, nullptr}},
-    {"function", {KEYWORD, nullptr}},
-    {"if", {KEYWORD, nullptr}},
-    {"in", {KEYWORD, nullptr}},
-    {"return", {KEYWORD, nullptr}},
-    {"then", {KEYWORD, nullptr}},
-    {"until", {KEYWORD, nullptr}},
-    {"while", {KEYWORD, nullptr}},
-    {"alias", {INTERNAL, nullptr}},
-    {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, builtin_cd}},
-    {"eval", {INTERNAL, nullptr}},
-    {"exec", {INTERNAL, nullptr}},
-    {"exit", {INTERNAL, nullptr}},
-    {"export", {INTERNAL, nullptr}},
-    {"fc", {INTERNAL, nullptr}},
-    {"fg", {INTERNAL, nullptr}},
-    {"help", {INTERNAL, nullptr}},
-    {"history", {INTERNAL, nullptr}},
-    {"jobs", {INTERNAL, nullptr}},
-    {"let", {INTERNAL, nullptr}},
-    {"local", {INTERNAL, nullptr}},
-    {"logout", {INTERNAL, nullptr}},
-    {"read", {INTERNAL, nullptr}},
-    {"set", {INTERNAL, nullptr}},
-    {"shift", {INTERNAL, nullptr}},
-    {"shopt", {INTERNAL, nullptr}},
-    {"source", {INTERNAL, nullptr}},
-    {"unalias", {INTERNAL, nullptr}}
-};
+std::unordered_map<std::string, DictStruct> dict =
+    {
+        {"break", {KEYWORD, nullptr}},
+        {"continue", {KEYWORD, nullptr}},
+        {"do", {KEYWORD, nullptr}},
+        {"else", {KEYWORD, nullptr}},
+        {"elseif", {KEYWORD, nullptr}},
+        {"end", {KEYWORD, nullptr}},
+        {"endif", {KEYWORD, nullptr}},
+        {"for", {KEYWORD, nullptr}},
+        {"function", {KEYWORD, nullptr}},
+        {"if", {KEYWORD, nullptr}},
+        {"in", {KEYWORD, nullptr}},
+        {"return", {KEYWORD, nullptr}},
+        {"then", {KEYWORD, nullptr}},
+        {"until", {KEYWORD, nullptr}},
+        {"while", {KEYWORD, nullptr}},
+        {"alias", {INTERNAL, nullptr}},
+        {"bg", {INTERNAL, nullptr}},
+        {"cd", {INTERNAL, builtin_cd}},
+        {"eval", {INTERNAL, nullptr}},
+        {"exec", {INTERNAL, nullptr}},
+        {"exit", {INTERNAL, nullptr}},
+        {"export", {INTERNAL, nullptr}},
+        {"fc", {INTERNAL, nullptr}},
+        {"fg", {INTERNAL, nullptr}},
+        {"help", {INTERNAL, nullptr}},
+        {"history", {INTERNAL, nullptr}},
+        {"jobs", {INTERNAL, nullptr}},
+        {"let", {INTERNAL, nullptr}},
+        {"local", {INTERNAL, nullptr}},
+        {"logout", {INTERNAL, nullptr}},
+        {"read", {INTERNAL, nullptr}},
+        {"set", {INTERNAL, nullptr}},
+        {"shift", {INTERNAL, nullptr}},
+        {"shopt", {INTERNAL, nullptr}},
+        {"source", {INTERNAL, nullptr}},
+        {"unalias", {INTERNAL, nullptr}}};
 
 //* function implementation
 
@@ -85,7 +84,7 @@ std::string process()
     std::string res;
     std::vector<std::string> args;
     std::vector<std::vector<char>> holder;
-    std::vector<char*> argv;
+    std::vector<char *> argv;
 
     // get parsed line
     res = current_line;
@@ -130,11 +129,11 @@ std::string process()
 
         // get class from dictionary
         std::string lineClassName = dict.at(args[0]).keyword;
-        if(dict.at(args[0]).function_pointer != nullptr)
+        if (dict.at(args[0]).function_pointer != nullptr)
         {
             dict.at(args[0]).function_pointer(args.size(), argv.data());
-        } 
-        else 
+        }
+        else
         {
             std::cout << "NOT YET IMPLEMENTED" << std::endl;
         }
@@ -145,7 +144,7 @@ std::string process()
     else
     {
 
-        if (const char* env_p = std::getenv("PATH"))
+        if (const char *env_p = std::getenv("PATH"))
         {
 
             std::stringstream stream(env_p);
@@ -153,10 +152,10 @@ std::string process()
             std::vector<std::string> seglist;
             bool found = false;
 
-            while(std::getline(stream, segment, ':'))
+            while (std::getline(stream, segment, ':'))
             {
                 std::string test_path = segment + "/" + args[0];
-            //    seglist.push_back(segment);
+                //    seglist.push_back(segment);
                 // std::cout << segment << "/" << args[0] << "\n";
                 struct stat sb;
                 if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
@@ -168,7 +167,9 @@ std::string process()
                     if (child == 0)
                     {
                         std::cout << "hi from main\n";
-                    } else {
+                    }
+                    else
+                    {
                         std::cout << "hi from child!\n";
                         execv(test_path.c_str(), argv.data());
                     }
@@ -347,7 +348,7 @@ std::string _get_current()
 
 // CD COMMANDS
 
-int builtin_cd(int argc, char ** argv)
+int builtin_cd(int argc, char **argv)
 {
     // cd function
 
@@ -359,13 +360,13 @@ int builtin_cd(int argc, char ** argv)
 
     // if argument is -{n}, convert to string to select from table
     // note: this works primarily because of short circuit evaluation
-    if (argc >=2 && isdigit(argv[1][1]))
+    if (argc >= 2 && isdigit(argv[1][1]))
     {
         key = "-{n}";
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, void (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message; // displays a simple help message
     cd_table["-H"] = cd_help_message; // displays a full help message
@@ -389,7 +390,7 @@ int builtin_cd(int argc, char ** argv)
     return 0;
 }
 
-void cd_help_message(int argc, char ** argv)
+void cd_help_message(int argc, char **argv)
 {
 
     // simple help message
@@ -403,7 +404,7 @@ void cd_help_message(int argc, char ** argv)
     {
         std::cout << simpleHelp << std::endl; // simple help message
     }
-    else if (strcmp(argv[1],"-H")==0)
+    else if (strcmp(argv[1], "-H") == 0)
     {
         std::cout << fullHelp << std::endl; // full help message
     }
@@ -419,7 +420,8 @@ int cd_history_length(std::string filename)
     std::ifstream historyFile;
     historyFile.open(filename);
 
-    if(historyFile.fail()){
+    if (historyFile.fail())
+    {
         std::ofstream outputFile(filename);
         outputFile.close();
         historyFile.open(filename);
@@ -428,7 +430,7 @@ int cd_history_length(std::string filename)
     int lines = 0;
     std::string line;
     // use a while loop to find the end of the file
-    while(!historyFile.eof())
+    while (!historyFile.eof())
     {
         getline(historyFile, line);
         lines++;
@@ -437,19 +439,19 @@ int cd_history_length(std::string filename)
     return lines;
 }
 
-void cd_print_history(std::string filename) 
+void cd_print_history(std::string filename)
 {
     // define and open the history file
     std::ifstream historyFile;
     historyFile.open(filename);
 
-
     // define the line that we will use to get the current line
     std::string line;
 
     // print out every line in the file
-    while (!historyFile.eof()) {
-        getline(historyFile,line);
+    while (!historyFile.eof())
+    {
+        getline(historyFile, line);
         std::cout << line << std::endl;
     }
 }

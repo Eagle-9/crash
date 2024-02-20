@@ -27,7 +27,7 @@ int main()
     // read all lines to 'lines'
     while (getline(content, line))
     {
-      lines.push_back(line);
+        lines.push_back(line);
     }
 
     // close the test case file;

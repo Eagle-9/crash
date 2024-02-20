@@ -4,7 +4,7 @@
 // include implementation
 #include <impl.hh>
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     if (argc == 2)
     {
@@ -26,7 +26,7 @@ int main(int argc, char** argv)
         // read all lines to 'lines'
         while (getline(content, line))
         {
-          lines.push_back(line);
+            lines.push_back(line);
         }
 
         // close the file;
@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     // main loop
     while (std::getline(std::cin, line))
     {
-	    line = strToLowerCase(line);
+        line = strToLowerCase(line);
 
         // if exit, exit
         /* TODO: This probably needs to be implemented as it's own internal command
