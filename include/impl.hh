@@ -14,6 +14,7 @@
 
 const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";
+#define PATH_MAX 1024
 
 // parse input (take each line and convert it to
 // the form from "logical line"

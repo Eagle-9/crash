@@ -188,6 +188,10 @@ std::string process()
 
     // add prompt to end of response
     res += "\n";
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    res += cwd;
+    res += " ";
     res += PROMPT_NEW;
 
     // clear current line + return
@@ -201,7 +205,13 @@ std::string parse(std::string line)
     // if there's a blank line
     if (line.length() == 0)
     {
-        return PROMPT_NEW;
+        std::string res;
+        char cwd[PATH_MAX];
+        getcwd(cwd, sizeof(cwd));
+        res += cwd;
+        res += " ";
+        res += PROMPT_NEW;
+        return res;
     }
 
     // to store the comment start location
@@ -231,7 +241,13 @@ std::string parse(std::string line)
         {
             if (!is_continuation)
             {
-                return PROMPT_NEW;
+                std::string res;
+                char cwd[PATH_MAX];
+                getcwd(cwd, sizeof(cwd));
+                res += cwd;
+                res += " ";
+                res += PROMPT_NEW;
+                return res;
             }
             line = "";
         }

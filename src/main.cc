@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <unistd.h>
 // include implementation
 #include <impl.hh>
 
@@ -45,7 +46,13 @@ int main(int argc, char** argv)
     // to store the line
     std::string line;
     // initial prompt
-    std::cout << PROMPT_NEW;
+    std::string res;
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    res += cwd;
+    res += " ";
+    res += PROMPT_NEW;
+    std::cout << res;
 
     // main loop
     while (std::getline(std::cin, line))
