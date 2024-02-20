@@ -1,3 +1,4 @@
+
 /**
  *
  *  impl.cc
@@ -191,7 +192,7 @@ std::string process()
 
     // add prompt to end of response
     res += "\n";
-    res += PROMPT_NEW;
+    res += getNewPrompt();
 
     // clear current line + return
     current_line.clear();
@@ -204,7 +205,7 @@ std::string parse(std::string line)
     // if there's a blank line
     if (line.length() == 0)
     {
-        return PROMPT_NEW;
+        return getNewPrompt();
     }
 
     // to store the comment start location
@@ -234,7 +235,7 @@ std::string parse(std::string line)
         {
             if (!is_continuation)
             {
-                return PROMPT_NEW;
+                return getNewPrompt();
             }
             line = "";
         }
@@ -290,20 +291,6 @@ std::string parse(std::string line)
     return process();
 }
 
-std::string strToLowerCase(std::string line)
-{
-    // this turns a string to lower case
-
-    for (int i = 0; (unsigned)i < line.size(); i++)
-    {
-        // convert character to lower case
-        line[i] = tolower(line[i]);
-    } // end for
-
-    return line;
-
-} // end strToLowerCase
-
 // Check if there is a meta character in the given string at the given position.
 bool checkMetacharacter(std::string inputString, size_t position)
 {
@@ -339,6 +326,11 @@ bool checkMetacharacter(std::string inputString, size_t position)
     }
     return false; // did not find a meta char
 }
+std::string getNewPrompt(){
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+    return "CRASH " + std::string(cwd) + PROMPT_NEW;
+}
 
 // commented in header
 std::string _get_current()
@@ -368,12 +360,12 @@ int builtin_cd(int argc, char **argv)
     // table to store all flags in
     std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
-    cd_table["-h"] = cd_help_message; // displays a simple help message
-    cd_table["-H"] = cd_help_message; // displays a full help message
-    cd_table["-l"] = cd_print_history;            // Display a history list
-    cd_table["-{n}"] = NULL;          // Change current directory to nth element
-    cd_table["-c"] = NULL;            // clean the directory history
-    cd_table["-s"] = NULL;            // suppress the directory history
+    cd_table["-h"] = cd_help_message;  // displays a simple help message
+    cd_table["-H"] = cd_help_message;  // displays a full help message
+    cd_table["-l"] = cd_print_history; // Display a history list
+    cd_table["-{n}"] = NULL;           // Change current directory to nth element
+    cd_table["-c"] = NULL;             // clean the directory history
+    cd_table["-s"] = NULL;             // suppress the directory history
 
     // make sure key is in table
     if (cd_table.find(key) != cd_table.end())
@@ -414,12 +406,20 @@ void cd_help_message(int argc, char **argv)
     }
 }
 
-
 int cd_history_length()
 {
     // open up the file
     std::ifstream historyFile;
     historyFile.open(HISTORY_FILE);
+
+    // check that the file is open
+    if (historyFile.fail())
+    {
+        std::ofstream writeFile;
+        writeFile.open(HISTORY_FILE);
+        writeFile.close();
+        historyFile.open(HISTORY_FILE);
+    }
 
     // lines will be our return value
     int lines = 0;
@@ -441,24 +441,23 @@ int cd_history_length()
 void cd_print_history(int argc, char **argv)
 {
     // if we have an n for number of lines, we run the other function
-    if(argc >= 3 && isdigit(argv[2][0]))
+    if (argc >= 3 && isdigit(argv[2][0]))
     {
         cd_print_history(argv[2][0] - '0');
     }
-    else 
+    else
     {
         // define and open the history file
         std::ifstream historyFile;
         historyFile.open(HISTORY_FILE);
-        
+
         // check that the file is open
-        if(historyFile.fail())
+        if (historyFile.fail())
         {
             std::ofstream writeFile;
             writeFile.open(HISTORY_FILE);
             writeFile.close();
             historyFile.open(HISTORY_FILE);
-
         }
 
         // define the line that we will use to get the current line
@@ -478,7 +477,6 @@ void cd_print_history(int argc, char **argv)
 // it is to be called from the normal cd_print_history
 void cd_print_history(int n)
 {
-    std::cout << "N is " << n << std::endl;
     // get the number of lines in the file
     int totalLen = cd_history_length();
 
@@ -502,3 +500,4 @@ void cd_print_history(int n)
     }
     historyFile.close();
 }
+
