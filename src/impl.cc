@@ -395,13 +395,14 @@ int builtin_cd(int argc, char ** argv)
     if (cd_table.find(key) != cd_table.end())
     {
         // access table
-        cd_table[key](argc, argv);
+        return cd_table[key](argc, argv);
     }
     else if (key[0] != '-')
     {
         if (chdir(key.c_str()) != 0)
         {
             std::cout << "err\n";
+            return 1;
         }
 
     }
@@ -409,6 +410,7 @@ int builtin_cd(int argc, char ** argv)
     {
         // not in table
         std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+        return 1;
     }
 
     return 0;
@@ -435,5 +437,7 @@ void cd_help_message(int argc, char ** argv)
     else
     {
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
+        return 1;
     }
+    return 0;
 }
