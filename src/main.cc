@@ -49,6 +49,7 @@ int main(int argc, char** argv)
     std::string res;
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
+    res += "CRASH ";
     res += cwd;
     res += " ";
     res += PROMPT_NEW;

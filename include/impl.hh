@@ -29,6 +29,9 @@ std::string _get_current();
 //checks if a character is a metacharacter
 bool checkMetacharacter(std::string inputString, size_t position);
 
+//Return new prompt
+std::string getNewPrompt();
+
 //cd commands builtin
 
 //int builtin_cd
