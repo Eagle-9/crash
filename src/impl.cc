@@ -436,3 +436,20 @@ int cd_history_length(std::string filename)
     historyFile.close();
     return lines;
 }
+
+void cd_print_history(std::string filename) 
+{
+    // define and open the history file
+    std::ifstream historyFile;
+    historyFile.open(filename);
+
+
+    // define the line that we will use to get the current line
+    std::string line;
+
+    // print out every line in the file
+    while (!historyFile.eof()) {
+        getline(historyFile,line);
+        std::cout << line << std::endl;
+    }
+}
