@@ -12,6 +12,10 @@
 #include <impl.hh>
 #include <vector>
 #include <stdio.h>
+#include <sstream>
+#include <sys/wait.h> // for wait()
+#include <unistd.h> // for exec()
+#include <sys/stat.h>
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
@@ -119,14 +123,14 @@ std::string process()
     }
 
     // if the map returns a key
-    if (dict.count(res))
+    if (dict.count(args[0]))
     {
 
         // get class from dictionary
-        std::string lineClassName = dict.at(res).keyword;
-        if(dict.at(res).function_pointer != nullptr)
+        std::string lineClassName = dict.at(args[0]).keyword;
+        if(dict.at(args[0]).function_pointer != nullptr)
         {
-            dict.at(res).function_pointer(args.size(), argv.data());
+            dict.at(args[0]).function_pointer(args.size(), argv.data());
         } 
         else 
         {
@@ -139,6 +143,44 @@ std::string process()
     else
     {
 
+        if (const char* env_p = std::getenv("PATH"))
+        {
+
+            std::stringstream stream(env_p);
+            std::string segment;
+            std::vector<std::string> seglist;
+            bool found = false;
+
+            while(std::getline(stream, segment, ':'))
+            {
+                std::string test_path = segment + "/" + args[0];
+            //    seglist.push_back(segment);
+                // std::cout << segment << "/" << args[0] << "\n";
+                struct stat sb;
+                if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
+                {
+                    std::cout << test_path << std::endl;
+
+                    pid_t child = fork();
+
+                    if (child == 0)
+                    {
+                        std::cout << "hi from main\n";
+                    } else {
+                        std::cout << "hi from child!\n";
+                        execv(test_path.c_str(), argv.data());
+                    }
+
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found)
+            {
+                std::cout << "Failed to find command: " << args[0] << "\n";
+            }
+        }
         // not in dictionary
         res = res + " external";
 
