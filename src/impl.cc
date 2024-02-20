@@ -413,17 +413,24 @@ void cd_help_message(int argc, char **argv)
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
     }
 }
+
+
 int cd_history_length(std::string filename)
 {
     // open up the file
     std::ifstream historyFile;
     historyFile.open(filename);
 
+    // lines will be our return value
     int lines = 0;
+
+    // line will temporarily hold each of the strings
     std::string line;
+
     // use a while loop to find the end of the file
     while (!historyFile.eof())
     {
+        // get the current line to get to the next line
         getline(historyFile, line);
         lines++;
     }
@@ -454,36 +461,6 @@ void cd_print_history(std::string filename, int n)
 {
     // get the number of lines in the file
     int totalLen = cd_history_length(filename);
-
-    // define and open the history file
-    std::ifstream historyFile;
-    historyFile.open(filename);
-
-    // define the line that we will use to get the current line
-    std::string line;
-
-    // move down the file totalLen - n spaces
-    for (int i = 0; i < (totalLen - n); i++)
-    {
-        getline(historyFile, line);
-    }
-
-    while (!historyFile.eof())
-    {
-        getline(historyFile, line);
-        std::cout << line << std::endl;
-    }
-    historyFile.close();
-}
-
-// this overload will print out the last n lines
-void cd_print_history(std::string filename, int n)
-{
-    // get the number of lines in the file
-    int totalLen = cd_history_length(filename);
-
-    // if n > totalLen, just set it to totalLen, otherwise n
-    totalLen = n > totalLen ? totalLen : n;
 
     // define and open the history file
     std::ifstream historyFile;
