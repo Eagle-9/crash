@@ -35,3 +35,6 @@ int builtin_cd(int argc, char ** argv);
 
 //help message for cd passing h or H
 void cd_help_message(int argc, char ** argv);
+
+// cd history length
+int cd_history_length(std::string fileName);

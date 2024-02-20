@@ -11,10 +11,12 @@
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
+#include <fstream>
 #include <stdio.h>
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
+#define HISTORY_FILE "history.txt"
 //* state info
 
 // if we're currently in a continuation
@@ -348,4 +350,28 @@ void cd_help_message(int argc, char ** argv)
     {
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
     }
+}
+
+int cd_history_length(std::string filename)
+{
+    // open up the file
+    std::ifstream historyFile;
+    historyFile.open(filename);
+
+    if(historyFile.fail()){
+        std::ofstream outputFile(filename);
+        outputFile.close();
+        historyFile.open(filename);
+    }
+
+    int lines = 0;
+    std::string line;
+    // use a while loop to find the end of the file
+    while(!historyFile.eof())
+    {
+        getline(historyFile, line);
+        lines++;
+    }
+    historyFile.close();
+    return lines;
 }
