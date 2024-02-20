@@ -37,5 +37,8 @@ std::string getNewPrompt();
 //int builtin_cd
 int builtin_cd(int argc, char ** argv);
 
+int builtin_exit(int argc, char ** argv);
+
+
 //help message for cd passing h or H
 void cd_help_message(int argc, char ** argv);
