@@ -50,8 +50,6 @@ int main(int argc, char** argv)
     // main loop
     while (std::getline(std::cin, line))
     {
-	    line = strToLowerCase(line);
-
         // if exit, exit
         /* TODO: This probably needs to be implemented as it's own internal command
             At least that is how professor Kim had it.
