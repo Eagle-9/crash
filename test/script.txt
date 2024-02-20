@@ -1,4 +1,4 @@
-#!./bin/main
+#!../bin/main
 
 ## blank lines are intentional, as they need
 ## to be ignored. Comments are throughout, and

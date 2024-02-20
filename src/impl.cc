@@ -152,8 +152,10 @@ std::string process()
         {
 
             std::stringstream stream(env_p);
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            stream << ":" << cwd;
             std::string segment;
-            std::vector<std::string> seglist;
             bool found = false;
 
             while(std::getline(stream, segment, ':'))
