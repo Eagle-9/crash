@@ -32,6 +32,11 @@ struct DictStruct
     int (*function_pointer)(int argc, char ** argv);
 };
 
+// used to kill children
+void sigint_handler(int sig) {
+  exit(0);
+}
+
 // classification table
 // the three classifications are
 std::unordered_map<std::string, DictStruct> dict = 
@@ -154,8 +159,7 @@ std::string process()
             while(std::getline(stream, segment, ':'))
             {
                 std::string test_path = segment + "/" + args[0];
-            //    seglist.push_back(segment);
-                // std::cout << segment << "/" << args[0] << "\n";
+
                 struct stat sb;
                 if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
                 {
@@ -165,10 +169,28 @@ std::string process()
 
                     if (child == 0)
                     {
-                        std::cout << "hi from main\n";
-                    } else {
-                        std::cout << "hi from child!\n";
+
+                        // allow kill
+                        struct sigaction action;
+                        memset(&action, 0, sizeof(action));
+                        action.sa_handler = sigint_handler;
+                        sigaction(SIGINT, &action, NULL);
+
                         execv(test_path.c_str(), argv.data());
+                    } else {
+                        // prevent kill while bearing children
+                        struct sigaction action;
+                        memset(&action, 0, sizeof(action));
+                        action.sa_handler = SIG_IGN;
+                        sigaction(SIGINT, &action, NULL);
+
+                        int status;
+                        waitpid(child, &status, 0);
+
+                        // allow kill after children exit
+                        memset(&action, 0, sizeof(action));
+                        action.sa_handler = sigint_handler;
+                        sigaction(SIGINT, &action, NULL);
                     }
 
                     found = true;
