@@ -24,8 +24,10 @@
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
-#define HOME std::string(getenv("HOME"))
-#define HISTORY_FILE HOME + "/cd_history.txt"
+#define HOME getenv("HOME")
+#define HISTORY_FILE_NAME "/cd_history.txt"
+#define HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
+
 //* state info
 
 // if we're currently in a continuation
@@ -400,7 +402,7 @@ int builtin_cd(int argc, char **argv)
     cd_table["-H"] = cd_help_message;  // displays a full help message
     cd_table["-l"] = cd_print_history; // Display a history list
     cd_table["-{n}"] = NULL;           // Change current directory to nth element
-    cd_table["-c"] = NULL;             // clean the directory history
+    cd_table["-c"] = cd_clear_history;             // clean the directory history
     cd_table["-s"] = NULL;             // suppress the directory history
 
     // make sure key is in table
@@ -459,13 +461,13 @@ int cd_history_length()
 {
     // open up the file
     std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE);
+    historyFile.open(HISTORY_FILE_PATH);
 
     // check that the file is open
     if (historyFile.fail())
     {
         cd_create_history_file();
-        historyFile.open(HISTORY_FILE);
+        historyFile.open(HISTORY_FILE_PATH);
     }
 
     // lines will be our return value
@@ -496,13 +498,13 @@ void cd_print_history(int argc, char **argv)
     {
         // define and open the history file
         std::ifstream historyFile;
-        historyFile.open(HISTORY_FILE);
+        historyFile.open(HISTORY_FILE_PATH);
 
         // check that the file is open
         if (historyFile.fail())
         {
             cd_create_history_file();
-            historyFile.open(HISTORY_FILE);
+            historyFile.open(HISTORY_FILE_PATH);
         }
 
         // define the line that we will use to get the current line
@@ -527,13 +529,13 @@ void cd_print_history(int n)
 
     // define and open the history file
     std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE);
+    historyFile.open(HISTORY_FILE_PATH);
 
     // define the line that we will use to get the current line
     std::string line;
 
     // move down the file totalLen - n spaces
-    for (int i = 0; i < (totalLen - n); i++)
+    for (int i = 0; i <= (totalLen - n); i++)
     {
         getline(historyFile, line);
     }
@@ -550,7 +552,7 @@ void cd_print_history(int n)
 void cd_create_history_file()
 {
     std::ofstream writeFile;
-    writeFile.open(HISTORY_FILE);
+    writeFile.open(HISTORY_FILE_PATH);
     if(writeFile.fail()){
         std::cout << "CREATE HISTORY FILE FAILED" << std::endl;
     }
@@ -561,7 +563,16 @@ void cd_write_history_file(const std::string dir)
 {
     int serialNum = cd_history_length();
     std::ofstream historyFile;
-    historyFile.open(HISTORY_FILE, std::ios::app);
+    historyFile.open(HISTORY_FILE_PATH, std::ios::app);
     historyFile << serialNum << ":" << dir << std::endl;
     historyFile.close();
+}
+
+void cd_clear_history(int argc, char ** argv)
+{
+    // delete the history file
+    std::remove(HISTORY_FILE_PATH);
+
+    // create a new history file
+    cd_create_history_file();
 }
