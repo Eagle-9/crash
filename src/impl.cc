@@ -390,7 +390,7 @@ int builtin_cd(int argc, char **argv)
 
     // if argument is -{n}, convert to string to select from table
     // note: this works primarily because of short circuit evaluation
-    if (argc >= 2 && isdigit(argv[1][1]))
+    if (argc >= 2 && isdigit(argv[1][1]) && argv[1][0] == '-')
     {
         key = "-{n}";
     }
@@ -401,8 +401,8 @@ int builtin_cd(int argc, char **argv)
     cd_table["-h"] = cd_help_message;  // displays a simple help message
     cd_table["-H"] = cd_help_message;  // displays a full help message
     cd_table["-l"] = cd_print_history; // Display a history list
-    cd_table["-{n}"] = cd_nth_history;           // Change current directory to nth element
-    cd_table["-c"] = cd_clear_history;             // clean the directory history
+    cd_table["-{n}"] = cd_nth_history; // Change current directory to nth element
+    cd_table["-c"] = cd_clear_history; // clean the directory history
     cd_table["-s"] = NULL;             // suppress the directory history
 
     // make sure key is in table
@@ -417,7 +417,7 @@ int builtin_cd(int argc, char **argv)
         {
             std::cout << "err\n";
         }
-        else 
+        else
         {
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
@@ -553,7 +553,8 @@ void cd_create_history_file()
 {
     std::ofstream writeFile;
     writeFile.open(HISTORY_FILE_PATH);
-    if(writeFile.fail()){
+    if (writeFile.fail())
+    {
         std::cout << "CREATE HISTORY FILE FAILED" << std::endl;
     }
     writeFile.close();
@@ -568,7 +569,7 @@ void cd_write_history_file(const std::string dir)
     historyFile.close();
 }
 
-void cd_clear_history(int argc, char ** argv)
+void cd_clear_history(int argc, char **argv)
 {
     // delete the history file
     std::remove(HISTORY_FILE_PATH);
@@ -577,40 +578,49 @@ void cd_clear_history(int argc, char ** argv)
     cd_create_history_file();
 }
 
-void cd_nth_history(int argc, char ** argv)
+void cd_nth_history(int argc, char **argv)
 {
     int n = argv[1][1] - '0';
     // checks that everything is valid
-    if(argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
+    if (argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
     {
         // open the file
         std::ifstream historyFile;
         historyFile.open(HISTORY_FILE_PATH);
+
         // find the directory we need to change to
         std::string line;
-        for(int i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             getline(historyFile, line);
         }
 
         // find the location of the : character, which marks the serial number and the path
         int loc = line.find(':');
+
+        // start from the loc + 1 location to get the full path to change to
         std::string dir = line.substr(loc + 1);
-        
+
         // if the chdir failed, report error. otherwise, log the cwd
         if (chdir(dir.c_str()) != 0)
         {
             std::cout << "err: " << dir << std::endl;
         }
-        else 
+        else
         {
+            // log the history
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
             cd_write_history_file(std::string(cwd));
         }
-    } 
-    else 
+    }
+    else
     {
         std::cout << "INVALID NUMBER" << std::endl;
     }
+}
+
+void cd_print_unique_history(int argc, char **argv)
+{
+
 }

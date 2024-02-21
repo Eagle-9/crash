@@ -57,3 +57,4 @@ void cd_create_history_file();
 void cd_write_history_file(const std::string dir);
 void cd_clear_history(int argc, char ** argv);
 void cd_nth_history(int argc, char ** argv);
+void cd_print_unique_history(int argc, char ** argv);
