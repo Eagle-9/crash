@@ -384,7 +384,7 @@ int builtin_cd(int argc, char ** argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, void (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message; // displays a simple help message
     cd_table["-H"] = cd_help_message; // displays a full help message
@@ -397,13 +397,14 @@ int builtin_cd(int argc, char ** argv)
     if (cd_table.find(key) != cd_table.end())
     {
         // access table
-        cd_table[key](argc, argv);
+        return cd_table[key](argc, argv);
     }
     else if (key[0] != '-')
     {
         if (chdir(key.c_str()) != 0)
         {
             std::cout << "err\n";
+            return 1;
         }
 
     }
@@ -411,12 +412,13 @@ int builtin_cd(int argc, char ** argv)
     {
         // not in table
         std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+        return 1;
     }
 
     return 0;
 }
 
-void cd_help_message(int argc, char ** argv)
+int cd_help_message(int argc, char ** argv)
 {
 
     // simple help message
@@ -437,5 +439,7 @@ void cd_help_message(int argc, char ** argv)
     else
     {
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
+        return 1;
     }
+    return 0;
 }
