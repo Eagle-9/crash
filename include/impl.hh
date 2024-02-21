@@ -41,17 +41,20 @@ int builtin_cd(int argc, char **argv);
 
 int builtin_exit(int argc, char **argv);
 
-// help message for cd passing h or H
-void cd_help_message(int argc, char **argv);
+//help message for cd passing h or H
+int cd_help_message(int argc, char ** argv);
 
 // cd history length
 int cd_history_length();
 
 // cd_print_history
-void cd_print_history(int argc, char **argv);
+int cd_print_history(int argc, char **argv);
 void cd_print_history(int n);
 void cd_create_history_file();
 void cd_write_history_file(const std::string dir);
-void cd_clear_history(int argc, char **argv);
-void cd_nth_history(int argc, char **argv);
-void cd_print_unique_history(int argc, char **argv);
+int cd_clear_history(int argc, char **argv);
+int cd_nth_history(int argc, char **argv);
+int cd_print_unique_history(int argc, char **argv);
+
+
+

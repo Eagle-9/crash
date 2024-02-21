@@ -14,11 +14,9 @@
 #include <impl.hh>
 #include <vector>
 #include <fstream>
-#include <fstream>
 #include <stdio.h>
 #include <sstream>
 #include <sys/wait.h> // for wait()
-#include <unistd.h>   // for exec()
 #include <unistd.h>   // for exec()
 #include <sys/stat.h>
 #define KEYWORD "keyword"
@@ -159,11 +157,10 @@ std::string process()
 
         if (const char *env_p = std::getenv("PATH"))
         {
-
-            std::stringstream stream(env_p);
+            std::string env_s = std::string(env_p);
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
-            stream << ":" << cwd;
+            std::stringstream stream(env_s + ":" + cwd);
             std::string segment;
             bool found = false;
 
@@ -361,7 +358,7 @@ std::string getNewPrompt()
 {
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
-    return "CRASH " + std::string(cwd) + PROMPT_NEW;
+    return "CRASH " + std::string(cwd) + " " + PROMPT_NEW;
 }
 
 // commented in header
@@ -396,7 +393,7 @@ int builtin_cd(int argc, char **argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message;         // displays a simple help message
     cd_table["-H"] = cd_help_message;         // displays a full help message
@@ -409,13 +406,14 @@ int builtin_cd(int argc, char **argv)
     if (cd_table.find(key) != cd_table.end())
     {
         // access table
-        cd_table[key](argc, argv);
+        return cd_table[key](argc, argv);
     }
     else if (key[0] != '-')
     {
         if (chdir(key.c_str()) != 0)
         {
             std::cout << "err\n";
+            return 1;
         }
         else
         {
@@ -428,12 +426,15 @@ int builtin_cd(int argc, char **argv)
     {
         // not in table
         std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+        return 1;
     }
 
     return 0;
 }
 
-void cd_help_message(int argc, char **argv)
+
+int cd_help_message(int argc, char ** argv)
+
 {
 
     // simple help message
@@ -454,7 +455,9 @@ void cd_help_message(int argc, char **argv)
     else
     {
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
+        return 1;
     }
+    return 0;
 }
 
 int cd_history_length()
@@ -487,7 +490,7 @@ int cd_history_length()
     return lines;
 }
 
-void cd_print_history(int argc, char **argv)
+int cd_print_history(int argc, char **argv)
 {
     // if we have an n for number of lines, we run the other function
     if (argc >= 3 && isdigit(argv[2][0]))
@@ -518,6 +521,7 @@ void cd_print_history(int argc, char **argv)
         }
         historyFile.close();
     }
+  return 0;
 }
 
 // this overload will print out the last n lines
@@ -569,13 +573,15 @@ void cd_write_history_file(const std::string dir)
     historyFile.close();
 }
 
-void cd_clear_history(int argc, char **argv)
+int cd_clear_history(int argc, char **argv)
 {
     // delete the history file
     std::remove(HISTORY_FILE_PATH);
 
     // create a new history file
     cd_create_history_file();
+  
+  return 0;
 }
 
 void cd_nth_history(int argc, char **argv)
@@ -617,10 +623,12 @@ void cd_nth_history(int argc, char **argv)
     else
     {
         std::cout << "INVALID NUMBER" << std::endl;
+        return 1;
     }
+    return 0;
 }
 
-void cd_print_unique_history(int argc, char **argv)
+int cd_print_unique_history(int argc, char **argv)
 {
     // create a vector to temporarily store the values
     std::vector<std::string> tempLine;
@@ -662,4 +670,5 @@ void cd_print_unique_history(int argc, char **argv)
             tempLine.push_back(filePath);
         }
     }
+    return 0;
 }
