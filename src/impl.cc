@@ -37,7 +37,6 @@ struct DictStruct
 {
     std::string keyword;
     int (*function_pointer)(int argc, char **argv);
-    int (*function_pointer)(int argc, char **argv);
 };
 
 // used to kill children
@@ -97,7 +96,6 @@ std::string process()
     std::vector<std::string> args;
     std::vector<std::vector<char>> holder;
     std::vector<char *> argv;
-    std::vector<char *> argv;
 
     // get parsed line
     res = current_line;
@@ -143,11 +141,8 @@ std::string process()
         // get class from dictionary
         std::string lineClassName = dict.at(args[0]).keyword;
         if (dict.at(args[0]).function_pointer != nullptr)
-        if (dict.at(args[0]).function_pointer != nullptr)
         {
             dict.at(args[0]).function_pointer(args.size(), argv.data());
-        }
-        else
         }
         else
         {
@@ -161,7 +156,6 @@ std::string process()
     {
 
         if (const char *env_p = std::getenv("PATH"))
-        if (const char *env_p = std::getenv("PATH"))
         {
 
             std::stringstream stream(env_p);
@@ -171,7 +165,6 @@ std::string process()
             std::string segment;
             bool found = false;
 
-            while (std::getline(stream, segment, ':'))
             while (std::getline(stream, segment, ':'))
             {
                 std::string test_path = segment + "/" + args[0];
@@ -381,7 +374,6 @@ int builtin_exit(int argc, char** argv)
 // CD COMMANDS
 
 int builtin_cd(int argc, char **argv)
-int builtin_cd(int argc, char **argv)
 {
     // cd function
 
@@ -394,21 +386,13 @@ int builtin_cd(int argc, char **argv)
     // if argument is -{n}, convert to string to select from table
     // note: this works primarily because of short circuit evaluation
     if (argc >= 2 && isdigit(argv[1][1]))
-    if (argc >= 2 && isdigit(argv[1][1]))
     {
         key = "-{n}";
     }
 
     // table to store all flags in
     std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
-    std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
-    cd_table["-h"] = cd_help_message;  // displays a simple help message
-    cd_table["-H"] = cd_help_message;  // displays a full help message
-    cd_table["-l"] = cd_print_history; // Display a history list
-    cd_table["-{n}"] = NULL;           // Change current directory to nth element
-    cd_table["-c"] = NULL;             // clean the directory history
-    cd_table["-s"] = NULL;             // suppress the directory history
     cd_table["-h"] = cd_help_message;  // displays a simple help message
     cd_table["-H"] = cd_help_message;  // displays a full help message
     cd_table["-l"] = cd_print_history; // Display a history list
@@ -440,7 +424,6 @@ int builtin_cd(int argc, char **argv)
 }
 
 void cd_help_message(int argc, char **argv)
-void cd_help_message(int argc, char **argv)
 {
 
     // simple help message
@@ -455,7 +438,6 @@ void cd_help_message(int argc, char **argv)
         std::cout << simpleHelp << std::endl; // simple help message
     }
     else if (strcmp(argv[1], "-H") == 0)
-    else if (strcmp(argv[1], "-H") == 0)
     {
         std::cout << fullHelp << std::endl; // full help message
     }
@@ -464,102 +446,6 @@ void cd_help_message(int argc, char **argv)
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
     }
 }
-
-int cd_history_length()
-{
-    // open up the file
-    std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE);
-
-    // check that the file is open
-    if (historyFile.fail())
-    {
-        std::ofstream writeFile;
-        writeFile.open(HISTORY_FILE);
-        writeFile.close();
-        historyFile.open(HISTORY_FILE);
-    }
-
-    // lines will be our return value
-    int lines = 0;
-
-    // line will temporarily hold each of the strings
-    std::string line;
-
-    // use a while loop to find the end of the file
-    while (!historyFile.eof())
-    {
-        // get the current line to get to the next line
-        getline(historyFile, line);
-        lines++;
-    }
-
-    return lines;
-}
-
-void cd_print_history(int argc, char **argv)
-{
-    // if we have an n for number of lines, we run the other function
-    if (argc >= 3 && isdigit(argv[2][0]))
-    {
-        cd_print_history(argv[2][0] - '0');
-    }
-    else
-    {
-        // define and open the history file
-        std::ifstream historyFile;
-        historyFile.open(HISTORY_FILE);
-
-        // check that the file is open
-        if (historyFile.fail())
-        {
-            std::ofstream writeFile;
-            writeFile.open(HISTORY_FILE);
-            writeFile.close();
-            historyFile.open(HISTORY_FILE);
-        }
-
-        // define the line that we will use to get the current line
-        std::string line;
-
-        // print out every line in the file
-        while (!historyFile.eof())
-        {
-            getline(historyFile, line);
-            std::cout << line << std::endl;
-        }
-        historyFile.close();
-    }
-}
-
-// this overload will print out the last n lines
-// it is to be called from the normal cd_print_history
-void cd_print_history(int n)
-{
-    // get the number of lines in the file
-    int totalLen = cd_history_length();
-
-    // define and open the history file
-    std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE);
-
-    // define the line that we will use to get the current line
-    std::string line;
-
-    // move down the file totalLen - n spaces
-    for (int i = 0; i < (totalLen - n); i++)
-    {
-        getline(historyFile, line);
-    }
-
-    while (!historyFile.eof())
-    {
-        getline(historyFile, line);
-        std::cout << line << std::endl;
-    }
-    historyFile.close();
-}
-
 
 int cd_history_length()
 {

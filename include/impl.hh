@@ -1,5 +1,4 @@
 /**
-/**
  *
  *  impl.hh
  *      This is the header for the "classifier",
@@ -48,12 +47,6 @@ int builtin_exit(int argc, char ** argv);
 //help message for cd passing h or H
 void cd_help_message(int argc, char ** argv);
 
-// cd history length
-int cd_history_length();
-
-// cd_print_history
-void cd_print_history(int argc, char **argv);
-void cd_print_history(int n);
 // cd history length
 int cd_history_length();
 
