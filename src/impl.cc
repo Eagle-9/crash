@@ -584,7 +584,7 @@ int cd_clear_history(int argc, char **argv)
   return 0;
 }
 
-void cd_nth_history(int argc, char **argv)
+int cd_nth_history(int argc, char **argv)
 {
     int n = argv[1][1] - '0';
     // checks that everything is valid
