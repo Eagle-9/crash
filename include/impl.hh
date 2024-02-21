@@ -1,4 +1,5 @@
 /**
+/**
  *
  *  impl.hh
  *      This is the header for the "classifier",
@@ -27,12 +28,15 @@ std::string strToLowerCase(std::string line);
 std::string _get_current();
 
 // checks if a character is a metacharacter
+// checks if a character is a metacharacter
 bool checkMetacharacter(std::string inputString, size_t position);
+
 
 
 //Return new prompt
 std::string getNewPrompt();
 
+// cd commands builtin
 // cd commands builtin
 
 //int builtin_cd
@@ -44,6 +48,12 @@ int builtin_exit(int argc, char ** argv);
 //help message for cd passing h or H
 void cd_help_message(int argc, char ** argv);
 
+// cd history length
+int cd_history_length();
+
+// cd_print_history
+void cd_print_history(int argc, char **argv);
+void cd_print_history(int n);
 // cd history length
 int cd_history_length();
 
