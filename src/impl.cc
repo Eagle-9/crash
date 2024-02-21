@@ -535,7 +535,7 @@ void cd_print_history(int n)
     std::string line;
 
     // move down the file totalLen - n spaces
-    for (int i = 0; i <= (totalLen - n); i++)
+    for (int i = 0; i < (totalLen - n - 1); i++)
     {
         getline(historyFile, line);
     }
