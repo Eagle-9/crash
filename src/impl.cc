@@ -348,7 +348,7 @@ bool checkMetacharacter(std::string inputString, size_t position)
 std::string getNewPrompt(){
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
-    return "CRASH " + std::string(cwd) + PROMPT_NEW;
+    return "CRASH " + std::string(cwd) + " " + PROMPT_NEW;
 }
 
 // commented in header
