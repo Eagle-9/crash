@@ -5,7 +5,7 @@
 // include implementation
 #include <impl.hh>
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     if (argc == 2)
     {
@@ -27,7 +27,7 @@ int main(int argc, char** argv)
         // read all lines to 'lines'
         while (getline(content, line))
         {
-          lines.push_back(line);
+            lines.push_back(line);
         }
 
         // close the file;
