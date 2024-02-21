@@ -398,12 +398,12 @@ int builtin_cd(int argc, char **argv)
     // table to store all flags in
     std::unordered_map<std::string, void (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
-    cd_table["-h"] = cd_help_message;  // displays a simple help message
-    cd_table["-H"] = cd_help_message;  // displays a full help message
-    cd_table["-l"] = cd_print_history; // Display a history list
-    cd_table["-{n}"] = cd_nth_history; // Change current directory to nth element
-    cd_table["-c"] = cd_clear_history; // clean the directory history
-    cd_table["-s"] = cd_print_unique_history;             // suppress the directory history
+    cd_table["-h"] = cd_help_message;         // displays a simple help message
+    cd_table["-H"] = cd_help_message;         // displays a full help message
+    cd_table["-l"] = cd_print_history;        // Display a history list
+    cd_table["-{n}"] = cd_nth_history;        // Change current directory to nth element
+    cd_table["-c"] = cd_clear_history;        // clean the directory history
+    cd_table["-s"] = cd_print_unique_history; // suppress the directory history
 
     // make sure key is in table
     if (cd_table.find(key) != cd_table.end())
@@ -624,20 +624,20 @@ void cd_print_unique_history(int argc, char **argv)
 {
     // create a vector to temporarily store the values
     std::vector<std::string> tempLine;
-    
+
     // open up the history file
     std::ifstream historyFile;
     historyFile.open(HISTORY_FILE_PATH);
 
     // check that the history file is open
-    if(historyFile.fail())
+    if (historyFile.fail())
     {
         cd_create_history_file();
         historyFile.open(HISTORY_FILE_PATH);
     }
 
     std::string line;
-    while(!historyFile.eof())
+    while (!historyFile.eof())
     {
         bool pathExists = false;
         // get the line in the file
@@ -646,15 +646,17 @@ void cd_print_unique_history(int argc, char **argv)
         std::string filePath = line.substr(loc + 1);
 
         // look through the tempLine vector to see if the path exists
-        for(size_t i = 0; i < tempLine.size(); i++){
-            if(strcmp(filePath.c_str(), tempLine.at(i).c_str()) == 0){
+        for (size_t i = 0; i < tempLine.size(); i++)
+        {
+            if (strcmp(filePath.c_str(), tempLine.at(i).c_str()) == 0)
+            {
                 pathExists = true;
                 break;
             }
         }
 
         // if the path does not exist, print out the line and add it to the vector
-        if(!pathExists)
+        if (!pathExists)
         {
             std::cout << line << std::endl;
             tempLine.push_back(filePath);

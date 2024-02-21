@@ -30,22 +30,19 @@ std::string _get_current();
 // checks if a character is a metacharacter
 bool checkMetacharacter(std::string inputString, size_t position);
 
-
-
-//Return new prompt
+// Return new prompt
 std::string getNewPrompt();
 
 // cd commands builtin
 // cd commands builtin
 
-//int builtin_cd
-int builtin_cd(int argc, char ** argv);
+// int builtin_cd
+int builtin_cd(int argc, char **argv);
 
-int builtin_exit(int argc, char ** argv);
+int builtin_exit(int argc, char **argv);
 
-
-//help message for cd passing h or H
-void cd_help_message(int argc, char ** argv);
+// help message for cd passing h or H
+void cd_help_message(int argc, char **argv);
 
 // cd history length
 int cd_history_length();
@@ -55,6 +52,6 @@ void cd_print_history(int argc, char **argv);
 void cd_print_history(int n);
 void cd_create_history_file();
 void cd_write_history_file(const std::string dir);
-void cd_clear_history(int argc, char ** argv);
-void cd_nth_history(int argc, char ** argv);
-void cd_print_unique_history(int argc, char ** argv);
+void cd_clear_history(int argc, char **argv);
+void cd_nth_history(int argc, char **argv);
+void cd_print_unique_history(int argc, char **argv);
