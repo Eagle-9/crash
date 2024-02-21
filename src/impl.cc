@@ -401,7 +401,7 @@ int builtin_cd(int argc, char **argv)
     cd_table["-h"] = cd_help_message;  // displays a simple help message
     cd_table["-H"] = cd_help_message;  // displays a full help message
     cd_table["-l"] = cd_print_history; // Display a history list
-    cd_table["-{n}"] = NULL;           // Change current directory to nth element
+    cd_table["-{n}"] = cd_nth_history;           // Change current directory to nth element
     cd_table["-c"] = cd_clear_history;             // clean the directory history
     cd_table["-s"] = NULL;             // suppress the directory history
 
@@ -575,4 +575,42 @@ void cd_clear_history(int argc, char ** argv)
 
     // create a new history file
     cd_create_history_file();
+}
+
+void cd_nth_history(int argc, char ** argv)
+{
+    int n = argv[1][1] - '0';
+    // checks that everything is valid
+    if(argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
+    {
+        // open the file
+        std::ifstream historyFile;
+        historyFile.open(HISTORY_FILE_PATH);
+        // find the directory we need to change to
+        std::string line;
+        for(int i = 0; i < n; i++)
+        {
+            getline(historyFile, line);
+        }
+
+        // find the location of the : character, which marks the serial number and the path
+        int loc = line.find(':');
+        std::string dir = line.substr(loc + 1);
+        
+        // if the chdir failed, report error. otherwise, log the cwd
+        if (chdir(dir.c_str()) != 0)
+        {
+            std::cout << "err: " << dir << std::endl;
+        }
+        else 
+        {
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            cd_write_history_file(std::string(cwd));
+        }
+    } 
+    else 
+    {
+        std::cout << "INVALID NUMBER" << std::endl;
+    }
 }
