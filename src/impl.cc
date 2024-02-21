@@ -24,7 +24,8 @@
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
-#define HISTORY_FILE "~/cd_history.txt"
+#define HOME std::string(getenv("HOME"))
+#define HISTORY_FILE HOME + "/cd_history.txt"
 //* state info
 
 // if we're currently in a continuation
@@ -550,10 +551,13 @@ void cd_create_history_file()
 {
     std::ofstream writeFile;
     writeFile.open(HISTORY_FILE);
+    if(writeFile.fail()){
+        std::cout << "CREATE HISTORY FILE FAILED" << std::endl;
+    }
     writeFile.close();
 }
 
-void cd_write_history_file(const char * dir)
+void cd_write_history_file(const std::string dir)
 {
     int serialNum = cd_history_length();
     std::ofstream historyFile;

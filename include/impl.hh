@@ -54,4 +54,4 @@ int cd_history_length();
 void cd_print_history(int argc, char **argv);
 void cd_print_history(int n);
 void cd_create_history_file();
-void cd_write_history_file(const char * dir);
+void cd_write_history_file(const std::string dir);
