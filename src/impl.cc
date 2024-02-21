@@ -24,8 +24,7 @@
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
-#define HISTORY_FILE "history.txt"
-#define HISTORY_FILE "history.txt"
+#define HISTORY_FILE "~/cd_history.txt"
 //* state info
 
 // if we're currently in a continuation
@@ -417,7 +416,9 @@ int builtin_cd(int argc, char **argv)
         }
         else 
         {
-            cd_write_history_file(key.c_str());
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            cd_write_history_file(std::string(cwd));
         }
     }
     else
