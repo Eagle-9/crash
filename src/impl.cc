@@ -40,51 +40,51 @@ struct DictStruct
 };
 
 // used to kill children
-void sigint_handler(int sig) {
-  exit(0);
+void sigint_handler(int sig)
+{
+    exit(0);
 }
 
 // classification table
 // the three classifications are
-std::unordered_map<std::string, DictStruct> dict = 
-{
-    {"break", {KEYWORD, nullptr}},
-    {"continue", {KEYWORD, nullptr}},
-    {"do", {KEYWORD, nullptr}},
-    {"else", {KEYWORD, nullptr}},
-    {"elseif", {KEYWORD, nullptr}},
-    {"end", {KEYWORD, nullptr}},
-    {"endif", {KEYWORD, nullptr}},
-    {"for", {KEYWORD, nullptr}},
-    {"function", {KEYWORD, nullptr}},
-    {"if", {KEYWORD, nullptr}},
-    {"in", {KEYWORD, nullptr}},
-    {"return", {KEYWORD, nullptr}},
-    {"then", {KEYWORD, nullptr}},
-    {"until", {KEYWORD, nullptr}},
-    {"while", {KEYWORD, nullptr}},
-    {"alias", {INTERNAL, nullptr}},
-    {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, builtin_cd}},
-    {"eval", {INTERNAL, nullptr}},
-    {"exec", {INTERNAL, nullptr}},
-    {"exit", {INTERNAL, builtin_exit}},
-    {"export", {INTERNAL, nullptr}},
-    {"fc", {INTERNAL, nullptr}},
-    {"fg", {INTERNAL, nullptr}},
-    {"help", {INTERNAL, nullptr}},
-    {"history", {INTERNAL, nullptr}},
-    {"jobs", {INTERNAL, nullptr}},
-    {"let", {INTERNAL, nullptr}},
-    {"local", {INTERNAL, nullptr}},
-    {"logout", {INTERNAL, nullptr}},
-    {"read", {INTERNAL, nullptr}},
-    {"set", {INTERNAL, nullptr}},
-    {"shift", {INTERNAL, nullptr}},
-    {"shopt", {INTERNAL, nullptr}},
-    {"source", {INTERNAL, nullptr}},
-    {"unalias", {INTERNAL, nullptr}}
-};
+std::unordered_map<std::string, DictStruct> dict =
+    {
+        {"break", {KEYWORD, nullptr}},
+        {"continue", {KEYWORD, nullptr}},
+        {"do", {KEYWORD, nullptr}},
+        {"else", {KEYWORD, nullptr}},
+        {"elseif", {KEYWORD, nullptr}},
+        {"end", {KEYWORD, nullptr}},
+        {"endif", {KEYWORD, nullptr}},
+        {"for", {KEYWORD, nullptr}},
+        {"function", {KEYWORD, nullptr}},
+        {"if", {KEYWORD, nullptr}},
+        {"in", {KEYWORD, nullptr}},
+        {"return", {KEYWORD, nullptr}},
+        {"then", {KEYWORD, nullptr}},
+        {"until", {KEYWORD, nullptr}},
+        {"while", {KEYWORD, nullptr}},
+        {"alias", {INTERNAL, nullptr}},
+        {"bg", {INTERNAL, nullptr}},
+        {"cd", {INTERNAL, builtin_cd}},
+        {"eval", {INTERNAL, nullptr}},
+        {"exec", {INTERNAL, nullptr}},
+        {"exit", {INTERNAL, builtin_exit}},
+        {"export", {INTERNAL, nullptr}},
+        {"fc", {INTERNAL, nullptr}},
+        {"fg", {INTERNAL, nullptr}},
+        {"help", {INTERNAL, nullptr}},
+        {"history", {INTERNAL, nullptr}},
+        {"jobs", {INTERNAL, nullptr}},
+        {"let", {INTERNAL, nullptr}},
+        {"local", {INTERNAL, nullptr}},
+        {"logout", {INTERNAL, nullptr}},
+        {"read", {INTERNAL, nullptr}},
+        {"set", {INTERNAL, nullptr}},
+        {"shift", {INTERNAL, nullptr}},
+        {"shopt", {INTERNAL, nullptr}},
+        {"source", {INTERNAL, nullptr}},
+        {"unalias", {INTERNAL, nullptr}}};
 
 //* function implementation
 
@@ -186,7 +186,9 @@ std::string process()
                         sigaction(SIGINT, &action, NULL);
 
                         execv(test_path.c_str(), argv.data());
-                    } else {
+                    }
+                    else
+                    {
                         // prevent kill while bearing children
                         struct sigaction action;
                         memset(&action, 0, sizeof(action));
@@ -353,7 +355,8 @@ bool checkMetacharacter(std::string inputString, size_t position)
     }
     return false; // did not find a meta char
 }
-std::string getNewPrompt(){
+std::string getNewPrompt()
+{
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     return "CRASH " + std::string(cwd) + PROMPT_NEW;
@@ -366,7 +369,7 @@ std::string _get_current()
 }
 
 // exit command
-int builtin_exit(int argc, char** argv)
+int builtin_exit(int argc, char **argv)
 {
     exit(0);
 }
@@ -412,7 +415,10 @@ int builtin_cd(int argc, char **argv)
         {
             std::cout << "err\n";
         }
-
+        else 
+        {
+            cd_write_history_file(key.c_str());
+        }
     }
     else
     {
@@ -456,9 +462,7 @@ int cd_history_length()
     // check that the file is open
     if (historyFile.fail())
     {
-        std::ofstream writeFile;
-        writeFile.open(HISTORY_FILE);
-        writeFile.close();
+        cd_create_history_file();
         historyFile.open(HISTORY_FILE);
     }
 
@@ -495,9 +499,7 @@ void cd_print_history(int argc, char **argv)
         // check that the file is open
         if (historyFile.fail())
         {
-            std::ofstream writeFile;
-            writeFile.open(HISTORY_FILE);
-            writeFile.close();
+            cd_create_history_file();
             historyFile.open(HISTORY_FILE);
         }
 
@@ -542,3 +544,19 @@ void cd_print_history(int n)
     historyFile.close();
 }
 
+// if the file was not created, recreate it here
+void cd_create_history_file()
+{
+    std::ofstream writeFile;
+    writeFile.open(HISTORY_FILE);
+    writeFile.close();
+}
+
+void cd_write_history_file(const char * dir)
+{
+    int serialNum = cd_history_length();
+    std::ofstream historyFile;
+    historyFile.open(HISTORY_FILE, std::ios::app);
+    historyFile << serialNum << ":" << dir << std::endl;
+    historyFile.close();
+}

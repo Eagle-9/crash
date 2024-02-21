@@ -53,3 +53,5 @@ int cd_history_length();
 // cd_print_history
 void cd_print_history(int argc, char **argv);
 void cd_print_history(int n);
+void cd_create_history_file();
+void cd_write_history_file(const char * dir);
