@@ -150,11 +150,10 @@ std::string process()
 
         if (const char* env_p = std::getenv("PATH"))
         {
-
-            std::stringstream stream(env_p);
+            std::string env_s = std::string(env_p);
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
-            stream << ":" << cwd;
+            std::stringstream stream(env_s + ":" + cwd);
             std::string segment;
             bool found = false;
 
