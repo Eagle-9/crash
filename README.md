@@ -55,8 +55,9 @@ To run a script in batch mode, there are 3 possible options.
 - Make sure the file is executable by running `chmod +x FILENAME`
 - Execute the script by running in a terminal `./SCRIPTNAME.EXTENSION`
 
-#### Stdin Piping
-Create a script and run `./bin/main < [script location]`
+#### Script as argument.
+- Navigate to the directory that contains the script
+- Enter the name of the script into crash `testScript` or `script.txt`. Extension doesn't matter.
 
-#### Script by Name
-Create a script and run `./bin/main [script location]`
+#### Script indirection
+Create a script and run `./bin/main < [script location]`

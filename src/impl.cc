@@ -164,17 +164,18 @@ std::string process()
             getcwd(cwd, sizeof(cwd));
             std::string localPath = cwd + '/' + args[0];
             struct stat localFile;
-            //If our current argument and path is a valid script
+            //If our current argument and path is a valid file
             if (stat(localPath.c_str(), &localFile) == 0 && (localFile.st_mode & S_IFMT) == S_IFREG){
                 std::ifstream localFileContent;
-                localFileContent.open(args[0]);
+                localFileContent.open(args[0]); //Open the file in current directory that has the name of first argument
                 std::vector<std::string> localLines;
                 std::string line;
-                // read all lines to 'lines'
+                //Store all lines of the file to localLines
                 while (getline(localFileContent, line)){
                     localLines.push_back(line);
                 }
                 localFileContent.close();
+                //Parse all lines of the file
                 for (size_t i = 0; i < localLines.size(); i++){
                     parse(localLines[i]);
                 }
