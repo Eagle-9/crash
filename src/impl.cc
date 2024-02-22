@@ -495,12 +495,7 @@ int cd_print_history(int argc, char **argv)
     // if we have an n for number of lines, we run the other function
     if (argc >= 3 && isdigit(argv[2][0]))
     {
-        std::string numString;
-        //TODO: '10' should probably be a constant or something, or perferably be the actual size of the array.
-        for (int i = 0; i < 10; i++){ //Grabs the first 10 numbers from the number char array
-            numString.push_back(argv[2][i]);
-        }
-        cd_print_history(stoi(numString));
+        cd_print_history(atoi(argv[2]));
     }
     else
     {
