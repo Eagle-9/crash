@@ -1,3 +1,5 @@
+
+
 /**
  *
  *  impl.cc
@@ -11,14 +13,19 @@
 #include <unordered_map>
 #include <impl.hh>
 #include <vector>
+#include <fstream>
 #include <stdio.h>
 #include <sstream>
 #include <sys/wait.h> // for wait()
-#include <unistd.h> // for exec()
+#include <unistd.h>   // for exec()
 #include <sys/stat.h>
 #define KEYWORD "keyword"
 #define INTERNAL "internal"
 #define EXTERNAL "external"
+#define HOME getenv("HOME")
+#define HISTORY_FILE_NAME "/cd_history.txt"
+#define HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
+
 //* state info
 
 // if we're currently in a continuation
@@ -29,55 +36,55 @@ std::string current_line;
 struct DictStruct
 {
     std::string keyword;
-    int (*function_pointer)(int argc, char ** argv);
+    int (*function_pointer)(int argc, char **argv);
 };
 
 // used to kill children
-void sigint_handler(int sig) {
-  exit(0);
+void sigint_handler(int sig)
+{
+    exit(0);
 }
 
 // classification table
 // the three classifications are
-std::unordered_map<std::string, DictStruct> dict = 
-{
-    {"break", {KEYWORD, nullptr}},
-    {"continue", {KEYWORD, nullptr}},
-    {"do", {KEYWORD, nullptr}},
-    {"else", {KEYWORD, nullptr}},
-    {"elseif", {KEYWORD, nullptr}},
-    {"end", {KEYWORD, nullptr}},
-    {"endif", {KEYWORD, nullptr}},
-    {"for", {KEYWORD, nullptr}},
-    {"function", {KEYWORD, nullptr}},
-    {"if", {KEYWORD, nullptr}},
-    {"in", {KEYWORD, nullptr}},
-    {"return", {KEYWORD, nullptr}},
-    {"then", {KEYWORD, nullptr}},
-    {"until", {KEYWORD, nullptr}},
-    {"while", {KEYWORD, nullptr}},
-    {"alias", {INTERNAL, nullptr}},
-    {"bg", {INTERNAL, nullptr}},
-    {"cd", {INTERNAL, builtin_cd}},
-    {"eval", {INTERNAL, nullptr}},
-    {"exec", {INTERNAL, nullptr}},
-    {"exit", {INTERNAL, builtin_exit}},
-    {"export", {INTERNAL, nullptr}},
-    {"fc", {INTERNAL, nullptr}},
-    {"fg", {INTERNAL, nullptr}},
-    {"help", {INTERNAL, nullptr}},
-    {"history", {INTERNAL, nullptr}},
-    {"jobs", {INTERNAL, nullptr}},
-    {"let", {INTERNAL, nullptr}},
-    {"local", {INTERNAL, nullptr}},
-    {"logout", {INTERNAL, nullptr}},
-    {"read", {INTERNAL, nullptr}},
-    {"set", {INTERNAL, nullptr}},
-    {"shift", {INTERNAL, nullptr}},
-    {"shopt", {INTERNAL, nullptr}},
-    {"source", {INTERNAL, nullptr}},
-    {"unalias", {INTERNAL, nullptr}}
-};
+std::unordered_map<std::string, DictStruct> dict =
+    {
+        {"break", {KEYWORD, nullptr}},
+        {"continue", {KEYWORD, nullptr}},
+        {"do", {KEYWORD, nullptr}},
+        {"else", {KEYWORD, nullptr}},
+        {"elseif", {KEYWORD, nullptr}},
+        {"end", {KEYWORD, nullptr}},
+        {"endif", {KEYWORD, nullptr}},
+        {"for", {KEYWORD, nullptr}},
+        {"function", {KEYWORD, nullptr}},
+        {"if", {KEYWORD, nullptr}},
+        {"in", {KEYWORD, nullptr}},
+        {"return", {KEYWORD, nullptr}},
+        {"then", {KEYWORD, nullptr}},
+        {"until", {KEYWORD, nullptr}},
+        {"while", {KEYWORD, nullptr}},
+        {"alias", {INTERNAL, nullptr}},
+        {"bg", {INTERNAL, nullptr}},
+        {"cd", {INTERNAL, builtin_cd}},
+        {"eval", {INTERNAL, nullptr}},
+        {"exec", {INTERNAL, nullptr}},
+        {"exit", {INTERNAL, builtin_exit}},
+        {"export", {INTERNAL, nullptr}},
+        {"fc", {INTERNAL, nullptr}},
+        {"fg", {INTERNAL, nullptr}},
+        {"help", {INTERNAL, nullptr}},
+        {"history", {INTERNAL, nullptr}},
+        {"jobs", {INTERNAL, nullptr}},
+        {"let", {INTERNAL, nullptr}},
+        {"local", {INTERNAL, nullptr}},
+        {"logout", {INTERNAL, nullptr}},
+        {"read", {INTERNAL, nullptr}},
+        {"set", {INTERNAL, nullptr}},
+        {"shift", {INTERNAL, nullptr}},
+        {"shopt", {INTERNAL, nullptr}},
+        {"source", {INTERNAL, nullptr}},
+        {"unalias", {INTERNAL, nullptr}}};
 
 //* function implementation
 
@@ -88,7 +95,7 @@ std::string process()
     std::string res;
     std::vector<std::string> args;
     std::vector<std::vector<char>> holder;
-    std::vector<char*> argv;
+    std::vector<char *> argv;
 
     // get parsed line
     res = current_line;
@@ -133,11 +140,11 @@ std::string process()
 
         // get class from dictionary
         std::string lineClassName = dict.at(args[0]).keyword;
-        if(dict.at(args[0]).function_pointer != nullptr)
+        if (dict.at(args[0]).function_pointer != nullptr)
         {
             dict.at(args[0]).function_pointer(args.size(), argv.data());
-        } 
-        else 
+        }
+        else
         {
             std::cout << "NOT YET IMPLEMENTED" << std::endl;
         }
@@ -148,7 +155,7 @@ std::string process()
     else
     {
 
-        if (const char* env_p = std::getenv("PATH"))
+        if (const char *env_p = std::getenv("PATH"))
         {
             std::string env_s = std::string(env_p);
             char cwd[PATH_MAX];
@@ -157,7 +164,7 @@ std::string process()
             std::string segment;
             bool found = false;
 
-            while(std::getline(stream, segment, ':'))
+            while (std::getline(stream, segment, ':'))
             {
                 std::string test_path = segment + "/" + args[0];
 
@@ -178,7 +185,9 @@ std::string process()
                         sigaction(SIGINT, &action, NULL);
 
                         execv(test_path.c_str(), argv.data());
-                    } else {
+                    }
+                    else
+                    {
                         // prevent kill while bearing children
                         struct sigaction action;
                         memset(&action, 0, sizeof(action));
@@ -345,7 +354,8 @@ bool checkMetacharacter(std::string inputString, size_t position)
     }
     return false; // did not find a meta char
 }
-std::string getNewPrompt(){
+std::string getNewPrompt()
+{
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     return "CRASH " + std::string(cwd) + " " + PROMPT_NEW;
@@ -358,14 +368,14 @@ std::string _get_current()
 }
 
 // exit command
-int builtin_exit(int argc, char** argv)
+int builtin_exit(int argc, char **argv)
 {
     exit(0);
 }
 
 // CD COMMANDS
 
-int builtin_cd(int argc, char ** argv)
+int builtin_cd(int argc, char **argv)
 {
     // cd function
 
@@ -377,7 +387,7 @@ int builtin_cd(int argc, char ** argv)
 
     // if argument is -{n}, convert to string to select from table
     // note: this works primarily because of short circuit evaluation
-    if (argc >=2 && isdigit(argv[1][1]))
+    if (argc >= 2 && isdigit(argv[1][1]) && argv[1][0] == '-')
     {
         key = "-{n}";
     }
@@ -385,12 +395,12 @@ int builtin_cd(int argc, char ** argv)
     // table to store all flags in
     std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
-    cd_table["-h"] = cd_help_message; // displays a simple help message
-    cd_table["-H"] = cd_help_message; // displays a full help message
-    cd_table["-l"] = NULL;            // Display a history list
-    cd_table["-{n}"] = NULL;          // Change current directory to nth element
-    cd_table["-c"] = NULL;            // clean the directory history
-    cd_table["-s"] = NULL;            // suppress the directory history
+    cd_table["-h"] = cd_help_message;         // displays a simple help message
+    cd_table["-H"] = cd_help_message;         // displays a full help message
+    cd_table["-l"] = cd_print_history;        // Display a history list
+    cd_table["-{n}"] = cd_nth_history;        // Change current directory to nth element
+    cd_table["-c"] = cd_clear_history;        // clean the directory history
+    cd_table["-s"] = cd_print_unique_history; // suppress the directory history
 
     // make sure key is in table
     if (cd_table.find(key) != cd_table.end())
@@ -405,7 +415,12 @@ int builtin_cd(int argc, char ** argv)
             std::cout << "err\n";
             return 1;
         }
-
+        else
+        {
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            cd_write_history_file(std::string(cwd));
+        }
     }
     else
     {
@@ -417,7 +432,9 @@ int builtin_cd(int argc, char ** argv)
     return 0;
 }
 
+
 int cd_help_message(int argc, char ** argv)
+
 {
 
     // simple help message
@@ -431,7 +448,7 @@ int cd_help_message(int argc, char ** argv)
     {
         std::cout << simpleHelp << std::endl; // simple help message
     }
-    else if (strcmp(argv[1],"-H")==0)
+    else if (strcmp(argv[1], "-H") == 0)
     {
         std::cout << fullHelp << std::endl; // full help message
     }
@@ -439,6 +456,219 @@ int cd_help_message(int argc, char ** argv)
     {
         std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
         return 1;
+    }
+    return 0;
+}
+
+int cd_history_length()
+{
+    // open up the file
+    std::ifstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH);
+
+    // check that the file is open
+    if (historyFile.fail())
+    {
+        cd_create_history_file();
+        historyFile.open(HISTORY_FILE_PATH);
+    }
+
+    // lines will be our return value
+    int lines = 0;
+
+    // line will temporarily hold each of the strings
+    std::string line;
+
+    // use a while loop to find the end of the file
+    while (!historyFile.eof())
+    {
+        // get the current line to get to the next line
+        getline(historyFile, line);
+        lines++;
+    }
+
+    return lines;
+}
+
+int cd_print_history(int argc, char **argv)
+{
+    // if we have an n for number of lines, we run the other function
+    if (argc >= 3 && isdigit(argv[2][0]))
+    {
+        cd_print_history(atoi(argv[2]));
+    }
+    else
+    {
+        // define and open the history file
+        std::ifstream historyFile;
+        historyFile.open(HISTORY_FILE_PATH);
+
+        // check that the file is open
+        if (historyFile.fail())
+        {
+            cd_create_history_file();
+            historyFile.open(HISTORY_FILE_PATH);
+        }
+
+        // define the line that we will use to get the current line
+        std::string line;
+
+        // print out every line in the file
+        while (!historyFile.eof())
+        {
+            getline(historyFile, line);
+            std::cout << line << std::endl;
+        }
+        historyFile.close();
+    }
+  return 0;
+}
+
+// this overload will print out the last n lines
+// it is to be called from the normal cd_print_history
+void cd_print_history(int n)
+{
+    // get the number of lines in the file
+    int totalLen = cd_history_length();
+
+    // define and open the history file
+    std::ifstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH);
+
+    // define the line that we will use to get the current line
+    std::string line;
+
+    // move down the file totalLen - n spaces
+    for (int i = 0; i < (totalLen - n - 1); i++)
+    {
+        getline(historyFile, line);
+    }
+
+    while (!historyFile.eof())
+    {
+        getline(historyFile, line);
+        std::cout << line << std::endl;
+    }
+    historyFile.close();
+}
+
+// if the file was not created, recreate it here
+void cd_create_history_file()
+{
+    std::ofstream writeFile;
+    writeFile.open(HISTORY_FILE_PATH);
+    if (writeFile.fail())
+    {
+        std::cout << "CREATE HISTORY FILE FAILED" << std::endl;
+    }
+    writeFile.close();
+}
+
+void cd_write_history_file(const std::string dir)
+{
+    int serialNum = cd_history_length();
+    std::ofstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH, std::ios::app);
+    historyFile << serialNum << ":" << dir << std::endl;
+    historyFile.close();
+}
+
+int cd_clear_history(int argc, char **argv)
+{
+    // delete the history file
+    std::remove(HISTORY_FILE_PATH);
+
+    // create a new history file
+    cd_create_history_file();
+  
+  return 0;
+}
+
+int cd_nth_history(int argc, char **argv)
+{
+    int n = argv[1][1] - '0';
+    // checks that everything is valid
+    if (argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
+    {
+        // open the file
+        std::ifstream historyFile;
+        historyFile.open(HISTORY_FILE_PATH);
+
+        // find the directory we need to change to
+        std::string line;
+        for (int i = 0; i < n; i++)
+        {
+            getline(historyFile, line);
+        }
+
+        // find the location of the : character, which marks the serial number and the path
+        int loc = line.find(':');
+
+        // start from the loc + 1 location to get the full path to change to
+        std::string dir = line.substr(loc + 1);
+
+        // if the chdir failed, report error. otherwise, log the cwd
+        if (chdir(dir.c_str()) != 0)
+        {
+            std::cout << "err: " << dir << std::endl;
+        }
+        else
+        {
+            // log the history
+            char cwd[PATH_MAX];
+            getcwd(cwd, sizeof(cwd));
+            cd_write_history_file(std::string(cwd));
+        }
+    }
+    else
+    {
+        std::cout << "INVALID NUMBER" << std::endl;
+        return 1;
+    }
+    return 0;
+}
+
+int cd_print_unique_history(int argc, char **argv)
+{
+    // create a vector to temporarily store the values
+    std::vector<std::string> tempLine;
+
+    // open up the history file
+    std::ifstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH);
+
+    // check that the history file is open
+    if (historyFile.fail())
+    {
+        cd_create_history_file();
+        historyFile.open(HISTORY_FILE_PATH);
+    }
+
+    std::string line;
+    while (!historyFile.eof())
+    {
+        bool pathExists = false;
+        // get the line in the file
+        getline(historyFile, line);
+        int loc = line.find(':');
+        std::string filePath = line.substr(loc + 1);
+
+        // look through the tempLine vector to see if the path exists
+        for (size_t i = 0; i < tempLine.size(); i++)
+        {
+            if (strcmp(filePath.c_str(), tempLine.at(i).c_str()) == 0)
+            {
+                pathExists = true;
+                break;
+            }
+        }
+
+        // if the path does not exist, print out the line and add it to the vector
+        if (!pathExists)
+        {
+            std::cout << line << std::endl;
+            tempLine.push_back(filePath);
+        }
     }
     return 0;
 }
