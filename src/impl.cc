@@ -586,7 +586,7 @@ int cd_clear_history(int argc, char **argv)
 
 int cd_nth_history(int argc, char **argv)
 {
-    int n = argv[1][1] - '0';
+    int n = std::abs(atoi(argv[1])); //We need to get the absolute values of this, because the argument has a negative sign lol.
     // checks that everything is valid
     if (argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
     {
