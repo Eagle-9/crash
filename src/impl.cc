@@ -155,28 +155,41 @@ std::string process()
     else
     {
 
+        // if we can get $PATH
         if (const char *env_p = std::getenv("PATH"))
         {
+            // path to std::string
             std::string env_s = std::string(env_p);
+            // get cwd
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
-            std::stringstream stream(env_s + ":" + cwd);
+            // prepend cwd to path
+            std::stringstream stream(cwd + ":" + env_s);
+            // for storing path segment (single path)
             std::string segment;
+            // if we found the command
             bool found = false;
 
+            // iterate over paths from $PATH
             while (std::getline(stream, segment, ':'))
             {
+                // get path to test by appending arg[0] to the segment
                 std::string test_path = segment + "/" + args[0];
 
+                // check if the path is a valid file
                 struct stat sb;
                 if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
                 {
-                    //std::cout << test_path << std::endl; /* DEBUG */
+                    // debug
+                    // std::cout << test_path << std::endl;
 
+                    // create a child process
                     pid_t child = fork();
 
+                    //  check if we're the child or the parent
                     if (child == 0)
                     {
+                        // we're the child
 
                         // allow kill
                         struct sigaction action;
@@ -184,16 +197,20 @@ std::string process()
                         action.sa_handler = sigint_handler;
                         sigaction(SIGINT, &action, NULL);
 
+                        // switch execution to new binary
                         execv(test_path.c_str(), argv.data());
                     }
                     else
                     {
+                        // we're the parent
+
                         // prevent kill while bearing children
                         struct sigaction action;
                         memset(&action, 0, sizeof(action));
                         action.sa_handler = SIG_IGN;
                         sigaction(SIGINT, &action, NULL);
 
+                        // wait for the child to finish running (or was cancelled by user)
                         int status;
                         waitpid(child, &status, 0);
 
@@ -203,11 +220,13 @@ std::string process()
                         sigaction(SIGINT, &action, NULL);
                     }
 
+                    // mark found
                     found = true;
                     break;
                 }
             }
 
+            // print if not found
             if (!found)
             {
                 std::cout << "ERROR: Failed to find command: " << args[0] << "\n";
