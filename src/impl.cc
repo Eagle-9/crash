@@ -101,7 +101,7 @@ std::string process()
     res = current_line;
 
     // Go through every character in the line, split them into args
-    std::string tempArg;
+    std::string tempArg; //To store arguments, before they are split
     for (size_t i = 0; i < res.length(); i++)
     {
         if (!checkMetacharacter(res, i))
@@ -109,9 +109,11 @@ std::string process()
             tempArg = tempArg + res[i];
         }
         else
-        { // We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
-            args.emplace_back(tempArg);
-            tempArg = "";
+        { // We hit a meta character, so we split the line. Add current arg (if not empty) to args, reset temp arg.
+            if(!tempArg.empty()){
+                args.emplace_back(tempArg);
+            }
+            tempArg.clear();
         }
     }
     // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
