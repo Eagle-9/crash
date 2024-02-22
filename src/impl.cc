@@ -160,6 +160,24 @@ std::string process()
             std::string env_s = std::string(env_p);
             char cwd[PATH_MAX];
             getcwd(cwd, sizeof(cwd));
+            std::string localPath = cwd + '/' + args[0];
+            struct stat localFile;
+            //If our current argument and path is a valid script
+            if (stat(localPath.c_str(), &localFile) == 0 && (localFile.st_mode & S_IFMT) == S_IFREG){
+                std::ifstream localFileContent;
+                localFileContent.open(args[0]);
+                std::vector<std::string> localLines;
+                std::string line;
+                // read all lines to 'lines'
+                while (getline(localFileContent, line)){
+                    localLines.push_back(line);
+                }
+                localFileContent.close();
+                for (size_t i = 0; i < localLines.size(); i++){
+                    parse(localLines[i]);
+                }
+            }
+            
             std::stringstream stream(env_s + ":" + cwd);
             std::string segment;
             bool found = false;
@@ -230,6 +248,8 @@ std::string process()
 // commented in header
 std::string parse(std::string line)
 {
+    //Clear the current line before parsing
+    current_line.clear();
     // if there's a blank line
     if (line.length() == 0)
     {
@@ -362,7 +382,7 @@ std::string getNewPrompt()
 }
 
 // commented in header
-std::string _get_current()
+std::string _get_current() //TODO: Do we need this? Does it do anything?
 {
     return current_line;
 }
