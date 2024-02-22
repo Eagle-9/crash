@@ -229,7 +229,7 @@ std::string process()
             // print if not found
             if (!found)
             {
-                std::cout << "Failed to find command: " << args[0] << "\n";
+                std::cout << "ERROR: Failed to find command: " << args[0] << "\n";
             }
         }
         // not in dictionary
@@ -239,7 +239,7 @@ std::string process()
 
     // add prompt to end of response
     res += "\n";
-    res += getNewPrompt();
+    res = getNewPrompt();
 
     // clear current line + return
     current_line.clear();
@@ -427,7 +427,7 @@ int builtin_cd(int argc, char **argv)
     {
         if (chdir(key.c_str()) != 0)
         {
-            std::cout << "err\n";
+            std::cout << "ERROR: Invalid Directory: " << key << "\n";
             return 1;
         }
         else
@@ -574,7 +574,7 @@ void cd_create_history_file()
     writeFile.open(HISTORY_FILE_PATH);
     if (writeFile.fail())
     {
-        std::cout << "CREATE HISTORY FILE FAILED" << std::endl;
+        std::cout << "ERROR: Failed to create history file" << std::endl;
     }
     writeFile.close();
 }
@@ -625,7 +625,7 @@ int cd_nth_history(int argc, char **argv)
         // if the chdir failed, report error. otherwise, log the cwd
         if (chdir(dir.c_str()) != 0)
         {
-            std::cout << "err: " << dir << std::endl;
+            std::cout << "ERROR: Failed to change directory: " << dir << std::endl;
         }
         else
         {
