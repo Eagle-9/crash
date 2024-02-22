@@ -48,13 +48,17 @@ this is the example command
 
 ### Batch Mode
 
-you would do one of the following
+To run a script in batch mode, there are 3 possible options.
 
 #### Executable Script
-Add `#!./bin/main` to the head of a file and make it executable
+- Give the script a path to CRASH by including `#!PATHTOCRASH` 
+    - For example, use `#!./bin/main` if inside CRASH's directory, or if inside CRASH's test directory use `#!../bin/main`.
+- Make the script executable by using `chmod +x SCRIPTNAME`
+- Run the script `./SCRIPTNAME` or `SCRIPTNAME`
+
 
 #### Stdin Piping
-Create a script and run `./bin/main < [script location]`
+- Create a script and run `./bin/main < [script location]`
 
 #### Script by Name
-Create a script and run `./bin/main [script location]`
+- Create a script and run `./bin/main [script location]`

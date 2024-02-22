@@ -23,7 +23,6 @@
 #define INTERNAL "internal"
 #define EXTERNAL "external"
 #define HOME getenv("HOME")
-#define HISTORY_FILE_NAME "/cd_history.txt"
 #define HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
 
 //* state info
@@ -110,8 +109,10 @@ std::string process()
         }
         else
         { // We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
-            args.emplace_back(tempArg);
-            tempArg = "";
+            if(!tempArg.empty()){
+                args.emplace_back(tempArg);
+            }
+            tempArg.clear();
         }
     }
     // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
@@ -124,11 +125,10 @@ std::string process()
     holder.reserve(args.size());
     argv.reserve(args.size());
 
-    /* Debug code to print out arguments. Can be removed without issue.*/
+    
     for (size_t i = 0; i < args.size(); i++)
     {
-        std::cout << "ARG[" << i << "]: " << args[i] << std::endl;
-        ;
+        //std::cout << "ARG[" << i << "]: " << args[i] << std::endl; /* Debug code to print out arguments. Can be removed without issue.*/
         holder.emplace_back(args[i].begin(), args[i].end());
         holder.back().push_back('\0');
         argv.push_back(holder.back().data());
@@ -230,6 +230,8 @@ std::string process()
 // commented in header
 std::string parse(std::string line)
 {
+    //Clear the current line before parsing
+    current_line.clear();
     // if there's a blank line
     if (line.length() == 0)
     {
@@ -359,12 +361,6 @@ std::string getNewPrompt()
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     return "CRASH " + std::string(cwd) + " " + PROMPT_NEW;
-}
-
-// commented in header
-std::string _get_current()
-{
-    return current_line;
 }
 
 // exit command
