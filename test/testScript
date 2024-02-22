@@ -1,3 +1,2 @@
-dig
-lsblk
-lsusb
+cd -H
+cd -H

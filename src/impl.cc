@@ -170,14 +170,18 @@ std::string process()
                 localFileContent.open(args[0]); //Open the file in current directory that has the name of first argument
                 std::vector<std::string> localLines;
                 std::string line;
-                //Store all lines of the file to localLines
-                while (getline(localFileContent, line)){
-                    localLines.push_back(line);
-                }
-                localFileContent.close();
-                //Parse all lines of the file
-                for (size_t i = 0; i < localLines.size(); i++){
-                    parse(localLines[i]);
+                if (localFileContent.is_open()){
+                    //Store all lines of the file to localLines
+                    while (getline(localFileContent, line)){
+                        localLines.push_back(line);
+                    }
+                    localFileContent.close();
+                    //Parse all lines of the file
+                    for (size_t i = 0; i < localLines.size(); i++){
+                        parse(localLines[i]);
+                    }
+                }else{
+                    std::cout << "Error encountered while trying to open: " << args[0] << std::endl;
                 }
             }
             
