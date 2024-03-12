@@ -3,7 +3,7 @@
 #include <vector>
 #include <unistd.h>
 // include implementation
-#include <impl.hh>
+#include <crash.hh>
 
 int main(int argc, char **argv)
 {
@@ -46,21 +46,13 @@ int main(int argc, char **argv)
     // to store the line
     std::string line;
     // initial prompt
-    std::string res;
-    char cwd[PATH_MAX];
-    getcwd(cwd, sizeof(cwd));
-    res += "CRASH ";
-    res += cwd;
-    res += " ";
-    res += PROMPT_NEW;
-    std::cout << res;
+    print_prompt();
 
     // main loop
     while (std::getline(std::cin, line))
     {
         // parse the line
-        std::cout << parse(line);
-
+        parse(line);
         // reset line
         line.clear();
     }
