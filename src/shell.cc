@@ -151,7 +151,7 @@ void run_external_fn(std::string* res, std::vector<std::string> args, std::vecto
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     // prepend cwd to path
-    std::stringstream stream(cwd + (":" + env_s));
+    std::stringstream stream(cwd + (':' + env_s));
     // for storing path segment (single path)
     std::string segment;
     // if we found the command
