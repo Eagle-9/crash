@@ -1,7 +1,7 @@
 #include <crash.hh>
-#define HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
+#define CD_HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
 
-int cd_help_message(int argc, char ** argv)
+int cd_help_message(int argc, char **argv)
 {
 
     // simple help message
@@ -27,12 +27,11 @@ int cd_help_message(int argc, char ** argv)
     return 0;
 }
 
-
 // if the file was not created, recreate it here
 void cd_create_history_file()
 {
     std::ofstream writeFile;
-    writeFile.open(HISTORY_FILE_PATH);
+    writeFile.open(CD_HISTORY_FILE_PATH);
     if (writeFile.fail())
     {
         std::cout << "ERROR: Failed to create history file" << std::endl;
@@ -44,13 +43,13 @@ int cd_history_length()
 {
     // open up the file
     std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE_PATH);
+    historyFile.open(CD_HISTORY_FILE_PATH);
 
     // check that the file is open
     if (historyFile.fail())
     {
         cd_create_history_file();
-        historyFile.open(HISTORY_FILE_PATH);
+        historyFile.open(CD_HISTORY_FILE_PATH);
     }
 
     // lines will be our return value
@@ -79,7 +78,7 @@ void cd_print_history(int n)
 
     // define and open the history file
     std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE_PATH);
+    historyFile.open(CD_HISTORY_FILE_PATH);
 
     // define the line that we will use to get the current line
     std::string line;
@@ -109,13 +108,13 @@ int cd_print_history(int argc, char **argv)
     {
         // define and open the history file
         std::ifstream historyFile;
-        historyFile.open(HISTORY_FILE_PATH);
+        historyFile.open(CD_HISTORY_FILE_PATH);
 
         // check that the file is open
         if (historyFile.fail())
         {
             cd_create_history_file();
-            historyFile.open(HISTORY_FILE_PATH);
+            historyFile.open(CD_HISTORY_FILE_PATH);
         }
 
         // define the line that we will use to get the current line
@@ -129,14 +128,14 @@ int cd_print_history(int argc, char **argv)
         }
         historyFile.close();
     }
-  return 0;
+    return 0;
 }
 
 void cd_write_history_file(const std::string dir)
 {
     int serialNum = cd_history_length();
     std::ofstream historyFile;
-    historyFile.open(HISTORY_FILE_PATH, std::ios::app);
+    historyFile.open(CD_HISTORY_FILE_PATH, std::ios::app);
     historyFile << serialNum << ":" << dir << std::endl;
     historyFile.close();
 }
@@ -144,23 +143,23 @@ void cd_write_history_file(const std::string dir)
 int cd_clear_history(int argc, char **argv)
 {
     // delete the history file
-    std::remove(HISTORY_FILE_PATH);
+    std::remove(CD_HISTORY_FILE_PATH);
 
     // create a new history file
     cd_create_history_file();
-  
-  return 0;
+
+    return 0;
 }
 
 int cd_nth_history(int argc, char **argv)
 {
-    int n = std::abs(atoi(argv[1])); //We need to get the absolute values of this, because the argument has a negative sign lol.
+    int n = std::abs(atoi(argv[1])); // We need to get the absolute values of this, because the argument has a negative sign lol.
     // checks that everything is valid
     if (argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
     {
         // open the file
         std::ifstream historyFile;
-        historyFile.open(HISTORY_FILE_PATH);
+        historyFile.open(CD_HISTORY_FILE_PATH);
 
         // find the directory we need to change to
         std::string line;
@@ -203,13 +202,13 @@ int cd_print_unique_history(int argc, char **argv)
 
     // open up the history file
     std::ifstream historyFile;
-    historyFile.open(HISTORY_FILE_PATH);
+    historyFile.open(CD_HISTORY_FILE_PATH);
 
     // check that the history file is open
     if (historyFile.fail())
     {
         cd_create_history_file();
-        historyFile.open(HISTORY_FILE_PATH);
+        historyFile.open(CD_HISTORY_FILE_PATH);
     }
 
     std::string line;
@@ -259,7 +258,7 @@ int builtin_cd(int argc, char **argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message;         // displays a simple help message
     cd_table["-H"] = cd_help_message;         // displays a full help message

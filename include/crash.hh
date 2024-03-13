@@ -18,6 +18,7 @@
 #include <unistd.h>   // for exec()
 #include <sys/stat.h>
 #define HOME getenv("HOME")
+#define HISTORY_FILE_PATH (std::string(HOME) + "/crash_history.txt").c_str()
 
 const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";
@@ -25,8 +26,14 @@ const std::string PROMPT_CNT = ">>> ";
 
 // shell fns
 void parse(std::string line);
-void print_prompt();
+void print_prompt(void);
+
+// history fns
+int history_history_length(void);
+void history_create_history_file(void);
+void history_write_history_file(const std::string dir);
 
 // builtin defs
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
+int builtin_history(int argc, char **argv);
