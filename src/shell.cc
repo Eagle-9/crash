@@ -27,44 +27,43 @@ struct KeywordEntry
 };
 
 std::unordered_map<std::string, KeywordEntry> dict =
-{
-    {"break", {Keyword, nullptr}},
-    {"continue", {Keyword, nullptr}},
-    {"do", {Keyword, nullptr}},
-    {"else", {Keyword, nullptr}},
-    {"elseif", {Keyword, nullptr}},
-    {"end", {Keyword, nullptr}},
-    {"endif", {Keyword, nullptr}},
-    {"for", {Keyword, nullptr}},
-    {"function", {Keyword, nullptr}},
-    {"if", {Keyword, nullptr}},
-    {"in", {Keyword, nullptr}},
-    {"return", {Keyword, nullptr}},
-    {"then", {Keyword, nullptr}},
-    {"until", {Keyword, nullptr}},
-    {"while", {Keyword, nullptr}},
-    {"alias", {Internal, nullptr}},
-    {"bg", {Internal, nullptr}},
-    {"cd", {Internal, builtin_cd}},
-    {"eval", {Internal, nullptr}},
-    {"exec", {Internal, nullptr}},
-    {"exit", {Internal, builtin_exit}},
-    {"export", {Internal, nullptr}},
-    {"fc", {Internal, nullptr}},
-    {"fg", {Internal, nullptr}},
-    {"help", {Internal, nullptr}},
-    {"history", {Internal, builtin_history}},
-    {"jobs", {Internal, nullptr}},
-    {"let", {Internal, nullptr}},
-    {"local", {Internal, nullptr}},
-    {"logout", {Internal, nullptr}},
-    {"read", {Internal, nullptr}},
-    {"set", {Internal, nullptr}},
-    {"shift", {Internal, nullptr}},
-    {"shopt", {Internal, nullptr}},
-    {"source", {Internal, nullptr}},
-    {"unalias", {Internal, nullptr}}
-};
+    {
+        {"break", {Keyword, nullptr}},
+        {"continue", {Keyword, nullptr}},
+        {"do", {Keyword, nullptr}},
+        {"else", {Keyword, nullptr}},
+        {"elseif", {Keyword, nullptr}},
+        {"end", {Keyword, nullptr}},
+        {"endif", {Keyword, nullptr}},
+        {"for", {Keyword, nullptr}},
+        {"function", {Keyword, nullptr}},
+        {"if", {Keyword, nullptr}},
+        {"in", {Keyword, nullptr}},
+        {"return", {Keyword, nullptr}},
+        {"then", {Keyword, nullptr}},
+        {"until", {Keyword, nullptr}},
+        {"while", {Keyword, nullptr}},
+        {"alias", {Internal, nullptr}},
+        {"bg", {Internal, nullptr}},
+        {"cd", {Internal, builtin_cd}},
+        {"eval", {Internal, nullptr}},
+        {"exec", {Internal, nullptr}},
+        {"exit", {Internal, builtin_exit}},
+        {"export", {Internal, nullptr}},
+        {"fc", {Internal, nullptr}},
+        {"fg", {Internal, nullptr}},
+        {"help", {Internal, nullptr}},
+        {"history", {Internal, builtin_history}},
+        {"jobs", {Internal, nullptr}},
+        {"let", {Internal, nullptr}},
+        {"local", {Internal, nullptr}},
+        {"logout", {Internal, nullptr}},
+        {"read", {Internal, nullptr}},
+        {"set", {Internal, nullptr}},
+        {"shift", {Internal, nullptr}},
+        {"shopt", {Internal, nullptr}},
+        {"source", {Internal, nullptr}},
+        {"unalias", {Internal, nullptr}}};
 
 /********************************************************************/
 /*  Utility functions                                               */
@@ -79,7 +78,7 @@ void print_prompt()
 
 std::string kwtype_as_string(KeywordType type)
 {
-    switch(type)
+    switch (type)
     {
     case Internal:
         return "internal";
@@ -136,14 +135,15 @@ void sigint_handler(int sig)
 /*  Runtime functions                                               */
 /********************************************************************/
 
-void run_external_fn(std::string* res, std::vector<std::string> args, std::vector<char *> argv)
+void run_external_fn(std::string *res, std::vector<std::string> args, std::vector<char *> argv)
 {
     // not in dictionary
     res->append(" ");
     res->append(kwtype_as_string(External));
 
     const char *env_p = std::getenv("PATH");
-    if (!env_p) return;
+    if (!env_p)
+        return;
 
     // path to std::string
     std::string env_s = std::string(env_p);
@@ -238,7 +238,8 @@ void process()
         }
         else
         { // We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
-            if(!tempArg.empty()){
+            if (!tempArg.empty())
+            {
                 args.emplace_back(tempArg);
             }
             tempArg.clear();
@@ -254,7 +255,6 @@ void process()
     holder.reserve(args.size());
     argv.reserve(args.size());
 
-    
     for (size_t i = 0; i < args.size(); i++)
     {
         holder.emplace_back(args[i].begin(), args[i].end());
@@ -388,6 +388,3 @@ void parse(std::string line)
     process();
     return;
 }
-
-
-// history storage files needed in parse

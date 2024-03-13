@@ -33,7 +33,6 @@ int history_history_length(void);
 void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
-
 // builtin defs
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);

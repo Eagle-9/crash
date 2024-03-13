@@ -1,7 +1,7 @@
 #include <crash.hh>
 #define CD_HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
 
-int cd_help_message(int argc, char ** argv)
+int cd_help_message(int argc, char **argv)
 {
 
     // simple help message
@@ -26,7 +26,6 @@ int cd_help_message(int argc, char ** argv)
     }
     return 0;
 }
-
 
 // if the file was not created, recreate it here
 void cd_create_history_file()
@@ -129,7 +128,7 @@ int cd_print_history(int argc, char **argv)
         }
         historyFile.close();
     }
-  return 0;
+    return 0;
 }
 
 void cd_write_history_file(const std::string dir)
@@ -148,13 +147,13 @@ int cd_clear_history(int argc, char **argv)
 
     // create a new history file
     cd_create_history_file();
-  
-  return 0;
+
+    return 0;
 }
 
 int cd_nth_history(int argc, char **argv)
 {
-    int n = std::abs(atoi(argv[1])); //We need to get the absolute values of this, because the argument has a negative sign lol.
+    int n = std::abs(atoi(argv[1])); // We need to get the absolute values of this, because the argument has a negative sign lol.
     // checks that everything is valid
     if (argc <= 2 && isdigit(argv[1][1]) && n < cd_history_length())
     {
@@ -259,7 +258,7 @@ int builtin_cd(int argc, char **argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, int (*)(int argc, char ** argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char **argv)> cd_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     cd_table["-h"] = cd_help_message;         // displays a simple help message
     cd_table["-H"] = cd_help_message;         // displays a full help message

@@ -1,7 +1,6 @@
 #include <crash.hh>
 
-
-int history_help_message(int argc, char ** argv)
+int history_help_message(int argc, char **argv)
 {
 
     // simple help message
@@ -26,7 +25,6 @@ int history_help_message(int argc, char ** argv)
     }
     return 0;
 }
-
 
 // this overload will print out the last n lines
 // it is to be called from the normal cd_print_history
@@ -87,7 +85,7 @@ int history_print_history(int argc, char **argv)
         }
         historyFile.close();
     }
-  return 0;
+    return 0;
 }
 
 int history_clear_history(int argc, char **argv)
@@ -97,13 +95,13 @@ int history_clear_history(int argc, char **argv)
 
     // create a new history file
     history_create_history_file();
-  
-  return 0;
+
+    return 0;
 }
 
 int history_nth_history(int argc, char **argv)
 {
-    int n = std::abs(atoi(argv[1])); //We need to get the absolute values of this, because the argument has a negative sign lol.
+    int n = std::abs(atoi(argv[1])); // We need to get the absolute values of this, because the argument has a negative sign lol.
     // checks that everything is valid
     if (argc <= 2 && isdigit(argv[1][1]) && n < history_history_length())
     {
@@ -198,7 +196,7 @@ int builtin_history(int argc, char **argv)
     }
 
     // table to store all flags in
-    std::unordered_map<std::string, int (*)(int argc, char ** argv)> history_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
+    std::unordered_map<std::string, int (*)(int argc, char **argv)> history_table; // key = int, value is array of strings. all funcs must be formatted like 'void funcName(int argc, std::string* argv)'
 
     history_table["-h"] = history_help_message;         // displays a simple help message
     history_table["-H"] = history_help_message;         // displays a full help message
@@ -221,7 +219,6 @@ int builtin_history(int argc, char **argv)
 
     return 0;
 }
-
 
 // if the file was not created, recreate it here
 void history_create_history_file()
