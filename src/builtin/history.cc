@@ -111,7 +111,7 @@ int history_nth_history(int argc, char **argv)
         std::ifstream historyFile;
         historyFile.open(HISTORY_FILE_PATH);
 
-        // find the directory we need to change to
+        // find the command we need to print
         std::string line;
         for (int i = 0; i < n; i++)
         {
@@ -121,21 +121,11 @@ int history_nth_history(int argc, char **argv)
         // find the location of the : character, which marks the serial number and the path
         int loc = line.find(':');
 
-        // start from the loc + 1 location to get the full path to change to
-        std::string dir = line.substr(loc + 1);
+        // start from the loc + 1 location to get the full command
+        std::string cmd = line.substr(loc + 1);
 
-        // if the chdir failed, report error. otherwise, log the cwd
-        if (chdir(dir.c_str()) != 0)
-        {
-            std::cout << "ERROR: Failed to change directory: " << dir << std::endl;
-        }
-        else
-        {
-            // log the history
-            char cwd[PATH_MAX];
-            getcwd(cwd, sizeof(cwd));
-            history_write_history_file(std::string(cwd));
-        }
+        // print out the command
+        std::cout << cmd << std::endl;
     }
     else
     {
@@ -223,25 +213,10 @@ int builtin_history(int argc, char **argv)
         // access table
         return history_table[key](argc, argv);
     }
-    else if (key[0] != '-')
-    {
-        if (chdir(key.c_str()) != 0)
-        {
-            std::cout << "ERROR: Invalid Directory: " << key << "\n";
-            return 1;
-        }
-        else
-        {
-            char cwd[PATH_MAX];
-            getcwd(cwd, sizeof(cwd));
-            history_write_history_file(std::string(cwd));
-        }
-    }
     else
     {
-        // not in table
-        std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
-        return 1;
+        history_print_history(argc, argv);
+        return 0;
     }
 
     return 0;
