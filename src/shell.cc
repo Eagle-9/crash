@@ -43,7 +43,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"then", {Keyword, nullptr}},
         {"until", {Keyword, nullptr}},
         {"while", {Keyword, nullptr}},
-        {"alias", {Internal, nullptr}},
+        {"alias", {Internal, builtin_alias}},
         {"bg", {Internal, nullptr}},
         {"cd", {Internal, builtin_cd}},
         {"eval", {Internal, nullptr}},
@@ -65,10 +65,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"source", {Internal, nullptr}},
         {"unalias", {Internal, nullptr}}};
 
-std::unordered_map<std::string, std::string> aliases = 
-{
-    {"hello", "history -l"}
-};
+std::unordered_map<std::string, std::string> aliases = {{"test","history -69"}};
 
 /********************************************************************/
 /*  Utility functions                                               */
