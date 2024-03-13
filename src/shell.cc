@@ -53,7 +53,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
     {"fc", {Internal, nullptr}},
     {"fg", {Internal, nullptr}},
     {"help", {Internal, nullptr}},
-    {"history", {Internal, nullptr}},
+    {"history", {Internal, builtin_history}},
     {"jobs", {Internal, nullptr}},
     {"let", {Internal, nullptr}},
     {"local", {Internal, nullptr}},
@@ -290,6 +290,7 @@ void process()
 
 void parse(std::string line)
 {
+    history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
 
@@ -386,4 +387,58 @@ void parse(std::string line)
     // not a continuation, as we would've returned
     process();
     return;
+}
+
+
+// history storage files needed in parse
+
+// if the file was not created, recreate it here
+void history_create_history_file()
+{
+    std::ofstream writeFile;
+    writeFile.open(HISTORY_FILE_PATH);
+    if (writeFile.fail())
+    {
+        std::cout << "ERROR: Failed to create history file" << std::endl;
+    }
+    writeFile.close();
+}
+
+void history_write_history_file(const std::string dir)
+{
+    int serialNum = history_history_length();
+    std::ofstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH, std::ios::app);
+    historyFile << serialNum << ":" << dir << std::endl;
+    historyFile.close();
+}
+
+int history_history_length()
+{
+    // open up the file
+    std::ifstream historyFile;
+    historyFile.open(HISTORY_FILE_PATH);
+
+    // check that the file is open
+    if (historyFile.fail())
+    {
+        history_create_history_file();
+        historyFile.open(HISTORY_FILE_PATH);
+    }
+
+    // lines will be our return value
+    int lines = 0;
+
+    // line will temporarily hold each of the strings
+    std::string line;
+
+    // use a while loop to find the end of the file
+    while (!historyFile.eof())
+    {
+        // get the current line to get to the next line
+        getline(historyFile, line);
+        lines++;
+    }
+
+    return lines;
 }
