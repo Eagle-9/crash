@@ -37,3 +37,4 @@ void history_write_history_file(const std::string dir);
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
 int builtin_history(int argc, char **argv);
+int builtin_alias(int argc, char **argv);
