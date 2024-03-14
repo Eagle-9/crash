@@ -16,12 +16,11 @@ std::string current_line;
 enum MetaCharType
 {
     NotMeta,
-    Split,      // This is ' '
     Pipe,       // This is '|'
     Store,      // This is '>'
+    StoreErr,   // This is '2>'
     Append,     // This is '>>'
-    SecondPart, // This is for the second > in append, basically do nothing with this
-    Other,      // Metacharacter that is not yet supported
+    AppendErr,  // This is '2>>'
 };
 
 enum TokenType
@@ -115,66 +114,88 @@ std::string kwtype_as_string(TokenType type)
     return "";
 }
 
-MetaCharType check_meta(std::string inputString, size_t position)
+std::vector<std::string> split_line(std::string inputString){
+    std::vector<std::string> splitLine;
+    std::string newSplit;
+    //Check every character
+    for (size_t i = 0; i < inputString.length(); i++){
+        // Check if quoted
+        bool quoteLeft = false;
+        bool quoteRight = false;
+        // Make sure position is not at end or start of line.
+        if (i > 0 && i < (inputString.length() - 1))
+        {
+            // Check to see if there is a quote left or right of current char.
+            if (inputString[i - 1] == '"')
+            {
+                quoteLeft = true;
+            }
+            if (inputString[i + 1] == '"')
+            {
+                quoteRight = true;
+            }
+        }
+        //We have an unquoted space, so we must split
+        if((!quoteLeft && !quoteRight) && inputString[i] == ' ')
+        {
+            if(!newSplit.empty()) 
+            { //Check to make sure the line we are adding isn't empty
+                splitLine.emplace_back(newSplit);
+            }
+            newSplit.clear();
+        }else
+        { //Don't need to split, so add
+            newSplit = newSplit + inputString[i];
+        }
+    }
+    // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
+    if (inputString != "")
+    {
+        splitLine.emplace_back(newSplit);
+    }
+    return splitLine;
+}
+
+MetaCharType check_meta(std::string inputString)
 {
     // Check if quoted
     bool quoteLeft = false;
     bool quoteRight = false;
-    // Make sure position is not at end or start of line.
-    if (position > 0 && position < (inputString.length() - 1))
+    // Check to see if string is quoted on left or right side
+    if (inputString[0] == '"')
     {
-        // Check to see if there is a quote left or right of current char.
-        if (inputString[position - 1] == '"')
-        {
-            quoteLeft = true;
-        }
-        if (inputString[position + 1] == '"')
-        {
-            quoteRight = true;
-        }
+        quoteLeft = true;
+    }
+    if (inputString[inputString.length()-1] == '"')
+    {
+        quoteRight = true;
     }
     if (quoteLeft && quoteRight)
     {
         return NotMeta; // Not a metacharacter as it is quoted.
     }
     // Check if metacharacter
-    std::string metaCharacters = "|&;()<> \\";
-    char indivChar = inputString[position];
-    for (size_t i = 0; i < metaCharacters.length(); i++)
+    if(inputString == "|")
     {
-        if (indivChar == metaCharacters[i])
-        { // We have a meta character find which one.
-            if (indivChar == ' ')
-            {
-                return Split;
-            }
-            if (indivChar == '|')
-            {
-                return Pipe;
-            }
-            // Check for first >
-            if (indivChar == '>')
-            {
-                // Check to see if there is a second > after
-                if (position + 1 < inputString.length()) // Make sure we are checking inside the string
-                {
-                    if (inputString[position + 1] == '>')
-                    {
-                        return Append;
-                    }
-                }
-                // Check to see if there is a > before the one we are checking, if so, don't count the current
-                if (position - 1 >= 0)
-                { // Make sure we are inside the string
-                    if (inputString[position - 1] == '>')
-                    {
-                        return SecondPart;
-                    }
-                }
-                return Store;
-            }
-        }
+        return Pipe;
     }
+    if(inputString == ">")
+    {
+        return Store;
+    }
+    if(inputString == ">>")
+    {
+        return Append;
+    }
+    if(inputString == "2>")
+    {
+        return StoreErr;
+    }
+    if(inputString == "2>>")
+    {
+        return AppendErr;
+    }
+
     return NotMeta; // did not find a meta char
 }
 
@@ -271,35 +292,14 @@ void run_external_fn(std::string *res, std::vector<char *> argv)
     }
 }
 
-std::vector<Token> lex(std::string lineToParse)
+std::vector<Token> lex(std::vector<std::string> splitLineToParse)
 {
     std::vector<Token> tokens;
-    std::vector<std::string> splitLine;
-    std::string newSplit;
-    // Split into tokens
-    for (size_t i = 0; i < lineToParse.length(); i++)
-    {
-        if (check_meta(lineToParse, i) != Split)
-        { // We don't need to split
-            newSplit = newSplit + lineToParse[i];
-        }
-        else if (!newSplit.empty())
-        { // Split the line
-            splitLine.emplace_back(newSplit);
-            newSplit.clear();
-        }
-    }
-    // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
-        if (lineToParse != "")
-        {
-            splitLine.emplace_back(newSplit);
-        }
-
-    for (std::string entry : splitLine)
+    for (std::string entry : splitLineToParse)
     {
         Token newToken;
         // Check to see if token is a meta character
-        MetaCharType checkType = check_meta(entry, 0);
+        MetaCharType checkType = check_meta(entry);
         if (checkType != NotMeta)
         {
             newToken.type = MetaChar;
@@ -329,7 +329,7 @@ std::vector<Token> lex(std::string lineToParse)
                 newToken.data = entry;
             }
             else
-            { // Is external
+            { // Is external (last token was meta char or keyword, or is first)
                 newToken.type = External;
                 newToken.data = entry;
             }
@@ -488,10 +488,14 @@ void format_input(std::string line)
     }
 
     // not a continuation, as we would've returned
-    std::vector<Token> tokens = lex(current_line);
-    for(int i = 0; i < tokens.size(); i++){
-        std::cout << tokens[i].type << "\n";
+    
+    std::vector<Token> tokens = lex(split_line(current_line));
+
+    for(size_t i = 0; i < tokens.size(); i++){
+        std::cout << kwtype_as_string(tokens[i].type) << "\n";
     }
+
+
     //process();
     return;
 }
