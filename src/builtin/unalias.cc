@@ -66,6 +66,7 @@ int builtin_unalias(int argc, char **argv)
     {
         // delete all aliases
         aliases.clear();
+        std::cout << "All aliases removed" << std::endl;
     }
     else
     {

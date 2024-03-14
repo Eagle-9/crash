@@ -58,16 +58,17 @@ int alias_parse(std::string line)
         command = command.substr(1);
     }
 
-    size_t final_pos = command.length() - 1;
 
     // if the last line is a space, decriment it by 1
-/*     if(command[final_pos] == ' ')
+    while(command.back() == ' ')
     {
-        final_pos--;
-    } */
+        command = command.substr(0, command.length() - 1);
+    }
+
+    size_t final_pos = command.length() - 1;
     if (command[final_pos] == '\'' || command[final_pos] == '"')
     {
-        command = command.substr(0, final_pos - 1);
+        command = command.substr(0, final_pos);
     }
 
     // check if the alias already exists
