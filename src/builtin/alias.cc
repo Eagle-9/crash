@@ -33,10 +33,17 @@ void alias_print(void)
     }
 }
 
-void alias_parse(std::string line)
+int alias_parse(std::string line)
 {
     // find the = sign first
     size_t find = line.find('=');
+
+    // check for invalid string
+    if(find == std::string::npos)
+    {
+        std::cout << "INVALID ALIAS" << std::endl;
+        return 1;
+    }
 
     // the name will be from the beginning to the = sign
     std::string name = line.substr(0, find);
@@ -56,6 +63,8 @@ void alias_parse(std::string line)
         command = command.substr(0,final_pos-1);
     }
     aliases.insert({name, command});
+
+    return 0;
 }
 
 int builtin_alias(int argc, char **argv)
