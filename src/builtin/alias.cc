@@ -27,9 +27,9 @@ int alias_help(int argc, char **argv)
 
 void alias_print(void)
 {
-    for(auto iter = aliases.begin(); iter!= aliases.end(); iter++)
+    for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
     {
-        std::cout << "alias " << iter->first << "='" << iter->second << "'" << std::endl; 
+        std::cout << "alias " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 
@@ -39,7 +39,7 @@ int alias_parse(std::string line)
     size_t find = line.find('=');
 
     // check for invalid string
-    if(find == std::string::npos)
+    if (find == std::string::npos)
     {
         std::cout << "INVALID ALIAS" << std::endl;
         return 1;
@@ -52,17 +52,27 @@ int alias_parse(std::string line)
     std::string command = line.substr(find + 1);
 
     // if the user puts in ' or " at the beg/end, remove it
-    if(command[0] == '\'' || command[0] == '"')
+    if (command[0] == '\'' || command[0] == '"')
     {
         command = command.substr(1);
     }
 
     size_t final_pos = command.length() - 1;
-    if(command[final_pos] == '\'' || command[final_pos] == '"')
+    if (command[final_pos] == '\'' || command[final_pos] == '"')
     {
-        command = command.substr(0,final_pos-1);
+        command = command.substr(0, final_pos - 1);
     }
-    aliases.insert({name, command});
+
+    // check if the alias already exists
+    if (aliases.count(name))
+    {
+        std::cout << "WARNING: Alias already exists.  Overriding...." << std::endl;
+        aliases[name] = command;
+    }
+    else
+    {
+        aliases.insert({name, command});
+    }
 
     return 0;
 }
@@ -70,17 +80,22 @@ int alias_parse(std::string line)
 int builtin_alias(int argc, char **argv)
 {
     // print out each alias if we just run 'alias' or with -p
-    if(argc == 1 || (argc >= 2 && strcmp(argv[1],"-p") == 0))
+    if (argc == 1 || (argc >= 2 && strcmp(argv[1], "-p") == 0))
     {
         alias_print();
-    } 
-    else if(argc >= 2 && (strcmp(argv[1],"-H") == 0 || strcmp(argv[1],"-h") == 0))
+    }
+
+    // help commands
+    else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
         alias_help(argc, argv);
     }
-    else {
+
+    // make an alias
+    else
+    {
         std::string line;
-        for(int section = 1; section < argc; section++)
+        for (int section = 1; section < argc; section++)
         {
             std::string i(argv[section]);
             line.append(i + ' ');
