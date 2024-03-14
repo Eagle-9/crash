@@ -27,6 +27,7 @@ int alias_help(int argc, char **argv)
 
 void alias_print(void)
 {
+    // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
     {
         std::cout << "alias " << iter->first << "='" << iter->second << "'" << std::endl;
@@ -64,15 +65,16 @@ int alias_parse(std::string line)
     }
 
     // check if the alias already exists
+    // if it exists, return an error
     if (aliases.count(name))
     {
-        std::cout << "WARNING: Alias already exists.  Overriding...." << std::endl;
-        aliases[name] = command;
+        std::cout << "ERROR: Alias name already exists.  Please use unalias to remove it before making a new one" << std::endl;
+
+        return 1;
     }
-    else
-    {
-        aliases.insert({name, command});
-    }
+
+    // insert the new alias
+    aliases.insert({name, command});
 
     return 0;
 }
@@ -94,12 +96,15 @@ int builtin_alias(int argc, char **argv)
     // make an alias
     else
     {
+        // let line be the final line. Simply append each of the argv's to it with spaces in the middle
         std::string line;
         for (int section = 1; section < argc; section++)
         {
             std::string i(argv[section]);
             line.append(i + ' ');
         }
+
+        // pass it to our parse function
         alias_parse(line);
     }
     return 0;
