@@ -6,10 +6,10 @@ int unalias_help(int argc, char **argv)
     std::string simpleHelp = "unalias: unalias [-a] name [name ...]";
 
     // full help message
-    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'alias'\n\nalias [-p] [name[=value] ... ]\n\nGeneral Use\n\nalias NAME=command\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-p : print all defined aliases";
+    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'unalias'\n\nunalias [-a] name [name ...]\n\nGeneral Use\n\nunalias NAME\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-a : remove all alias definitions";
 
     // differentiate between simple and complex help message
-    if(argc == 1)
+    if (argc == 1)
     {
         std::cout << simpleHelp << std::endl; // simple help message
     }
@@ -23,29 +23,53 @@ int unalias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean alias -h or cd -H ?" << std::endl; // not a known command
+        std::cout << "not a known command. Did you mean unalias -h or unalias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
 }
 
-
-
-int builtin_alias(int argc, char **argv)
+void unalias_parse(int argc, char **argv)
 {
-
-    // help commands
-    if (argc == 1 || argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
+    // let line be the final line. Simply append each of the argv's to it with spaces in the middle
+    if (argc >= 2)
+    {
+        // get the name that was provided
+        std::string name(argv[1]);
+        if (aliases.count(name))
+        {
+            aliases.erase(name);
+            std::cout << "Removed " << name << std::endl;
+        }
+        else
+        {
+            // error if alias is not found
+            std::cout << name << " not found" << std::endl;
+        }
+    }
+    else
     {
         unalias_help(argc, argv);
     }
+}
 
-    // make an alias
+int builtin_unalias(int argc, char **argv)
+{
+
+    // help commands
+    if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
+    {
+        std::cout << "61" << std::endl;
+        unalias_help(argc, argv);
+    }
+    else if(argc >= 2 && strcmp(argv[1], "-a") == 0)
+    {
+        // delete all aliases
+        aliases.clear();
+    }
     else
     {
-        // let line be the final line. Simply append each of the argv's to it with spaces in the middle
-
-
+        unalias_parse(argc, argv);
     }
     return 0;
 }

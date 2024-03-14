@@ -1,6 +1,6 @@
 #include <crash.hh>
 
-int unalias_help(int argc, char **argv)
+int alias_help(int argc, char **argv)
 {
     // simple help message
     std::string simpleHelp = "alias: alias [-p] [name[=value] ... ]";
@@ -19,13 +19,13 @@ int unalias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean alias -h or cd -H ?" << std::endl; // not a known command
+        std::cout << "not a known command. Did you mean alias -h or alias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
 }
 
-void unalias_print(void)
+void alias_print(void)
 {
     // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
@@ -59,6 +59,12 @@ int alias_parse(std::string line)
     }
 
     size_t final_pos = command.length() - 1;
+
+    // if the last line is a space, decriment it by 1
+/*     if(command[final_pos] == ' ')
+    {
+        final_pos--;
+    } */
     if (command[final_pos] == '\'' || command[final_pos] == '"')
     {
         command = command.substr(0, final_pos - 1);
@@ -84,13 +90,13 @@ int builtin_alias(int argc, char **argv)
     // print out each alias if we just run 'alias' or with -p
     if (argc == 1 || (argc >= 2 && strcmp(argv[1], "-p") == 0))
     {
-        unalias_print();
+        alias_print();
     }
 
     // help commands
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        unalias_help(argc, argv);
+        alias_help(argc, argv);
     }
 
     // make an alias

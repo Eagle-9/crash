@@ -65,7 +65,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"source", {Internal, nullptr}},
         {"unalias", {Internal, builtin_unalias}}};
 
-std::unordered_map<std::string, std::string> aliases = {{"test","history -69"}};
+std::unordered_map<std::string, std::string> aliases = {{"test", "history -69"}};
 
 /********************************************************************/
 /*  Utility functions                                               */
@@ -282,7 +282,7 @@ void process()
         // append class to line
         res = res + " " + lineClassName;
     }
-    else if(aliases.count(args[0]))
+    else if (aliases.count(args[0]))
     {
         parse(aliases.at(args[0]));
     }
