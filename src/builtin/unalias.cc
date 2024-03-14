@@ -44,7 +44,7 @@ void unalias_parse(int argc, char **argv)
         else
         {
             // error if alias is not found
-            std::cout << name << " not found" << std::endl;
+            std::cout << "ERROR: " << name << " not found" << std::endl;
         }
     }
     else
@@ -62,7 +62,7 @@ int builtin_unalias(int argc, char **argv)
         std::cout << "61" << std::endl;
         unalias_help(argc, argv);
     }
-    else if(argc >= 2 && strcmp(argv[1], "-a") == 0)
+    else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
     {
         // delete all aliases
         aliases.clear();

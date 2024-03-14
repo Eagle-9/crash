@@ -58,9 +58,8 @@ int alias_parse(std::string line)
         command = command.substr(1);
     }
 
-
     // if the last line is a space, decriment it by 1
-    while(command.back() == ' ')
+    while (command.back() == ' ')
     {
         command = command.substr(0, command.length() - 1);
     }
