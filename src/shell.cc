@@ -63,7 +63,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, nullptr}}};
+        {"unalias", {Internal, builtin_unalias}}};
 
 std::unordered_map<std::string, std::string> aliases = {{"test","history -69"}};
 

@@ -1,6 +1,6 @@
 #include <crash.hh>
 
-int alias_help(int argc, char **argv)
+int unalias_help(int argc, char **argv)
 {
     // simple help message
     std::string simpleHelp = "alias: alias [-p] [name[=value] ... ]";
@@ -25,7 +25,7 @@ int alias_help(int argc, char **argv)
     return 0;
 }
 
-void alias_print(void)
+void unalias_print(void)
 {
     // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
@@ -84,13 +84,13 @@ int builtin_alias(int argc, char **argv)
     // print out each alias if we just run 'alias' or with -p
     if (argc == 1 || (argc >= 2 && strcmp(argv[1], "-p") == 0))
     {
-        alias_print();
+        unalias_print();
     }
 
     // help commands
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        alias_help(argc, argv);
+        unalias_help(argc, argv);
     }
 
     // make an alias

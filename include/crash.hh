@@ -41,3 +41,4 @@ int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
 int builtin_history(int argc, char **argv);
 int builtin_alias(int argc, char **argv);
+int builtin_unalias(int argc, char **argv);
