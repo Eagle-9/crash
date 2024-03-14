@@ -37,8 +37,24 @@ void alias_parse(std::string line)
 {
     // find the = sign first
     size_t find = line.find('=');
+
+    // the name will be from the beginning to the = sign
     std::string name = line.substr(0, find);
+
+    // the command will be after the = to the end
     std::string command = line.substr(find + 1);
+
+    // if the user puts in ' or " at the beg/end, remove it
+    if(command[0] == '\'' || command[0] == '"')
+    {
+        command = command.substr(1);
+    }
+
+    size_t final_pos = command.length() - 1;
+    if(command[final_pos] == '\'' || command[final_pos] == '"')
+    {
+        command = command.substr(0,final_pos-1);
+    }
     aliases.insert({name, command});
 }
 
