@@ -49,6 +49,7 @@ void unalias_parse(int argc, char **argv)
     }
     else
     {
+        // if nothing was provided, print out help
         unalias_help(argc, argv);
     }
 }
@@ -59,7 +60,6 @@ int builtin_unalias(int argc, char **argv)
     // help commands
     if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        std::cout << "61" << std::endl;
         unalias_help(argc, argv);
     }
     else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
@@ -70,6 +70,7 @@ int builtin_unalias(int argc, char **argv)
     }
     else
     {
+        // delete an alias
         unalias_parse(argc, argv);
     }
     return 0;
