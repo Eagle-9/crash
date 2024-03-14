@@ -284,8 +284,7 @@ void process()
     }
     else if(aliases.count(args[0]))
     {
-        current_line = aliases.at(args[0]);
-        process();
+        parse(aliases.at(args[0]));
     }
     else
     {
