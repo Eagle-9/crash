@@ -43,7 +43,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"then", {Keyword, nullptr}},
         {"until", {Keyword, nullptr}},
         {"while", {Keyword, nullptr}},
-        {"alias", {Internal, nullptr}},
+        {"alias", {Internal, builtin_alias}},
         {"bg", {Internal, nullptr}},
         {"cd", {Internal, builtin_cd}},
         {"eval", {Internal, nullptr}},
@@ -63,7 +63,9 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, nullptr}}};
+        {"unalias", {Internal, builtin_unalias}}};
+
+std::unordered_map<std::string, std::string> aliases = {{"test", "history -69"}};
 
 /********************************************************************/
 /*  Utility functions                                               */
@@ -279,6 +281,10 @@ void process()
 
         // append class to line
         res = res + " " + lineClassName;
+    }
+    else if (aliases.count(args[0]))
+    {
+        parse(aliases.at(args[0]));
     }
     else
     {
