@@ -20,6 +20,17 @@ enum KeywordType
     External
 };
 
+enum MetaCharType
+{
+    NotMeta,
+    Split, //This is ' '
+    Pipe, // This is '|'
+    Store, // This is '>'
+    Append, //This is '>>'
+    SecondPart, //This is for the second > in append, basically do nothing with this
+    Other, // Metacharacter that is not yet supported
+};
+
 struct KeywordEntry
 {
     KeywordType keyword;
@@ -90,7 +101,7 @@ std::string kwtype_as_string(KeywordType type)
     return "";
 }
 
-bool check_meta(std::string inputString, size_t position)
+MetaCharType check_meta(std::string inputString, size_t position)
 {
     // Check if quoted
     bool quoteLeft = false;
@@ -110,7 +121,7 @@ bool check_meta(std::string inputString, size_t position)
     }
     if (quoteLeft && quoteRight)
     {
-        return false; // Not a metacharacter as it is quoted.
+        return NotMeta; // Not a metacharacter as it is quoted.
     }
     // Check if metacharacter
     std::string metaCharacters = "|&;()<> \\";
@@ -118,11 +129,37 @@ bool check_meta(std::string inputString, size_t position)
     for (size_t i = 0; i < metaCharacters.length(); i++)
     {
         if (indivChar == metaCharacters[i])
-        {
-            return true; // meta char found
+        {//We have a meta character find which one.
+            if (indivChar == ' ')
+            {
+                return Split;
+            }
+            if (indivChar == '|')
+            {
+                return Pipe;
+            }
+            //Check for first >
+            if (indivChar == '>')
+            {
+                //Check to see if there is a second > after
+                if(position + 1 < inputString.length()) //Make sure we are checking inside the string
+                {
+                    if(inputString[position + 1] == '>')
+                    {
+                        return Append;
+                    }
+                }
+                //Check to see if there is a > before the one we are checking, if so, don't count the current
+                if(position - 1 >= 0){ //Make sure we are inside the string
+                    if(inputString[position - 1] == '>'){
+                        return SecondPart;
+                    }
+                }
+                return Store;
+            }
         }
     }
-    return false; // did not find a meta char
+    return NotMeta; // did not find a meta char
 }
 
 // used to kill children
@@ -232,17 +269,34 @@ void process()
     std::string tempArg;
     for (size_t i = 0; i < res.length(); i++)
     {
-        if (!check_meta(res, i))
-        { // If not a meta character, add to tempArg
-            tempArg = tempArg + res[i];
-        }
-        else
-        { // We hit a meta character, so we split the line. Add current arg to args, reset temp arg.
-            if (!tempArg.empty())
-            {
-                args.emplace_back(tempArg);
-            }
-            tempArg.clear();
+        MetaCharType metaType = check_meta(res, i);
+        switch (metaType) {
+            case NotMeta:
+                std::cout << "Non Meta detected" << std::endl;
+                tempArg = tempArg + res[i];
+                break;
+            case SecondPart:
+                std::cout << "Second part of Append detected, do nothing!" << std::endl;
+                break;
+            case Split:
+                std::cout << "Split detected!" << std::endl;
+                if (!tempArg.empty())
+                {
+                    args.emplace_back(tempArg);
+                }
+                tempArg.clear();
+                break;
+            case Pipe:
+                std::cout << "Pipe detected!" << std::endl;
+                break;
+            case Store:
+                std::cout << "Store detected!" << std::endl;
+                break;
+            case Append:
+                std::cout << "Append detected!" << std::endl;
+                break;
+            default:
+                std::cout << "Unsupported metacharacter detected!" << std::endl;
         }
     }
     // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
