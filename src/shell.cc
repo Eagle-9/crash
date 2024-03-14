@@ -13,27 +13,37 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-enum KeywordType
-{
-    Keyword,
-    Internal,
-    External
-};
-
 enum MetaCharType
 {
     NotMeta,
-    Split, //This is ' '
-    Pipe, // This is '|'
-    Store, // This is '>'
-    Append, //This is '>>'
-    SecondPart, //This is for the second > in append, basically do nothing with this
-    Other, // Metacharacter that is not yet supported
+    Split,      // This is ' '
+    Pipe,       // This is '|'
+    Store,      // This is '>'
+    Append,     // This is '>>'
+    SecondPart, // This is for the second > in append, basically do nothing with this
+    Other,      // Metacharacter that is not yet supported
+};
+
+enum TokenType
+{
+    Keyword,
+    Argument,
+    Internal, // Internal command
+    External, // External command
+    MetaChar
+};
+
+struct Token
+{
+    TokenType type;                                 // Type of token
+    MetaCharType meta;                              // Meta character type
+    std::string data;                               // String data
+    int (*function_pointer)(int argc, char **argv); // Pointer to the function
 };
 
 struct KeywordEntry
 {
-    KeywordType keyword;
+    TokenType keyword;
     int (*function_pointer)(int argc, char **argv);
 };
 
@@ -87,7 +97,7 @@ void print_prompt()
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
 }
 
-std::string kwtype_as_string(KeywordType type)
+std::string kwtype_as_string(TokenType type)
 {
     switch (type)
     {
@@ -97,6 +107,10 @@ std::string kwtype_as_string(KeywordType type)
         return "external";
     case Keyword:
         return "keyword";
+    case Argument:
+        return "argument";
+    case MetaChar:
+        return "meta char";
     }
     return "";
 }
@@ -129,7 +143,7 @@ MetaCharType check_meta(std::string inputString, size_t position)
     for (size_t i = 0; i < metaCharacters.length(); i++)
     {
         if (indivChar == metaCharacters[i])
-        {//We have a meta character find which one.
+        { // We have a meta character find which one.
             if (indivChar == ' ')
             {
                 return Split;
@@ -138,20 +152,22 @@ MetaCharType check_meta(std::string inputString, size_t position)
             {
                 return Pipe;
             }
-            //Check for first >
+            // Check for first >
             if (indivChar == '>')
             {
-                //Check to see if there is a second > after
-                if(position + 1 < inputString.length()) //Make sure we are checking inside the string
+                // Check to see if there is a second > after
+                if (position + 1 < inputString.length()) // Make sure we are checking inside the string
                 {
-                    if(inputString[position + 1] == '>')
+                    if (inputString[position + 1] == '>')
                     {
                         return Append;
                     }
                 }
-                //Check to see if there is a > before the one we are checking, if so, don't count the current
-                if(position - 1 >= 0){ //Make sure we are inside the string
-                    if(inputString[position - 1] == '>'){
+                // Check to see if there is a > before the one we are checking, if so, don't count the current
+                if (position - 1 >= 0)
+                { // Make sure we are inside the string
+                    if (inputString[position - 1] == '>')
+                    {
                         return SecondPart;
                     }
                 }
@@ -172,7 +188,7 @@ void sigint_handler(int sig)
 /*  Runtime functions                                               */
 /********************************************************************/
 
-void run_external_fn(std::string *res, std::vector<std::string> args, std::vector<char *> argv)
+void run_external_fn(std::string *res, std::vector<char *> argv)
 {
     // not in dictionary
     res->append(" ");
@@ -198,7 +214,7 @@ void run_external_fn(std::string *res, std::vector<std::string> args, std::vecto
     while (std::getline(stream, segment, ':'))
     {
         // get path to test by appending arg[0] to the segment
-        std::string test_path = segment + "/" + args[0];
+        std::string test_path = segment + "/" + argv[0];
 
         // check if the path is a valid file
         struct stat sb;
@@ -251,10 +267,83 @@ void run_external_fn(std::string *res, std::vector<std::string> args, std::vecto
     // print if not found
     if (!found)
     {
-        std::cout << "ERROR: Failed to find command: " << args[0] << "\n";
+        std::cout << "ERROR: Failed to find command: " << argv[0] << "\n";
     }
 }
 
+std::vector<Token> lex(std::string lineToParse)
+{
+    std::vector<Token> tokens;
+    std::vector<std::string> splitLine;
+    std::string newSplit;
+    // Split into tokens
+    for (size_t i = 0; i < lineToParse.length(); i++)
+    {
+        if (check_meta(lineToParse, i) != Split)
+        { // We don't need to split
+            newSplit = newSplit + lineToParse[i];
+        }
+        else if (!newSplit.empty())
+        { // Split the line
+            splitLine.emplace_back(newSplit);
+            newSplit.clear();
+        }
+    }
+    // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
+        if (lineToParse != "")
+        {
+            splitLine.emplace_back(newSplit);
+        }
+
+    for (std::string entry : splitLine)
+    {
+        Token newToken;
+        // Check to see if token is a meta character
+        MetaCharType checkType = check_meta(entry, 0);
+        if (checkType != NotMeta)
+        {
+            newToken.type = MetaChar;
+            newToken.meta = checkType;
+        }
+        // Check to see if in dictionary (internal or keyword)
+        else if (dict.count(entry))
+        { // The entry is in the dict
+            newToken.type = dict.at(entry).keyword;
+            if (newToken.type == Internal)
+            { // The entry is is an internal function
+                newToken.function_pointer = dict.at(entry).function_pointer;
+            }
+            else
+            { // The entry is internal keyword
+                // TODO: For nick, this might need changed
+                newToken.data = entry;
+            }
+        }
+        // If previous token was internal, external, or argument it is an argument, otherwise external
+        else if (tokens.size() != 0)
+        {
+            Token lastToken = tokens[tokens.size() - 1];
+            if (lastToken.type == External || lastToken.type == Internal || lastToken.type == Argument)
+            { // Is argument
+                newToken.type = Argument;
+                newToken.data = entry;
+            }
+            else
+            { // Is external
+                newToken.type = External;
+                newToken.data = entry;
+            }
+        }
+        else
+        { // If there are no tokens, the current token must be external
+            newToken.type = External;
+            newToken.data = entry;
+        }
+        tokens.emplace_back(newToken);
+    }
+    return tokens;
+}
+// TODO: Fix literally all of this lol
 void process()
 {
     std::string res;
@@ -264,46 +353,6 @@ void process()
 
     // get parsed line
     res = current_line;
-
-    // Go through every character in the line, split them into args
-    std::string tempArg;
-    for (size_t i = 0; i < res.length(); i++)
-    {
-        MetaCharType metaType = check_meta(res, i);
-        switch (metaType) {
-            case NotMeta:
-                std::cout << "Non Meta detected" << std::endl;
-                tempArg = tempArg + res[i];
-                break;
-            case SecondPart:
-                std::cout << "Second part of Append detected, do nothing!" << std::endl;
-                break;
-            case Split:
-                std::cout << "Split detected!" << std::endl;
-                if (!tempArg.empty())
-                {
-                    args.emplace_back(tempArg);
-                }
-                tempArg.clear();
-                break;
-            case Pipe:
-                std::cout << "Pipe detected!" << std::endl;
-                break;
-            case Store:
-                std::cout << "Store detected!" << std::endl;
-                break;
-            case Append:
-                std::cout << "Append detected!" << std::endl;
-                break;
-            default:
-                std::cout << "Unsupported metacharacter detected!" << std::endl;
-        }
-    }
-    // The above loop only adds an argument if there is a space, so we need this to get the inital arg.
-    if (res != "")
-    {
-        args.emplace_back(tempArg);
-    }
 
     // resize holder and argv to the args size
     holder.reserve(args.size());
@@ -336,13 +385,13 @@ void process()
     }
     else
     {
-        run_external_fn(&res, args, argv);
+        run_external_fn(&res, argv);
     } // end if
     std::cout << res << "\n";
     print_prompt();
 }
 
-void parse(std::string line)
+void format_input(std::string line)
 {
     history_write_history_file(line);
     // clear the current line before parsing
@@ -439,6 +488,10 @@ void parse(std::string line)
     }
 
     // not a continuation, as we would've returned
-    process();
+    std::vector<Token> tokens = lex(current_line);
+    for(int i = 0; i < tokens.size(); i++){
+        std::cout << tokens[i].type << "\n";
+    }
+    //process();
     return;
 }

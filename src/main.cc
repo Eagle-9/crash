@@ -37,7 +37,7 @@ int main(int argc, char **argv)
         for (size_t i = 0; i < lines.size(); i++)
         {
             // todo: print what we're doing (echo) (do we need this?)
-            parse(lines[i]);
+            format_input(lines[i]);
         }
 
         return 0;
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     while (std::getline(std::cin, line))
     {
         // parse the line
-        parse(line);
+        format_input(line);
         // reset line
         line.clear();
     }

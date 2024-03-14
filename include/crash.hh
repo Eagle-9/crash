@@ -25,7 +25,7 @@ const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
 
 // shell fns
-void parse(std::string line);
+void format_input(std::string line);
 void print_prompt(void);
 
 // history fns
