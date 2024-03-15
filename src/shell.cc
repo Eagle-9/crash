@@ -52,7 +52,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"export", {Internal, nullptr}},
         {"fc", {Internal, nullptr}},
         {"fg", {Internal, nullptr}},
-        {"help", {Internal, nullptr}},
+        {"help", {Internal, builtin_help}},
         {"history", {Internal, builtin_history}},
         {"jobs", {Internal, nullptr}},
         {"let", {Internal, nullptr}},
