@@ -3,7 +3,7 @@
 int help_help(int argc, char **argv)
 {
     // simple help message
-    std::string simpleHelp = "unalias: unalias [-a] name [name ...]";
+    std::string simpleHelp = "help: help [NAME]";
 
     // full help message
     std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'help'\n\nunalias [-a] name [name ...]\n\nGeneral Use\n\nunalias NAME\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-a : remove all alias definitions";
@@ -33,6 +33,7 @@ int builtin_help(int argc, char **argv)
 {
     if (argc == 1)
     {
+        std::cout << std::endl;
         // print out each help command
         for (auto iter = dict.begin(); iter != dict.end(); iter++)
         {
@@ -40,12 +41,22 @@ int builtin_help(int argc, char **argv)
             {
                 continue;
             }
-            std::string line = iter->first;
-            line.append(" -h");
-            process(line);
+            
+            char ** full_cmd = new char*[2];
+            full_cmd[0] = new char[15];
+            full_cmd[1] = new char[3];
+            strcpy(full_cmd[0], (iter->first).c_str());
+            strcpy(full_cmd[1], "-h");
+
+            iter->second.function_pointer(2, full_cmd);
+
+            delete[] full_cmd[0];
+            delete[] full_cmd[1];
+            delete[] full_cmd;
+
         }
     }
-    if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
+    else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
         help_help(argc, argv);
     }
