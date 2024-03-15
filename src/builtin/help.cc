@@ -31,7 +31,21 @@ int help_help(int argc, char **argv)
 
 int builtin_help(int argc, char **argv)
 {
-    if (argc <= 1 || (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0)))
+    if(argc == 1)
+    {
+        // print out each help command
+        for(auto iter = dict.begin(); iter != dict.end(); iter++)
+        {
+            if(iter->second.function_pointer == nullptr)
+            {
+                continue;
+            }
+            std::string line = iter->first;
+            line.append(" -h");
+            process(line);
+        }
+    }
+    if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
         help_help(argc, argv);
     }
