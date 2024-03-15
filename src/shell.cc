@@ -13,18 +13,7 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-enum KeywordType
-{
-    Keyword,
-    Internal,
-    External
-};
 
-struct KeywordEntry
-{
-    KeywordType keyword;
-    int (*function_pointer)(int argc, char **argv);
-};
 
 std::unordered_map<std::string, KeywordEntry> dict =
     {

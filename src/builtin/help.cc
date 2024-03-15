@@ -31,7 +31,23 @@ int help_help(int argc, char **argv)
 
 int builtin_help(int argc, char **argv)
 {
-
+    if (argc <= 1 || (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0)))
+    {
+        help_help(argc, argv);
+    }
+    else
+    {
+        if(dict.count(argv[1]))
+        {
+            std::string command = argv[1];
+            command += " -H";
+            parse(command);
+        }
+        else
+        {
+            std::cout << argv[1] << " is not a valid command" << std::endl;
+        }
+    }
 
     return 0;
 }

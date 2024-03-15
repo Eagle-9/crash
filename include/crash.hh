@@ -33,7 +33,20 @@ int history_history_length(void);
 void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
-// aliases
+// aliases and dict
+enum KeywordType
+{
+    Keyword,
+    Internal,
+    External
+};
+
+struct KeywordEntry
+{
+    KeywordType keyword;
+    int (*function_pointer)(int argc, char **argv);
+};
+extern std::unordered_map<std::string, KeywordEntry> dict;
 extern std::unordered_map<std::string, std::string> aliases;
 
 // builtin defs
