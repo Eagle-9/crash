@@ -7,7 +7,7 @@ int history_help_message(int argc, char **argv)
     std::string simpleHelp = "history [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s]";
 
     // full help message
-    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'history'\n\nhistory [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] \n\nGeneral Use\n\nPrint out the full history of your commands\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the commands with serial numbers. With the optional N it displays only the last N entries\n-{n} : pnly print out the n'th command\n-c : Clean the directory history\n-s : Suppress the directory history by eliminating duplicated directories. The order of the history must be maintained. The latest entry must be kept for same directories";
+    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'history'\n\nhistory [-h] [-H] [-l [{n}]] [-{n}] [-c] [-s] \n\nGeneral Use\n\nPrint out the full history of your commands\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-l [{n}] : Display the history list of the commands with serial numbers. With the optional N it displays only the last N entries\n-{n} : pnly print out the n'th command\n-c : Clean the history\n-s : Suppress the history by eliminating duplicated commands. The order of the history must be maintained. The latest entry must be kept for same directories";
 
     // differentiate between simple and complex help message
     if (strcmp(argv[1], "-h") == 0)
