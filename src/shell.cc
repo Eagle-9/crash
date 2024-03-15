@@ -13,8 +13,6 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-
-
 std::unordered_map<std::string, KeywordEntry> dict =
     {
         {"break", {Keyword, nullptr}},

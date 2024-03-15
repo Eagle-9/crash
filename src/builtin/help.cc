@@ -31,12 +31,12 @@ int help_help(int argc, char **argv)
 
 int builtin_help(int argc, char **argv)
 {
-    if(argc == 1)
+    if (argc == 1)
     {
         // print out each help command
-        for(auto iter = dict.begin(); iter != dict.end(); iter++)
+        for (auto iter = dict.begin(); iter != dict.end(); iter++)
         {
-            if(iter->second.function_pointer == nullptr)
+            if (iter->second.function_pointer == nullptr)
             {
                 continue;
             }
@@ -51,7 +51,7 @@ int builtin_help(int argc, char **argv)
     }
     else
     {
-        if(dict.count(argv[1]))
+        if (dict.count(argv[1]))
         {
             std::string command = argv[1];
             command += " -H";
