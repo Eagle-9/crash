@@ -248,9 +248,9 @@ std::string get_from_path(std::string command)
     return {};
 }
 
-std::vector<char*> argv_from_tokens(std::vector<Token> tokens)
+std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
 {
-    std::vector<char*> argv;
+    std::vector<char *> argv;
     argv.reserve(tokens.size());
     for (size_t i = 0; i < tokens.size(); i++)
     {
@@ -264,19 +264,22 @@ std::vector<char*> argv_from_tokens(std::vector<Token> tokens)
 void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
 {
     // needed to pass to fns
-    std::vector<char*> argv = argv_from_tokens(tokens);
-    
+    std::vector<char *> argv = argv_from_tokens(tokens);
+
     // check token type
     if (tokens[0].type == Internal)
     {
         if (tokens[0].function_pointer)
         {
             tokens[0].function_pointer(argv.size(), argv.data());
-        } else {
+        }
+        else
+        {
             std::cout << "[WARN]: Not yet implemented!\n";
         }
         // todo: free members of `argv`
-    } else if (tokens[0].type == External)
+    }
+    else if (tokens[0].type == External)
     {
         std::string full_path = get_from_path(tokens[0].data);
         std::cout << full_path << std::endl;
@@ -293,16 +296,18 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
         {
             //! DEMO CODE: REMOVE BEFORE COMMIT
 
-            int test_outfd = open("text.md", O_RDWR | O_CREAT | O_TRUNC,S_IRUSR | S_IWUSR);
+            int test_outfd = open("text.md", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
             // test_f_plz_rem.open("test.txt");
             // test_f_plz_rem << "hello wordl!\n";
             // test_f_plz_rem.close();
 
-            if (dup2(test_outfd, STDOUT_FILENO) < 0) {
+            if (dup2(test_outfd, STDOUT_FILENO) < 0)
+            {
                 std::perror("dup2 (stdout)");
                 std::exit(1);
             }
-            if (dup2(test_outfd, STDERR_FILENO) < 0) {
+            if (dup2(test_outfd, STDERR_FILENO) < 0)
+            {
                 std::perror("dup2 (stderr)");
                 std::exit(1);
             }
@@ -342,7 +347,9 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
             action.sa_handler = sigint_handler;
             sigaction(SIGINT, &action, NULL);
         }
-    } else {
+    }
+    else
+    {
         std::cout << "[ERROR]: Command was not of type \"Internal\" or \"External\"!\n";
     }
 }
@@ -433,7 +440,7 @@ void process(std::vector<Token> tokens)
             exit(1);
         }
 
-        switch(redirect_type)
+        switch (redirect_type)
         {
         case Pipe:
             break;
@@ -446,7 +453,6 @@ void process(std::vector<Token> tokens)
         case AppendErr:
             break;
         }
-
     }
     print_prompt();
 }
