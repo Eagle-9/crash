@@ -38,11 +38,20 @@ int builtin_help(int argc, char **argv)
                 continue;
             }
 
-            char **full_cmd = new char *[2];
-            full_cmd[0] = new char[15];
-            full_cmd[1] = new char[3];
-            strcpy(full_cmd[0], (iter->first).c_str());
-            strcpy(full_cmd[1], "-h");
+            // to avoid using the heap, we will create an array of pointers
+            char* full_cmd[2];
+
+            // we will then make two more arrays that are the needed size
+            char cmdBuffer[iter->first.length() + 1];
+            char flagBuffer[3];
+
+            // copy those strings into our buffers
+            strcpy(cmdBuffer, (iter->first).c_str());
+            strcpy(flagBuffer, "-h");
+
+            // set the pointers to point to the buffers
+            full_cmd[0] = cmdBuffer;
+            full_cmd[1] = flagBuffer;
 
             iter->second.function_pointer(2, full_cmd);
 
