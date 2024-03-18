@@ -66,7 +66,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"unalias", {Internal, builtin_unalias}}};
 
 std::unordered_map<std::string, std::string> aliases = {};
-std::unordered_map<std::string, std::string> set={};
+std::unordered_map<std::string, std::string> set = {};
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -299,31 +299,37 @@ void parse(std::string line)
     // since the $ signifies variables, we will first find and replace them with their values
     size_t pos = 0;
     bool keepGoing = true;
-    while(keepGoing)
+    while (keepGoing)
     {
-        size_t find = line.find('$',pos);
-        if(find != std::string::npos)
+        // check to see if a $ exists
+        size_t find = line.find('$', pos);
+        if (find != std::string::npos)
         {
-            size_t end = line.find(' ',find);
+            // find the end of the current word
+            size_t end = line.find(' ', find);
+
+            // find the name of the var that we are substituing for
             std::string var = line.substr(find + 1, end - 1);
-            
-            // check if that value is in the set dict
+
+            // if no var exists, replace it with ""
             std::string replace = "";
-            if(set.count(var))
+            if (set.count(var))
             {
                 replace = set[var];
-            } 
+            }
             line.replace(find, var.length() + 1, set[var]);
-            
+
             // move pos forward
             pos = find;
 
-        } 
-        else {
+        }
+        else
+        {
+            // once all $ are substituted, stop the loop
             keepGoing = false;
         }
-        
     }
+
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
