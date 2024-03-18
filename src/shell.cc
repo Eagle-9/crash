@@ -296,6 +296,33 @@ void process()
 
 void parse(std::string line)
 {
+    // since the $ signifies variables, we will first find and replace them with their values
+    size_t pos = 0;
+    bool keepGoing = true;
+    while(keepGoing)
+    {
+        size_t find = line.find('$',pos);
+        if(find != std::string::npos)
+        {
+            size_t end = line.find(' ',find);
+            std::string var = line.substr(find + 1, end);
+            
+            // check if that value is in the set dict
+            std::string replace = "";
+            if(set.count(var))
+            {
+                replace = set[var];
+            } 
+            line.replace(find, var.length() + 1, set[var]);
+            
+            // move pos forward
+            pos = find + 1;
+
+        } 
+        else {
+            keepGoing = false;
+        }
+    }
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();

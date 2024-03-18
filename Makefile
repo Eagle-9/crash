@@ -8,7 +8,7 @@ CFLAGS	= -Wall -g -fno-stack-protector -I${INC_DIR}
 LDFLAGS =
 
 # source files
-SOURCES = src/main.cc src/shell.cc src/builtin/cd.cc src/builtin/exit.cc src/builtin/history.cc src/builtin/alias.cc src/builtin/unalias.cc
+SOURCES = src/main.cc src/shell.cc src/builtin/cd.cc src/builtin/exit.cc src/builtin/history.cc src/builtin/alias.cc src/builtin/unalias.cc src/builtin/set.cc
 
 # file macros
 OBJ_OF = $(patsubst src/%.cc,  build/%.o, $1 $2 $3)                                  

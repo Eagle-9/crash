@@ -3,6 +3,7 @@
 int set_help(int argc, char **argv)
 {
     std::cout << "TODO: set help msg" << std::endl;
+    return 0;
 }
 
 int set_parse(std::string line)
@@ -58,10 +59,10 @@ int set_parse(std::string line)
 void set_remove(int argc, char **argv)
 {
     // let line be the final line. Simply append each of the argv's to it with spaces in the middle
-    if (argc >= 2)
+    if (argc >= 3)
     {
         // get the name that was provided
-        std::string name(argv[1]);
+        std::string name(argv[2]);
         if (set.count(name))
         {
             set.erase(name);
@@ -102,7 +103,7 @@ int builtin_set(int argc, char **argv)
         set.clear();
         std::cout << "All vars removed" << std::endl;
     }
-    else if (argc >= 2 && strcmp(argv[1], "-d") == 0)
+    else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {
         // delete all variables
         set_remove(argc, argv);
