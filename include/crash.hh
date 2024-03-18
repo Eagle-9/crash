@@ -16,6 +16,7 @@
 #include <sstream>
 #include <sys/wait.h> // for wait()
 #include <unistd.h>   // for exec()
+#include <fcntl.h>
 #include <sys/stat.h>
 #define HOME getenv("HOME")
 #define HISTORY_FILE_PATH (std::string(HOME) + "/crash_history.txt").c_str()
