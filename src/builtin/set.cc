@@ -15,7 +15,7 @@ int set_parse(std::string line)
     if (find == std::string::npos)
     {
         std::cout << "INVALID SET" << std::endl;
-        return 1;
+        return 1; 
     }
 
     // the name will be from the beginning to the = sign
