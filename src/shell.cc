@@ -305,7 +305,7 @@ void parse(std::string line)
         if(find != std::string::npos)
         {
             size_t end = line.find(' ',find);
-            std::string var = line.substr(find + 1, end);
+            std::string var = line.substr(find + 1, end - 1);
             
             // check if that value is in the set dict
             std::string replace = "";
@@ -316,12 +316,13 @@ void parse(std::string line)
             line.replace(find, var.length() + 1, set[var]);
             
             // move pos forward
-            pos = find + 1;
+            pos = find;
 
         } 
         else {
             keepGoing = false;
         }
+        
     }
     history_write_history_file(line);
     // clear the current line before parsing
