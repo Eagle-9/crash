@@ -13,19 +13,6 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-enum KeywordType
-{
-    Keyword,
-    Internal,
-    External
-};
-
-struct KeywordEntry
-{
-    KeywordType keyword;
-    int (*function_pointer)(int argc, char **argv);
-};
-
 std::unordered_map<std::string, KeywordEntry> dict =
     {
         {"break", {Keyword, nullptr}},
@@ -52,7 +39,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"export", {Internal, nullptr}},
         {"fc", {Internal, nullptr}},
         {"fg", {Internal, nullptr}},
-        {"help", {Internal, nullptr}},
+        {"help", {Internal, builtin_help}},
         {"history", {Internal, builtin_history}},
         {"jobs", {Internal, nullptr}},
         {"let", {Internal, nullptr}},
