@@ -36,9 +36,14 @@ void history_write_history_file(const std::string dir);
 // aliases
 extern std::unordered_map<std::string, std::string> aliases;
 
+// set
+extern std::unordered_map<std::string, std::string> set;
+
+
 // builtin defs
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
 int builtin_history(int argc, char **argv);
 int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
+int builtin_set(int argc, char **argv);
