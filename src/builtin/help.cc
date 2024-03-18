@@ -74,7 +74,7 @@ int builtin_help(int argc, char **argv)
         }
         else
         {
-            std::cout << argv[1] << " is not a valid command" << std::endl;
+            std::cout << argv[1] << " is not a valid flag" << std::endl;
         }
     }
 
