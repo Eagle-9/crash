@@ -19,7 +19,7 @@ int help_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean help -h or help -H ?" << std::endl; // not a known command
+        std::cout << "not a known flag. Did you mean help -h or help -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
