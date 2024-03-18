@@ -65,8 +65,8 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"source", {Internal, nullptr}},
         {"unalias", {Internal, builtin_unalias}}};
 
-std::unordered_map<std::string, std::string> aliases = {{"test", "history -69"}};
-
+std::unordered_map<std::string, std::string> aliases = {};
+std::unordered_map<std::string, std::string> set={};
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/

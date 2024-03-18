@@ -41,32 +41,52 @@ int set_parse(std::string line)
         command = command.substr(0, final_pos);
     }
 
-    // check if the alias already exists
+    // check if the variable already exists
     // if it exists, return an error
-    if (aliases.count(name))
+    if (set.count(name))
     {
         std::cout << "ERROR: Variable already exists.  Please use set -d to remove it before making a new one" << std::endl;
 
         return 1;
     }
-    // insert the new alias
-    aliases.insert({name, command});
+    // insert the new variable
+    set.insert({name, command});
 
     return 0;
 }
 
+void set_remove(int argc, char **argv)
+{
+    // let line be the final line. Simply append each of the argv's to it with spaces in the middle
+    if (argc >= 2)
+    {
+        // get the name that was provided
+        std::string name(argv[1]);
+        if (set.count(name))
+        {
+            set.erase(name);
+            std::cout << "Removed " << name << std::endl;
+        }
+        else
+        {
+            // error if alias is not found
+            std::cout << "ERROR: " << name << " not found" << std::endl;
+        }
+    }
+}
+
 void set_print(void)
 {
-    // print out each alias
-    for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
+    // print out each set
+    for (auto iter = set.begin(); iter != set.end(); iter++)
     {
         std::cout << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 int builtin_set(int argc, char **argv)
 {
-    // print out each alias if we just run 'alias' or with -p
-    if (argc == 1 || (argc >= 2 && strcmp(argv[1], "-p") == 0))
+    // print out each var if we just run 'var'
+    if (argc == 1)
     {
         set_print();
     }
@@ -76,8 +96,18 @@ int builtin_set(int argc, char **argv)
     {
         set_help(argc, argv);
     }
-
-    // make an alias
+    else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
+    {
+        // delete all variables
+        set.clear();
+        std::cout << "All vars removed" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "-d") == 0)
+    {
+        // delete all variables
+        set_remove(argc, argv);
+    }
+    // make an var
     else
     {
         // let line be the final line. Simply append each of the argv's to it with spaces in the middle
