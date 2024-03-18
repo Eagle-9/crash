@@ -39,7 +39,7 @@ int builtin_help(int argc, char **argv)
             }
 
             // to avoid using the heap, we will create an array of pointers
-            char* full_cmd[2];
+            char *full_cmd[2];
 
             // we will then make two more arrays that are the needed size
             char cmdBuffer[iter->first.length() + 1];
@@ -54,10 +54,6 @@ int builtin_help(int argc, char **argv)
             full_cmd[1] = flagBuffer;
 
             iter->second.function_pointer(2, full_cmd);
-
-            delete[] full_cmd[0];
-            delete[] full_cmd[1];
-            delete[] full_cmd;
         }
     }
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
