@@ -9,11 +9,7 @@ int help_help(int argc, char **argv)
     std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'help'\n\nhelp [name]\n\nGeneral Use\n\nhelp NAME\n\nBy default, help outputs the basic help message for each available command.  help NAME, where NAME is a command will output the full help message for that command";
 
     // differentiate between simple and complex help message
-    if (argc == 1)
-    {
-        std::cout << simpleHelp << std::endl; // simple help message
-    }
-    else if (strcmp(argv[1], "-h") == 0)
+    if (argc == 1 || strcmp(argv[1], "-h") == 0)
     {
         std::cout << simpleHelp << std::endl; // simple help message
     }
