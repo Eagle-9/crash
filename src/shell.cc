@@ -16,11 +16,11 @@ std::string current_line;
 enum MetaCharType
 {
     NotMeta,
-    Pipe,       // This is '|'
-    Store,      // This is '>'
-    StoreErr,   // This is '2>'
-    Append,     // This is '>>'
-    AppendErr,  // This is '2>>'
+    Pipe,      // This is '|'
+    Store,     // This is '>'
+    StoreErr,  // This is '2>'
+    Append,    // This is '>>'
+    AppendErr, // This is '2>>'
 };
 
 enum TokenType
@@ -114,37 +114,54 @@ std::string kwtype_as_string(TokenType type)
     return "";
 }
 
-std::vector<std::string> split_line(std::string inputString){
+std::vector<std::string> split_line(std::string inputString)
+{
     std::vector<std::string> splitLine;
     std::string newSplit;
-    //Check every character
-    for (size_t i = 0; i < inputString.length(); i++){
-        // Check if quoted
-        bool quoteLeft = false;
-        bool quoteRight = false;
-        // Make sure position is not at end or start of line.
-        if (i > 0 && i < (inputString.length() - 1))
+    std::vector<int> quoteIndexs;
+
+    // Find all quoted sections, as they don't need to be split.
+    for (size_t i = 0; i < inputString.length(); i++)
+    {
+        if (inputString[i] == '"')
         {
-            // Check to see if there is a quote left or right of current char.
-            if (inputString[i - 1] == '"')
-            {
-                quoteLeft = true;
-            }
-            if (inputString[i + 1] == '"')
-            {
-                quoteRight = true;
+            quoteIndexs.emplace_back(i);
+        }
+    }
+    // If there is an odd number of quotes, remove the last one from the index, as it won't be quotping anything. Ex: "hello world" "
+    if (quoteIndexs.size() % 2 == 1)
+    {
+        quoteIndexs.pop_back();
+    }
+
+    // Check every character
+    for (size_t i = 0; i < inputString.length(); i++)
+    {
+        bool quoted = false;
+        // Check if the current selection is inside a quote
+        for (size_t indexRangeCount = 0; indexRangeCount < quoteIndexs.size() / 2; indexRangeCount++)
+        {
+            size_t lowerBound = quoteIndexs[indexRangeCount * 2];
+            size_t upperBound = quoteIndexs[(indexRangeCount * 2) + 1];
+            // If character is inside of bounds
+            if ((i > lowerBound) && (i < upperBound))
+            { // character is quoted
+                //std::cout << inputString[i] << " is QUOTED!" << std::endl;
+                quoted = true;
             }
         }
-        //We have an unquoted space, so we must split
-        if((!quoteLeft && !quoteRight) && inputString[i] == ' ')
+
+        // We have an unquoted space, so we must split
+        if (!quoted && inputString[i] == ' ')
         {
-            if(!newSplit.empty()) 
-            { //Check to make sure the line we are adding isn't empty
+            if (!newSplit.empty())
+            { // Check to make sure the line we are adding isn't empty
                 splitLine.emplace_back(newSplit);
             }
             newSplit.clear();
-        }else
-        { //Don't need to split, so add
+        }
+        else
+        { // Don't need to split, so add
             newSplit = newSplit + inputString[i];
         }
     }
@@ -166,7 +183,7 @@ MetaCharType check_meta(std::string inputString)
     {
         quoteLeft = true;
     }
-    if (inputString[inputString.length()-1] == '"')
+    if (inputString[inputString.length() - 1] == '"')
     {
         quoteRight = true;
     }
@@ -175,23 +192,23 @@ MetaCharType check_meta(std::string inputString)
         return NotMeta; // Not a metacharacter as it is quoted.
     }
     // Check if metacharacter
-    if(inputString == "|")
+    if (inputString == "|")
     {
         return Pipe;
     }
-    if(inputString == ">")
+    if (inputString == ">")
     {
         return Store;
     }
-    if(inputString == ">>")
+    if (inputString == ">>")
     {
         return Append;
     }
-    if(inputString == "2>")
+    if (inputString == "2>")
     {
         return StoreErr;
     }
-    if(inputString == "2>>")
+    if (inputString == "2>>")
     {
         return AppendErr;
     }
@@ -488,14 +505,14 @@ void format_input(std::string line)
     }
 
     // not a continuation, as we would've returned
-    
+
     std::vector<Token> tokens = lex(split_line(current_line));
 
-    for(size_t i = 0; i < tokens.size(); i++){
-        std::cout << kwtype_as_string(tokens[i].type) << "\n";
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
     }
 
-
-    //process();
+    // process();
     return;
 }
