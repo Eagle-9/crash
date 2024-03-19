@@ -46,14 +46,14 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"local", {Internal, nullptr}},
         {"logout", {Internal, nullptr}},
         {"read", {Internal, nullptr}},
-        {"set", {Internal, nullptr}},
+        {"set", {Internal, builtin_set}},
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
         {"unalias", {Internal, builtin_unalias}}};
 
-std::unordered_map<std::string, std::string> aliases = {{"test", "history -69"}};
-
+std::unordered_map<std::string, std::string> aliases = {};
+std::unordered_map<std::string, std::string> set = {};
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -283,6 +283,40 @@ void process()
 
 void parse(std::string line)
 {
+    // since the $ signifies variables, we will first find and replace them with their values
+    size_t pos = 0;
+    bool keepGoing = true;
+    while (keepGoing)
+    {
+        // check to see if a $ exists
+        size_t find = line.find('$', pos);
+        if (find != std::string::npos)
+        {
+            // find the end of the current word
+            size_t end = line.find(' ', find);
+
+            // find the name of the var that we are substituing for
+            std::string var = line.substr(find + 1, end - 1);
+
+            // if no var exists, replace it with ""
+            std::string replace = "";
+            if (set.count(var))
+            {
+                replace = set[var];
+            }
+            line.replace(find, var.length() + 1, set[var]);
+
+            // move pos forward
+            pos = find;
+
+        }
+        else
+        {
+            // once all $ are substituted, stop the loop
+            keepGoing = false;
+        }
+    }
+
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
