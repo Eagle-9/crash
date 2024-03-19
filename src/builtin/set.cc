@@ -46,9 +46,8 @@ int set_parse(std::string line)
     // if it exists, return an error
     if (set.count(name))
     {
-        std::cout << "ERROR: Variable already exists.  Please use set -d to remove it before making a new one" << std::endl;
+        std::cout << "NOTE: "<< name <<" already exists and is being overwritten" << std::endl;
 
-        return 1;
     }
     // insert the new variable
     set.insert({name, command});
