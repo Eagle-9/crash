@@ -70,7 +70,7 @@ void set_remove(int argc, char **argv)
         else
         {
             // error if alias is not found
-            std::cout << "ERROR: " << name << " not found" << std::endl;
+            std::cout << "WARN: " << name << " not found" << std::endl;
         }
     }
 }
