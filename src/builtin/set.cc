@@ -47,7 +47,7 @@ int set_parse(std::string line)
     if (set.count(name))
     {
         std::cout << "NOTE: "<< name <<" already exists and is being overwritten" << std::endl;
-
+        set.erase(name);
     }
     // insert the new variable
     set.insert({name, command});
