@@ -261,7 +261,7 @@ std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
     return argv;
 }
 
-void run_command(std::vector<Token> tokens, int outfd, int errfd)
+void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 {
     // needed to pass to fns
     std::vector<char *> argv = argv_from_tokens(tokens);
@@ -305,6 +305,11 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd)
             if (errfd != -1 && dup2(errfd, STDERR_FILENO) < 0)
             {
                 std::perror("dup2 (stderr)");
+                std::exit(1);
+            }
+            if (infd != -1 && dup2(infd, STDIN_FILENO) < 0)
+            {
+                std::perror("dup2 (stdin)");
                 std::exit(1);
             }
 
@@ -426,7 +431,7 @@ void process(std::vector<Token> tokens)
 
     if (redirect_type == NotMeta)
     {
-        run_command(tokens, -1, -1);
+        run_command(tokens, -1, -1, -1);
         print_prompt();
         return;
     }
@@ -454,18 +459,26 @@ void process(std::vector<Token> tokens)
     case Store:
     case Append:
         fd = fopen(filename.c_str(), &open_mode);
-        run_command(lhs, fileno(fd), -1);
+        run_command(lhs, fileno(fd), -1, -1);
         fclose(fd);
         break;
     case AppendErr:
     case StoreErr:
         fd = fopen(filename.c_str(), &open_mode);
-        run_command(lhs, -1, fileno(fd));
+        run_command(lhs, -1, fileno(fd), -1);
         fclose(fd);
         break;
     case Pipe:
-        std::cout << "[TODO]: pipe\n";
-        return;
+        int pipefd[2];
+        if (pipe(pipefd) == -1)
+        {
+            std::cerr << "Pipe error!" << std::endl;
+            exit(1);
+        }
+        run_command(lhs, pipefd[1], -1, -1);
+        close(pipefd[1]);
+        run_command(rhs, -1, -1, pipefd[0]);
+        close(pipefd[0]);
         break;
     }
 
