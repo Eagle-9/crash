@@ -16,7 +16,9 @@
 #include <sstream>
 #include <sys/wait.h> // for wait()
 #include <unistd.h>   // for exec()
+#include <fcntl.h>
 #include <sys/stat.h>
+#include <glob.h>
 #define HOME getenv("HOME")
 #define HISTORY_FILE_PATH (std::string(HOME) + "/crash_history.txt").c_str()
 
@@ -25,7 +27,8 @@ const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
 
 // shell fns
-void parse(std::string line);
+bool isLocationInStringQuoted(std::string, size_t); // Quote detection is needed in main.cc
+void format_input(std::string line);
 void print_prompt(void);
 
 // history fns
@@ -34,16 +37,19 @@ void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
 // aliases and dict
-enum KeywordType
+
+enum TokenType
 {
     Keyword,
-    Internal,
-    External
+    Argument,
+    Internal, // Internal command
+    External, // External command
+    MetaChar
 };
 
 struct KeywordEntry
 {
-    KeywordType keyword;
+    TokenType keyword;
     int (*function_pointer)(int argc, char **argv);
 };
 extern std::unordered_map<std::string, KeywordEntry> dict;
@@ -61,3 +67,6 @@ int builtin_history(int argc, char **argv);
 int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
+
+//keywords
+int keyword_if(int argc, char** argv);

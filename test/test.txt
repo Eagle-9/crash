@@ -1,2 +1,2 @@
-lscpu
+lscpu; lscpu
 lsblk
