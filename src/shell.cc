@@ -84,28 +84,28 @@ void print_prompt()
 }
 std::string wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
 {
-    glob_t glob_result;
-    int return_value = glob(wildCard.c_str(), GLOB_TILDE, nullptr, &glob_result);
-    if (return_value == 0)
+    glob_t globResult;
+    int returnValue = glob(wildCard.c_str(), GLOB_TILDE, nullptr, &globResult);
+    if (returnValue == 0)
     {
-        return glob_result.gl_pathv[0]; // Return first result
+        return globResult.gl_pathv[0]; // Return first result
     }
-    if (return_value == GLOB_NOMATCH)
+    if (returnValue == GLOB_NOMATCH)
     {
-        std::cout << "No matches found" << std::endl;
+        std::cout << "Err: no match found for wildcard" << std::endl;
         return wildCard;
     }
-    else if (return_value != 0)
+    else
     {
-        std::cout << "Error in glob: " << return_value << std::endl;
+        std::cout << "Err: Failed glob wildcard search: " << returnValue << std::endl;
         return wildCard;
     }
-    // Loop to get all matches if needed
-    /*for (size_t i = 0; i < glob_result.gl_pathc; i++) {
-        std::cout << glob_result.gl_pathv[i] << std::endl;
+    // Loop to get all matches if needed later, can be removed
+    /*for (size_t i = 0; i < globResult.gl_pathc; i++) {
+        std::cout << globResult.gl_pathv[i] << std::endl;
     }*/
 
-    globfree(&glob_result);
+    globfree(&globResult);
 }
 
 std::string kwtype_as_string(TokenType type)
@@ -329,6 +329,29 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
     for (std::string entry : splitLineToParse)
     {
         Token newToken;
+
+        // Check to see if token has a wildcard that needs to be converted
+        size_t foundQuestionMark = entry.find('?');
+        size_t foundAsterisk = entry.find('*');
+        size_t foundLeftBracket = entry.find('[');
+        size_t foundRightBracket = entry.find(']');
+        // Convert entry to wildcard if needed
+        if (foundQuestionMark != std::string::npos)
+        { // We found a question mark
+            entry = wildCardMatch(entry);
+        }
+        if (foundAsterisk != std::string::npos)
+        { // We found an Asterisk
+            entry = wildCardMatch(entry);
+        }
+        if (foundLeftBracket != std::string::npos && foundRightBracket != std::string::npos)
+        { // We found a bracket pair
+            if (foundLeftBracket < foundRightBracket)
+            { // Make sure the right bracket is actually right of the left one
+                entry = wildCardMatch(entry);
+            }
+        }
+
         // Check to see if token is a meta character
         MetaCharType checkType = check_meta(entry);
         if (checkType != NotMeta)
