@@ -16,6 +16,7 @@
 #include <sstream>
 #include <sys/wait.h> // for wait()
 #include <unistd.h>   // for exec()
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <glob.h>
 #define HOME getenv("HOME")
