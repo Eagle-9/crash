@@ -62,3 +62,16 @@ To run a script in batch mode, there are 3 possible options.
 
 #### Script by Name
 - Create a script and run `./bin/main [script location]`
+
+### Wild Card Matching
+
+Wild cards can be used to find a matching file in the current working directory.
+
+- Question marks (`?`) can be used to match any single character in a file name.
+    - Example: `tes?.txt` can be matched to `test.txt`
+
+- Asterisks (`*`) can be used to match any number of characters in a file name.
+    - Example: `t*.txt` can be matched to `test.txt`
+
+- Square brackets (`[...]`) can be used to match the characters inside the bracket.
+    - Example: `test[0-9].txt` can be matched to `test5.txt`

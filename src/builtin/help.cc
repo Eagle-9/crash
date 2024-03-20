@@ -66,7 +66,7 @@ int builtin_help(int argc, char **argv)
         {
             std::string command = argv[1];
             command += " -H";
-            parse(command);
+            format_input(command);
         }
         else
         {
