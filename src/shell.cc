@@ -40,12 +40,6 @@ struct Token
     int (*function_pointer)(int argc, char **argv); // Pointer to the function
 };
 
-struct KeywordEntry
-{
-    TokenType keyword;
-    int (*function_pointer)(int argc, char **argv);
-};
-
 std::unordered_map<std::string, KeywordEntry> dict =
     {
         {"break", {Keyword, nullptr}},
@@ -57,13 +51,13 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"endif", {Keyword, nullptr}},
         {"for", {Keyword, nullptr}},
         {"function", {Keyword, nullptr}},
-        {"if", {Keyword, nullptr}},
+        {"if", {Keyword, keyword_if}},
         {"in", {Keyword, nullptr}},
         {"return", {Keyword, nullptr}},
         {"then", {Keyword, nullptr}},
         {"until", {Keyword, nullptr}},
         {"while", {Keyword, nullptr}},
-        {"alias", {Internal, nullptr}},
+        {"alias", {Internal, builtin_alias}},
         {"bg", {Internal, nullptr}},
         {"cd", {Internal, builtin_cd}},
         {"eval", {Internal, nullptr}},
@@ -72,19 +66,21 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"export", {Internal, nullptr}},
         {"fc", {Internal, nullptr}},
         {"fg", {Internal, nullptr}},
-        {"help", {Internal, nullptr}},
+        {"help", {Internal, builtin_help}},
         {"history", {Internal, builtin_history}},
         {"jobs", {Internal, nullptr}},
         {"let", {Internal, nullptr}},
         {"local", {Internal, nullptr}},
         {"logout", {Internal, nullptr}},
         {"read", {Internal, nullptr}},
-        {"set", {Internal, nullptr}},
+        {"set", {Internal, builtin_set}},
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, nullptr}}};
+        {"unalias", {Internal, builtin_unalias}}};
 
+std::unordered_map<std::string, std::string> aliases = {};
+std::unordered_map<std::string, std::string> set = {};
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -94,6 +90,31 @@ void print_prompt()
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
+}
+std::string wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
+{
+    glob_t globResult;
+    int returnValue = glob(wildCard.c_str(), GLOB_TILDE, nullptr, &globResult);
+    if (returnValue == 0)
+    {
+        return globResult.gl_pathv[0]; // Return first result
+    }
+    if (returnValue == GLOB_NOMATCH)
+    {
+        std::cout << "Err: no match found for wildcard" << std::endl;
+        return wildCard;
+    }
+    else
+    {
+        std::cout << "Err: Failed glob wildcard search: " << returnValue << std::endl;
+        return wildCard;
+    }
+    // Loop to get all matches if needed later, can be removed
+    /*for (size_t i = 0; i < globResult.gl_pathc; i++) {
+        std::cout << globResult.gl_pathv[i] << std::endl;
+    }*/
+
+    globfree(&globResult);
 }
 
 std::string kwtype_as_string(TokenType type)
@@ -112,6 +133,37 @@ std::string kwtype_as_string(TokenType type)
         return "meta char";
     }
     return "";
+}
+bool isLocationInStringQuoted(std::string inputString, size_t locationToCheck)
+{
+    std::vector<int> quoteIndexs;
+    bool quoted = false;
+    // Find all quoted sections
+    for (size_t i = 0; i < inputString.length(); i++)
+    {
+        if (inputString[i] == '"')
+        {
+            quoteIndexs.emplace_back(i);
+        }
+    }
+    // If there is an odd number of quotes, remove the last one from the index, as it won't be quotping anything. Ex: "hello world" "
+    if (quoteIndexs.size() % 2 == 1)
+    {
+        quoteIndexs.pop_back();
+    }
+
+    // Check if character is quoted
+    for (size_t indexRangeCount = 0; indexRangeCount < quoteIndexs.size() / 2; indexRangeCount++)
+    {
+        size_t lowerBound = quoteIndexs[indexRangeCount * 2];
+        size_t upperBound = quoteIndexs[(indexRangeCount * 2) + 1];
+        // If character is inside of bounds
+        if ((locationToCheck > lowerBound) && (locationToCheck < upperBound))
+        { // character is quoted
+            quoted = true;
+        }
+    }
+    return quoted;
 }
 
 std::vector<std::string> split_line(std::string inputString)
@@ -360,6 +412,29 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
     for (std::string entry : splitLineToParse)
     {
         Token newToken;
+
+        // Check to see if token has a wildcard that needs to be converted
+        size_t foundQuestionMark = entry.find('?');
+        size_t foundAsterisk = entry.find('*');
+        size_t foundLeftBracket = entry.find('[');
+        size_t foundRightBracket = entry.find(']');
+        // Convert entry to wildcard if needed
+        if (foundQuestionMark != std::string::npos)
+        { // We found a question mark
+            entry = wildCardMatch(entry);
+        }
+        if (foundAsterisk != std::string::npos)
+        { // We found an Asterisk
+            entry = wildCardMatch(entry);
+        }
+        if (foundLeftBracket != std::string::npos && foundRightBracket != std::string::npos)
+        { // We found a bracket pair
+            if (foundLeftBracket < foundRightBracket)
+            { // Make sure the right bracket is actually right of the left one
+                entry = wildCardMatch(entry);
+            }
+        }
+
         // Check to see if token is a meta character
         MetaCharType checkType = check_meta(entry);
         if (checkType != NotMeta)
@@ -372,7 +447,8 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
         { // The entry is in the dict
             newToken.type = dict.at(entry).keyword;
             if (newToken.type == Internal)
-            { // The entry is is an internal function
+            {                          // The entry is is an internal function
+                newToken.data = entry; // This is really not needed, but it's nice for debugging, to see the command name
                 newToken.function_pointer = dict.at(entry).function_pointer;
                 newToken.data = entry;
             }
@@ -436,7 +512,7 @@ void process(std::vector<Token> tokens)
         return;
     }
 
-    char open_mode;
+      char open_mode;
     switch(redirect_type)
     {
     case Store:
@@ -485,8 +561,41 @@ void process(std::vector<Token> tokens)
     print_prompt();
 }
 
-void format_input(std::string line)
+void format_input(std::string line) // this used to be parse
 {
+    // since the $ signifies variables, we will first find and replace them with their values
+    size_t pos = 0;
+    bool keepGoing = true;
+    while (keepGoing)
+    {
+        // check to see if a $ exists
+        size_t find = line.find('$', pos);
+        if (find != std::string::npos)
+        {
+            // find the end of the current word
+            size_t end = line.find(' ', find);
+
+            // find the name of the var that we are substituing for
+            std::string var = line.substr(find + 1, end - 1);
+
+            // if no var exists, replace it with ""
+            std::string replace = "";
+            if (set.count(var))
+            {
+                replace = set[var];
+            }
+            line.replace(find, var.length() + 1, set[var]);
+
+            // move pos forward
+            pos = find;
+        }
+        else
+        {
+            // once all $ are substituted, stop the loop
+            keepGoing = false;
+        }
+    }
+
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
@@ -582,9 +691,125 @@ void format_input(std::string line)
     }
 
     // not a continuation, as we would've returned
-
     std::vector<Token> tokens = lex(split_line(current_line));
 
-    process(tokens);
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
+        std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
+    }
+    process(tokens); // TODO: This is also part of the temp workaround that needs removed!
     return;
+}
+
+int keyword_if(int argc, char** argv) {
+  //conditional if statements
+
+  std::vector<std::string> args;
+
+  //this stores the pairs of if, then statements
+  std::vector<std::vector<std::string>> conditionals;
+
+  //print out all of the arguments to test
+  for (int i = 0; i < argc; i++) {
+    //convert char** to string to make it easier to work with
+    std::string tempStr = argv[i];
+    args.push_back(tempStr);
+    std::cout << args[i] << std::endl;
+  }
+
+    std::vector<std::string> tempVec;
+    
+    //parser, counters to keep track of if inside an if statement
+    int ifCounter = 0;
+    
+    std::cout << "args --" << std::endl;
+    for (unsigned int i = 0; i < args.size(); i++) {
+        std::cout << args[i] << std::endl;
+    }
+    
+    std::cout << std::endl << "parsing --" << std::endl;
+    //for each word in the vector
+    for (unsigned int i = 0; i < args.size(); i++) {
+        
+        if (args[i] == "if") {
+            //increase ifCounter
+            ifCounter++;
+            if(ifCounter > 1) {
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "then") {
+            //done counting variables
+            if(ifCounter <= 1) {
+                //in sub if, ignore keywords
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //add to vector arguments
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "elseif") {
+            //new statement
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                ifCounter++;
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "else") {
+            //last statement always happens
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                
+                //add empty vector to check for when evaluating
+                conditionals.push_back(tempVec);
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            
+        } else if (args[i] == "endif") {
+            //end of the statement
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            ifCounter--;
+        } else if (args[i] == "[") {
+            //begining of elseif
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "]") {
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
+        } else {
+            //not a keyword, so a command
+            tempVec.push_back(args[i]);
+        }
+    }
+    
+    std::cout << std::endl << "conditionals --" << std::endl;
+    for (unsigned long int j = 0; j < conditionals.size(); j++) {
+        std::cout << j << ": ";
+        for (unsigned int i = 0; i < conditionals[j].size(); i++) {
+            std::cout << conditionals[j][i] << ",";
+        }
+        std::cout << std::endl;
+    }
+
+  //loop through each conditional with dictionary
+  //return exit status
+
+  return 0;
 }
