@@ -18,6 +18,7 @@ enum MetaCharType
     NotMeta,
     Pipe,      // This is '|'
     Store,     // This is '>'
+    Redirect,  // This is '<'
     StoreErr,  // This is '2>'
     Append,    // This is '>>'
     AppendErr, // This is '2>>'
@@ -228,6 +229,10 @@ MetaCharType check_meta(std::string inputString)
     if (inputString == ">")
     {
         return Store;
+    }
+    if (inputString == "<")
+    {
+        return Redirect;
     }
     if (inputString == ">>")
     {
