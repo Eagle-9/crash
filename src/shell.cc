@@ -113,14 +113,11 @@ std::string kwtype_as_string(TokenType type)
     }
     return "";
 }
-
-std::vector<std::string> split_line(std::string inputString)
+bool isLocationInStringQuoted(std::string inputString, size_t locationToCheck)
 {
-    std::vector<std::string> splitLine;
-    std::string newSplit;
     std::vector<int> quoteIndexs;
-
-    // Find all quoted sections, as they don't need to be split.
+    bool quoted = false;
+    // Find all quoted sections
     for (size_t i = 0; i < inputString.length(); i++)
     {
         if (inputString[i] == '"')
@@ -134,25 +131,30 @@ std::vector<std::string> split_line(std::string inputString)
         quoteIndexs.pop_back();
     }
 
+    // Check if character is quoted
+    for (size_t indexRangeCount = 0; indexRangeCount < quoteIndexs.size() / 2; indexRangeCount++)
+    {
+        size_t lowerBound = quoteIndexs[indexRangeCount * 2];
+        size_t upperBound = quoteIndexs[(indexRangeCount * 2) + 1];
+        // If character is inside of bounds
+        if ((locationToCheck > lowerBound) && (locationToCheck < upperBound))
+        { // character is quoted
+            quoted = true;
+        }
+    }
+    return quoted;
+}
+
+std::vector<std::string> split_line(std::string inputString)
+{
+    std::vector<std::string> splitLine;
+    std::string newSplit;
+
     // Check every character
     for (size_t i = 0; i < inputString.length(); i++)
     {
-        bool quoted = false;
-        // Check if the current selection is inside a quote
-        for (size_t indexRangeCount = 0; indexRangeCount < quoteIndexs.size() / 2; indexRangeCount++)
-        {
-            size_t lowerBound = quoteIndexs[indexRangeCount * 2];
-            size_t upperBound = quoteIndexs[(indexRangeCount * 2) + 1];
-            // If character is inside of bounds
-            if ((i > lowerBound) && (i < upperBound))
-            { // character is quoted
-                //std::cout << inputString[i] << " is QUOTED!" << std::endl;
-                quoted = true;
-            }
-        }
-
         // We have an unquoted space, so we must split
-        if (!quoted && inputString[i] == ' ')
+        if (!isLocationInStringQuoted(inputString, i) && inputString[i] == ' ')
         {
             if (!newSplit.empty())
             { // Check to make sure the line we are adding isn't empty

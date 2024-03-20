@@ -25,6 +25,7 @@ const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
 
 // shell fns
+bool isLocationInStringQuoted(std::string, size_t); // Quote detection is needed in main.cc
 void format_input(std::string line);
 void print_prompt(void);
 
