@@ -42,3 +42,6 @@ int builtin_exit(int argc, char **argv);
 int builtin_history(int argc, char **argv);
 int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
+
+//keywords
+int keyword_if(int argc, char** argv);

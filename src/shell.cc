@@ -37,7 +37,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"endif", {Keyword, nullptr}},
         {"for", {Keyword, nullptr}},
         {"function", {Keyword, nullptr}},
-        {"if", {Keyword, nullptr}},
+        {"if", {Keyword, keyword_if}},
         {"in", {Keyword, nullptr}},
         {"return", {Keyword, nullptr}},
         {"then", {Keyword, nullptr}},
@@ -393,4 +393,20 @@ void parse(std::string line)
     // not a continuation, as we would've returned
     process();
     return;
+}
+
+int keyword_if(int argc, char** argv) {
+  //conditional if statements
+
+  std::vector<std::string> args;
+
+  //print out all of the arguments to test
+  for (int i = 0; i < argc; i++) {
+    //convert char** to string to make it easier to work with
+    std::string tempStr = argv[i];
+    args.push_back(tempStr);
+    std::cout << args[i] << std::endl;
+  }
+
+  return 0;
 }
