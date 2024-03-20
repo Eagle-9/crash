@@ -421,7 +421,7 @@ int keyword_if(int argc, char** argv) {
         std::cout << args[i] << std::endl;
     }
     
-    std::cout << std::endl << "parsing --" << std::endl;
+    //parsing
     //for each word in the vector
     for (unsigned int i = 0; i < args.size(); i++) {
         
