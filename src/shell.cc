@@ -23,6 +23,15 @@ enum MetaCharType
     AppendErr, // This is '2>>'
 };
 
+enum TokenType
+{
+    Keyword,
+    Argument,
+    Internal, // Internal command
+    External, // External command
+    MetaChar
+};
+
 struct Token
 {
     TokenType type;                                 // Type of token
@@ -161,12 +170,27 @@ std::vector<std::string> split_line(std::string inputString)
 {
     std::vector<std::string> splitLine;
     std::string newSplit;
-
     // Check every character
     for (size_t i = 0; i < inputString.length(); i++)
     {
+        // Check if quoted
+        bool quoteLeft = false;
+        bool quoteRight = false;
+        // Make sure position is not at end or start of line.
+        if (i > 0 && i < (inputString.length() - 1))
+        {
+            // Check to see if there is a quote left or right of current char.
+            if (inputString[i - 1] == '"')
+            {
+                quoteLeft = true;
+            }
+            if (inputString[i + 1] == '"')
+            {
+                quoteRight = true;
+            }
+        }
         // We have an unquoted space, so we must split
-        if (!isLocationInStringQuoted(inputString, i) && inputString[i] == ' ')
+        if ((!quoteLeft && !quoteRight) && inputString[i] == ' ')
         {
             if (!newSplit.empty())
             { // Check to make sure the line we are adding isn't empty
@@ -240,15 +264,14 @@ void sigint_handler(int sig)
 /*  Runtime functions                                               */
 /********************************************************************/
 
-void run_external_fn(std::string *res, std::vector<char *> argv)
+std::string get_from_path(std::string command)
 {
-    // not in dictionary
-    res->append(" ");
-    res->append(kwtype_as_string(External));
-
     const char *env_p = std::getenv("PATH");
     if (!env_p)
-        return;
+    {
+        std::cout << "[WARN]: Failed to get $PATH!\n";
+        return {};
+    }
 
     // path to std::string
     std::string env_s = std::string(env_p);
@@ -259,67 +282,127 @@ void run_external_fn(std::string *res, std::vector<char *> argv)
     std::stringstream stream(cwd + (':' + env_s));
     // for storing path segment (single path)
     std::string segment;
-    // if we found the command
-    bool found = false;
 
     // iterate over paths from $PATH
     while (std::getline(stream, segment, ':'))
     {
         // get path to test by appending arg[0] to the segment
-        std::string test_path = segment + "/" + argv[0];
+        std::string test_path = segment + "/" + command;
 
         // check if the path is a valid file
         struct stat sb;
         if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
         {
-
-            // create a child process
-            pid_t child = fork();
-
-            //  check if we're the child or the parent
-            if (child == 0)
-            {
-                // we're the child
-
-                // allow kill
-                struct sigaction action;
-                memset(&action, 0, sizeof(action));
-                action.sa_handler = sigint_handler;
-                sigaction(SIGINT, &action, NULL);
-
-                // switch execution to new binary
-                execv(test_path.c_str(), argv.data());
-            }
-            else
-            {
-                // we're the parent
-
-                // prevent kill while bearing children
-                struct sigaction action;
-                memset(&action, 0, sizeof(action));
-                action.sa_handler = SIG_IGN;
-                sigaction(SIGINT, &action, NULL);
-
-                // wait for the child to finish running (or was cancelled by user)
-                int status;
-                waitpid(child, &status, 0);
-
-                // allow kill after children exit
-                memset(&action, 0, sizeof(action));
-                action.sa_handler = sigint_handler;
-                sigaction(SIGINT, &action, NULL);
-            }
-
-            // mark found
-            found = true;
-            break;
+            return test_path;
         }
     }
 
-    // print if not found
-    if (!found)
+    return {};
+}
+
+std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
+{
+    std::vector<char *> argv;
+    argv.reserve(tokens.size());
+    for (size_t i = 0; i < tokens.size(); i++)
     {
-        std::cout << "ERROR: Failed to find command: " << argv[0] << "\n";
+        // anyone know a better way?
+        argv.push_back(new char[tokens[i].data.size()]);
+        strcpy(argv[i], tokens[i].data.c_str());
+    }
+    return argv;
+}
+
+void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
+{
+    // needed to pass to fns
+    std::vector<char *> argv = argv_from_tokens(tokens);
+
+    // check token type
+    if (tokens[0].type == Internal)
+    {
+        if (tokens[0].function_pointer)
+        {
+            tokens[0].function_pointer(argv.size(), argv.data());
+        }
+        else
+        {
+            std::cout << "[WARN]: Not yet implemented!\n";
+        }
+        // todo: free members of `argv`
+    }
+    else if (tokens[0].type == External)
+    {
+        std::string full_path = get_from_path(tokens[0].data);
+        std::cout << full_path << std::endl;
+        if (full_path.empty())
+        {
+            std::cout << "Command not found: " << tokens[0].data << "\n";
+            print_prompt();
+            return;
+        }
+        argv.erase(argv.begin());
+
+        // create a child process
+        pid_t child = fork();
+
+        //  check if we're the child or the parent
+        if (child == 0)
+        {
+            if (outfd != -1 && dup2(outfd, STDOUT_FILENO) < 0)
+            {
+                std::perror("dup2 (stdout)");
+                std::exit(1);
+            }
+            if (errfd != -1 && dup2(errfd, STDERR_FILENO) < 0)
+            {
+                std::perror("dup2 (stderr)");
+                std::exit(1);
+            }
+            if (infd != -1 && dup2(infd, STDIN_FILENO) < 0)
+            {
+                std::perror("dup2 (stdin)");
+                std::exit(1);
+            }
+
+            // we're the child
+            // allow kill
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+
+            // switch execution to new binary
+
+            execv(full_path.c_str(), argv.data());
+
+            std::cerr << "[!!] What are we doing here?!\n";
+            exit(130);
+        }
+        else
+        {
+            // we're the parent
+            // prevent kill while bearing children
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = SIG_IGN;
+            sigaction(SIGINT, &action, NULL);
+
+            std::cout << "[*] waiting...\n";
+
+            // wait for the child to finish running (or was cancelled by user)
+            int status;
+            waitpid(child, &status, 0);
+
+            // allow kill after children exit
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+        }
+    }
+    else
+    {
+        std::cout << "[ERROR]: Command was not of type \"Internal\" or \"External\"!\n";
     }
 }
 
@@ -367,6 +450,7 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
             {                          // The entry is is an internal function
                 newToken.data = entry; // This is really not needed, but it's nice for debugging, to see the command name
                 newToken.function_pointer = dict.at(entry).function_pointer;
+                newToken.data = entry;
             }
             else
             { // The entry is internal keyword
@@ -398,63 +482,82 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
     }
     return tokens;
 }
-// TODO: Make this actually work. This right now is purely a stop gap that converts tokens back to a string so CRASH can still run.
+
 void process(std::vector<Token> tokens)
 {
+    MetaCharType redirect_type = NotMeta;
+    std::vector<Token> lhs;
+    std::vector<Token> rhs;
 
-    std::string res;
-    std::vector<std::string> args;
-    std::vector<std::vector<char>> holder;
-    std::vector<char *> argv;
-
-    // TODO: Remove this!
-    // Temp workaround solution to let CRASH run with new parsing
     for (size_t i = 0; i < tokens.size(); i++)
     {
-        args.emplace_back(tokens[i].data);
-    }
-
-    // get parsed line
-    res = current_line;
-
-    // resize holder and argv to the args size
-    holder.reserve(args.size());
-    argv.reserve(args.size());
-
-    for (size_t i = 0; i < args.size(); i++)
-    {
-        holder.emplace_back(args[i].begin(), args[i].end());
-        holder.back().push_back('\0');
-        argv.push_back(holder.back().data());
-    }
-
-    // if the map returns a key
-    if (dict.count(args[0]))
-    {
-
-        // get class from dictionary
-        std::string lineClassName = kwtype_as_string(dict.at(args[0]).keyword);
-        if (dict.at(args[0]).function_pointer != nullptr)
+        std::cout << kwtype_as_string(tokens[i].type) << "\n";
+        if (tokens[i].type == MetaChar)
         {
-            dict.at(args[0]).function_pointer(args.size(), argv.data());
+            if (redirect_type != NotMeta)
+                std::cout << "[WARN]: Multiple operators on one line are not supported!\n";
+            else
+            {
+                redirect_type = tokens[i].meta;
+                lhs.assign(tokens.begin(), tokens.begin() + i);
+                rhs.assign(tokens.begin() + i + 1, tokens.end()); // +1 to skip meta
+            }
         }
-        else
-        {
-            std::cout << "NOT YET IMPLEMENTED\n";
-        }
+    }
 
-        // append class to line
-        res = res + " " + lineClassName;
-    }
-    else if (aliases.count(args[0]))
+    if (redirect_type == NotMeta)
     {
-        format_input(aliases.at(args[0]));
+        run_command(tokens, -1, -1, -1);
+        print_prompt();
+        return;
     }
-    else
+
+      char open_mode;
+    switch(redirect_type)
     {
-        run_external_fn(&res, argv);
-    } // end if
-    std::cout << res << "\n";
+    case Store:
+    case StoreErr:
+        open_mode = 'w';
+        break;
+    case Append:
+    case AppendErr:
+        open_mode = 'a';
+        break;
+    }
+
+    std::string filename = rhs[0].data.c_str();
+    FILE* fd = nullptr;
+    switch(redirect_type)
+    {
+    case NotMeta:
+        std::perror("Something went terribly wrong!");
+        break;
+    case Store:
+    case Append:
+        fd = fopen(filename.c_str(), &open_mode);
+        run_command(lhs, fileno(fd), -1, -1);
+        fclose(fd);
+        break;
+    case AppendErr:
+    case StoreErr:
+        fd = fopen(filename.c_str(), &open_mode);
+        run_command(lhs, -1, fileno(fd), -1);
+        fclose(fd);
+        break;
+    case Pipe:
+        int pipefd[2];
+        if (pipe(pipefd) == -1)
+        {
+            std::cerr << "Pipe error!" << std::endl;
+            exit(1);
+        }
+        run_command(lhs, pipefd[1], -1, -1);
+        close(pipefd[1]);
+        run_command(rhs, -1, -1, pipefd[0]);
+        close(pipefd[0]);
+        break;
+    }
+
     print_prompt();
 }
 
@@ -588,7 +691,6 @@ void format_input(std::string line) // this used to be parse
     }
 
     // not a continuation, as we would've returned
-
     std::vector<Token> tokens = lex(split_line(current_line));
 
     for (size_t i = 0; i < tokens.size(); i++)
