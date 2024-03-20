@@ -23,27 +23,12 @@ enum MetaCharType
     AppendErr, // This is '2>>'
 };
 
-enum TokenType
-{
-    Keyword,
-    Argument,
-    Internal, // Internal command
-    External, // External command
-    MetaChar
-};
-
 struct Token
 {
     TokenType type;                                 // Type of token
     MetaCharType meta;                              // Meta character type
     std::string data;                               // String data
     int (*function_pointer)(int argc, char **argv); // Pointer to the function
-};
-
-struct KeywordEntry
-{
-    TokenType keyword;
-    int (*function_pointer)(int argc, char **argv);
 };
 
 std::unordered_map<std::string, KeywordEntry> dict =
@@ -83,7 +68,8 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, builtin_unalias}}};
+        {"unalias", {Internal, builtin_unalias}}
+    };
 
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
@@ -415,7 +401,7 @@ void process(std::vector<Token> tokens)
     }
     else if (aliases.count(args[0]))
     {
-        parse(aliases.at(args[0]));
+        format_input(aliases.at(args[0]));
     }
     else
     {
@@ -425,7 +411,7 @@ void process(std::vector<Token> tokens)
     print_prompt();
 }
 
-void format_input(std::string line)
+void format_input(std::string line) //this used to be parse
 {
     // since the $ signifies variables, we will first find and replace them with their values
     size_t pos = 0;

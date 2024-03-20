@@ -35,16 +35,19 @@ void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
 // aliases and dict
-enum KeywordType
+
+enum TokenType
 {
     Keyword,
-    Internal,
-    External
+    Argument,
+    Internal, // Internal command
+    External, // External command
+    MetaChar
 };
 
 struct KeywordEntry
 {
-    KeywordType keyword;
+    TokenType keyword;
     int (*function_pointer)(int argc, char **argv);
 };
 extern std::unordered_map<std::string, KeywordEntry> dict;
