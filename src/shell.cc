@@ -795,16 +795,13 @@ int keyword_if(int argc, char **argv)
     {
         std::cout << args[i] << std::endl;
     }
-
-    std::cout << std::endl
-              << "parsing --" << std::endl;
-    // for each word in the vector
-    for (unsigned int i = 0; i < args.size(); i++)
-    {
-
-        if (args[i] == "if")
-        {
-            // increase ifCounter
+    
+    //parsing
+    //for each word in the vector
+    for (unsigned int i = 0; i < args.size(); i++) {
+        
+        if (args[i] == "if") {
+            //increase ifCounter
             ifCounter++;
             if (ifCounter > 1)
             {
