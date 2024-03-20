@@ -415,8 +415,6 @@ int keyword_if(int argc, char** argv) {
     
     //parser, counters to keep track of if inside an if statement
     int ifCounter = 0;
-    int thenCounter = 0;
-    int endCounter = 0;
     
     std::cout << "args --" << std::endl;
     for (unsigned int i = 0; i < args.size(); i++) {
@@ -427,33 +425,68 @@ int keyword_if(int argc, char** argv) {
     //for each word in the vector
     for (unsigned int i = 0; i < args.size(); i++) {
         
-        //if an if statement, then add to counter
         if (args[i] == "if") {
             //increase ifCounter
             ifCounter++;
-            std::cout << "if --" << std::endl;
+            if(ifCounter > 1) {
+                tempVec.push_back(args[i]);
+            }
         } else if (args[i] == "then") {
             //done counting variables
-            conditionals.push_back(tempVec);
-            tempVec.clear();
-            thenCounter++;
+            if(ifCounter <= 1) {
+                //in sub if, ignore keywords
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //add to vector arguments
+                tempVec.push_back(args[i]);
+            }
         } else if (args[i] == "elseif") {
             //new statement
-            conditionals.push_back(tempVec);
-            tempVec.clear();
-            ifCounter++;
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                ifCounter++;
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
         } else if (args[i] == "else") {
             //last statement always happens
-            conditionals.push_back(tempVec);
-            tempVec.clear();
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                
+                //add empty vector to check for when evaluating
+                conditionals.push_back(tempVec);
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            
         } else if (args[i] == "endif") {
             //end of the statement
-            conditionals.push_back(tempVec);
-            tempVec.clear();
-            endCounter++;
-            std::cout << "end --" << std::endl;
-        } else if (args[i] == "]" || args[i] == "[") {
-            //ignore these
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            ifCounter--;
+        } else if (args[i] == "[") {
+            //begining of elseif
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "]") {
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
         } else {
             //not a keyword, so a command
             tempVec.push_back(args[i]);
