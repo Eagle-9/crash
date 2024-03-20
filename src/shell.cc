@@ -23,15 +23,6 @@ enum MetaCharType
     AppendErr, // This is '2>>'
 };
 
-enum TokenType
-{
-    Keyword,
-    Argument,
-    Internal, // Internal command
-    External, // External command
-    MetaChar
-};
-
 struct Token
 {
     TokenType type;                                 // Type of token
