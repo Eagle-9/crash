@@ -261,7 +261,7 @@ std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
     return argv;
 }
 
-void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
+void run_command(std::vector<Token> tokens, std::string filename, bool append, bool err)
 {
     // needed to pass to fns
     std::vector<char *> argv = argv_from_tokens(tokens);
@@ -287,6 +287,13 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
         {
             std::cout << "Command not found: " << tokens[0].data << "\n";
         }
+        argv.erase(argv.begin());
+
+        FILE* fd = nullptr;
+        if (filename != "")
+        {
+            fd = fopen(filename.c_str(), append ? "a" : "w");
+        }
 
         // create a child process
         pid_t child = fork();
@@ -294,25 +301,15 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
         //  check if we're the child or the parent
         if (child == 0)
         {
-            //! DEMO CODE: REMOVE BEFORE COMMIT
-
-            int test_outfd = open("text.md", O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-            // test_f_plz_rem.open("test.txt");
-            // test_f_plz_rem << "hello wordl!\n";
-            // test_f_plz_rem.close();
-
-            if (dup2(test_outfd, STDOUT_FILENO) < 0)
+            if (fd != nullptr)
             {
-                std::perror("dup2 (stdout)");
-                std::exit(1);
+                int fd_to_override = err ? STDERR_FILENO : STDOUT_FILENO;
+                if (dup2(fileno(fd), fd_to_override) < 0)
+                {
+                    std::perror("dup2 (stdout)");
+                    std::exit(1);
+                }
             }
-            if (dup2(test_outfd, STDERR_FILENO) < 0)
-            {
-                std::perror("dup2 (stderr)");
-                std::exit(1);
-            }
-            // close(test_outfd);
-            //!/ DEMO CODE: REMOVE BEFORE COMMIT
 
             // we're the child
             // allow kill
@@ -325,9 +322,8 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
 
             execv(full_path.c_str(), argv.data());
 
-            //! DEMO CODE: REMOVE BEFORE COMMIT
-            exit(0);
-            //!/ DEMO CODE: REMOVE BEFORE COMMIT
+            std::cerr << "[!!] What are we doing here?!\n";
+            exit(130);
         }
         else
         {
@@ -338,9 +334,13 @@ void run_command(std::vector<Token> tokens, int outfd = -1, int errfd = -1)
             action.sa_handler = SIG_IGN;
             sigaction(SIGINT, &action, NULL);
 
+            std::cout << "[*] waiting...\n";
+
             // wait for the child to finish running (or was cancelled by user)
             int status;
             waitpid(child, &status, 0);
+
+            if (fd != nullptr) fclose(fd);
 
             // allow kill after children exit
             memset(&action, 0, sizeof(action));
@@ -417,43 +417,58 @@ void process(std::vector<Token> tokens)
     {
         std::cout << kwtype_as_string(tokens[i].type) << "\n";
         if (tokens[i].type == MetaChar)
-            redirect_type = tokens[i].meta;
-        const std::size_t half = tokens.size() / 2;
-        lhs.assign(tokens.begin(), tokens.begin() + half);
-        rhs.assign(tokens.begin() + half, tokens.end());
-        if (redirect_type != NotMeta)
-            std::cout << "[WARN]: Multiple operators on one line are not supported!\n";
+        {
+            if (redirect_type != NotMeta)
+                std::cout << "[WARN]: Multiple operators on one line are not supported!\n";
+            else
+            {
+                redirect_type = tokens[i].meta;
+                lhs.assign(tokens.begin(), tokens.begin() + i);
+                rhs.assign(tokens.begin() + i + 1, tokens.end()); // +1 to skip meta
+            }
+        }
     }
 
     if (redirect_type == NotMeta)
     {
-        run_command(tokens);
+        run_command(tokens, {}, false, false);
+        print_prompt();
+        return;
     }
-    else
+
+    bool do_append;
+    switch(redirect_type)
     {
-        // create pipe
-        int pipefd[2];
-
-        if (pipe(pipefd) == -1)
-        {
-            std::cerr << "Pipe error!" << std::endl;
-            exit(1);
-        }
-
-        switch (redirect_type)
-        {
-        case Pipe:
-            break;
-        case Store:
-            break;
-        case StoreErr:
-            break;
-        case Append:
-            break;
-        case AppendErr:
-            break;
-        }
+    case Store:
+    case StoreErr:
+        do_append = false;
+        break;
+    case Append:
+    case AppendErr:
+        do_append = true;
+        break;
     }
+
+    std::string filename = rhs[0].data.c_str();
+    switch(redirect_type)
+    {
+    case NotMeta:
+        std::perror("Something went terribly wrong!");
+        break;
+    case Store:
+    case Append:
+        run_command(lhs, filename, do_append, false);
+        break;
+    case AppendErr:
+    case StoreErr:
+        run_command(lhs, filename, do_append, true);
+        break;
+    case Pipe:
+        std::cout << "[TODO]: pipe\n";
+        return;
+        break;
+    }
+
     print_prompt();
 }
 
