@@ -42,7 +42,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"endif", {Keyword, nullptr}},
         {"for", {Keyword, nullptr}},
         {"function", {Keyword, nullptr}},
-        {"if", {Keyword, nullptr}},
+        {"if", {Keyword, keyword_if}},
         {"in", {Keyword, nullptr}},
         {"return", {Keyword, nullptr}},
         {"then", {Keyword, nullptr}},
@@ -597,4 +597,117 @@ void format_input(std::string line) // this used to be parse
     }
     process(tokens); // TODO: This is also part of the temp workaround that needs removed!
     return;
+}
+
+int keyword_if(int argc, char** argv) {
+  //conditional if statements
+
+  std::vector<std::string> args;
+
+  //this stores the pairs of if, then statements
+  std::vector<std::vector<std::string>> conditionals;
+
+  //print out all of the arguments to test
+  for (int i = 0; i < argc; i++) {
+    //convert char** to string to make it easier to work with
+    std::string tempStr = argv[i];
+    args.push_back(tempStr);
+    std::cout << args[i] << std::endl;
+  }
+
+    std::vector<std::string> tempVec;
+    
+    //parser, counters to keep track of if inside an if statement
+    int ifCounter = 0;
+    
+    std::cout << "args --" << std::endl;
+    for (unsigned int i = 0; i < args.size(); i++) {
+        std::cout << args[i] << std::endl;
+    }
+    
+    std::cout << std::endl << "parsing --" << std::endl;
+    //for each word in the vector
+    for (unsigned int i = 0; i < args.size(); i++) {
+        
+        if (args[i] == "if") {
+            //increase ifCounter
+            ifCounter++;
+            if(ifCounter > 1) {
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "then") {
+            //done counting variables
+            if(ifCounter <= 1) {
+                //in sub if, ignore keywords
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //add to vector arguments
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "elseif") {
+            //new statement
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                ifCounter++;
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "else") {
+            //last statement always happens
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+                
+                //add empty vector to check for when evaluating
+                conditionals.push_back(tempVec);
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            
+        } else if (args[i] == "endif") {
+            //end of the statement
+            if(ifCounter <= 1) {
+                conditionals.push_back(tempVec);
+                tempVec.clear();
+            } else {
+                //end of sub if
+                tempVec.push_back(args[i]);
+            }
+            ifCounter--;
+        } else if (args[i] == "[") {
+            //begining of elseif
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
+        } else if (args[i] == "]") {
+            if(ifCounter <= 1) {
+                ifCounter--;   
+            } else {
+                tempVec.push_back(args[i]);
+            }
+        } else {
+            //not a keyword, so a command
+            tempVec.push_back(args[i]);
+        }
+    }
+    
+    std::cout << std::endl << "conditionals --" << std::endl;
+    for (unsigned long int j = 0; j < conditionals.size(); j++) {
+        std::cout << j << ": ";
+        for (unsigned int i = 0; i < conditionals[j].size(); i++) {
+            std::cout << conditionals[j][i] << ",";
+        }
+        std::cout << std::endl;
+    }
+
+  //loop through each conditional with dictionary
+  //return exit status
+
+  return 0;
 }
