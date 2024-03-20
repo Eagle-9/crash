@@ -63,7 +63,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"then", {Keyword, nullptr}},
         {"until", {Keyword, nullptr}},
         {"while", {Keyword, nullptr}},
-        {"alias", {Internal, nullptr}},
+        {"alias", {Internal, builtin_alias}},
         {"bg", {Internal, nullptr}},
         {"cd", {Internal, builtin_cd}},
         {"eval", {Internal, nullptr}},
@@ -72,19 +72,21 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"export", {Internal, nullptr}},
         {"fc", {Internal, nullptr}},
         {"fg", {Internal, nullptr}},
-        {"help", {Internal, nullptr}},
+        {"help", {Internal, builtin_help}},
         {"history", {Internal, builtin_history}},
         {"jobs", {Internal, nullptr}},
         {"let", {Internal, nullptr}},
         {"local", {Internal, nullptr}},
         {"logout", {Internal, nullptr}},
         {"read", {Internal, nullptr}},
-        {"set", {Internal, nullptr}},
+        {"set", {Internal, builtin_set}},
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, nullptr}}};
+        {"unalias", {Internal, builtin_unalias}}};
 
+std::unordered_map<std::string, std::string> aliases = {};
+std::unordered_map<std::string, std::string> set = {};
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -411,6 +413,10 @@ void process(std::vector<Token> tokens)
         // append class to line
         res = res + " " + lineClassName;
     }
+    else if (aliases.count(args[0]))
+    {
+        parse(aliases.at(args[0]));
+    }
     else
     {
         run_external_fn(&res, argv);
@@ -421,6 +427,40 @@ void process(std::vector<Token> tokens)
 
 void format_input(std::string line)
 {
+    // since the $ signifies variables, we will first find and replace them with their values
+    size_t pos = 0;
+    bool keepGoing = true;
+    while (keepGoing)
+    {
+        // check to see if a $ exists
+        size_t find = line.find('$', pos);
+        if (find != std::string::npos)
+        {
+            // find the end of the current word
+            size_t end = line.find(' ', find);
+
+            // find the name of the var that we are substituing for
+            std::string var = line.substr(find + 1, end - 1);
+
+            // if no var exists, replace it with ""
+            std::string replace = "";
+            if (set.count(var))
+            {
+                replace = set[var];
+            }
+            line.replace(find, var.length() + 1, set[var]);
+
+            // move pos forward
+            pos = find;
+
+        }
+        else
+        {
+            // once all $ are substituted, stop the loop
+            keepGoing = false;
+        }
+    }
+
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
