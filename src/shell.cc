@@ -261,7 +261,7 @@ std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
     return argv;
 }
 
-void run_command(std::vector<Token> tokens, std::string filename, bool append, bool err)
+void run_command(std::vector<Token> tokens, int outfd, int errfd)
 {
     // needed to pass to fns
     std::vector<char *> argv = argv_from_tokens(tokens);
@@ -286,14 +286,10 @@ void run_command(std::vector<Token> tokens, std::string filename, bool append, b
         if (full_path.empty())
         {
             std::cout << "Command not found: " << tokens[0].data << "\n";
+            print_prompt();
+            return;
         }
         argv.erase(argv.begin());
-
-        FILE* fd = nullptr;
-        if (filename != "")
-        {
-            fd = fopen(filename.c_str(), append ? "a" : "w");
-        }
 
         // create a child process
         pid_t child = fork();
@@ -301,14 +297,15 @@ void run_command(std::vector<Token> tokens, std::string filename, bool append, b
         //  check if we're the child or the parent
         if (child == 0)
         {
-            if (fd != nullptr)
+            if (outfd != -1 && dup2(outfd, STDOUT_FILENO) < 0)
             {
-                int fd_to_override = err ? STDERR_FILENO : STDOUT_FILENO;
-                if (dup2(fileno(fd), fd_to_override) < 0)
-                {
-                    std::perror("dup2 (stdout)");
-                    std::exit(1);
-                }
+                std::perror("dup2 (stdout)");
+                std::exit(1);
+            }
+            if (errfd != -1 && dup2(errfd, STDERR_FILENO) < 0)
+            {
+                std::perror("dup2 (stderr)");
+                std::exit(1);
             }
 
             // we're the child
@@ -339,8 +336,6 @@ void run_command(std::vector<Token> tokens, std::string filename, bool append, b
             // wait for the child to finish running (or was cancelled by user)
             int status;
             waitpid(child, &status, 0);
-
-            if (fd != nullptr) fclose(fd);
 
             // allow kill after children exit
             memset(&action, 0, sizeof(action));
@@ -431,25 +426,26 @@ void process(std::vector<Token> tokens)
 
     if (redirect_type == NotMeta)
     {
-        run_command(tokens, {}, false, false);
+        run_command(tokens, -1, -1);
         print_prompt();
         return;
     }
 
-    bool do_append;
+    char open_mode;
     switch(redirect_type)
     {
     case Store:
     case StoreErr:
-        do_append = false;
+        open_mode = 'w';
         break;
     case Append:
     case AppendErr:
-        do_append = true;
+        open_mode = 'a';
         break;
     }
 
     std::string filename = rhs[0].data.c_str();
+    FILE* fd = nullptr;
     switch(redirect_type)
     {
     case NotMeta:
@@ -457,11 +453,15 @@ void process(std::vector<Token> tokens)
         break;
     case Store:
     case Append:
-        run_command(lhs, filename, do_append, false);
+        fd = fopen(filename.c_str(), &open_mode);
+        run_command(lhs, fileno(fd), -1);
+        fclose(fd);
         break;
     case AppendErr:
     case StoreErr:
-        run_command(lhs, filename, do_append, true);
+        fd = fopen(filename.c_str(), &open_mode);
+        run_command(lhs, -1, fileno(fd));
+        fclose(fd);
         break;
     case Pipe:
         std::cout << "[TODO]: pipe\n";
