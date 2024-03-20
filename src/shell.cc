@@ -330,6 +330,7 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
             newToken.type = dict.at(entry).keyword;
             if (newToken.type == Internal)
             { // The entry is is an internal function
+                newToken.data = entry; // This is really not needed, but it's nice for debugging, to see the command name
                 newToken.function_pointer = dict.at(entry).function_pointer;
             }
             else
@@ -362,13 +363,21 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
     }
     return tokens;
 }
-// TODO: Fix literally all of this lol
-void process()
+// TODO: Make this actually work. This right now is purely a stop gap that converts tokens back to a string so CRASH can still run.
+void process(std::vector<Token> tokens)
 {
+    
+
     std::string res;
     std::vector<std::string> args;
     std::vector<std::vector<char>> holder;
     std::vector<char *> argv;
+
+    // TODO: Remove this!
+    // Temp workaround solution to let CRASH run with new parsing
+    for(size_t i = 0; i < tokens.size(); i++){
+        args.emplace_back(tokens[i].data);
+    }
 
     // get parsed line
     res = current_line;
@@ -514,7 +523,6 @@ void format_input(std::string line)
     {
         std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
     }
-
-    // process();
+    process(tokens); //TODO: This is also part of the temp workaround that needs removed!
     return;
 }
