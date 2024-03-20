@@ -68,8 +68,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, nullptr}},
-        {"unalias", {Internal, builtin_unalias}}
-    };
+        {"unalias", {Internal, builtin_unalias}}};
 
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
@@ -82,6 +81,31 @@ void print_prompt()
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
+}
+std::string wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
+{
+    glob_t globResult;
+    int returnValue = glob(wildCard.c_str(), GLOB_TILDE, nullptr, &globResult);
+    if (returnValue == 0)
+    {
+        return globResult.gl_pathv[0]; // Return first result
+    }
+    if (returnValue == GLOB_NOMATCH)
+    {
+        std::cout << "Err: no match found for wildcard" << std::endl;
+        return wildCard;
+    }
+    else
+    {
+        std::cout << "Err: Failed glob wildcard search: " << returnValue << std::endl;
+        return wildCard;
+    }
+    // Loop to get all matches if needed later, can be removed
+    /*for (size_t i = 0; i < globResult.gl_pathc; i++) {
+        std::cout << globResult.gl_pathv[i] << std::endl;
+    }*/
+
+    globfree(&globResult);
 }
 
 std::string kwtype_as_string(TokenType type)
@@ -305,6 +329,29 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
     for (std::string entry : splitLineToParse)
     {
         Token newToken;
+
+        // Check to see if token has a wildcard that needs to be converted
+        size_t foundQuestionMark = entry.find('?');
+        size_t foundAsterisk = entry.find('*');
+        size_t foundLeftBracket = entry.find('[');
+        size_t foundRightBracket = entry.find(']');
+        // Convert entry to wildcard if needed
+        if (foundQuestionMark != std::string::npos)
+        { // We found a question mark
+            entry = wildCardMatch(entry);
+        }
+        if (foundAsterisk != std::string::npos)
+        { // We found an Asterisk
+            entry = wildCardMatch(entry);
+        }
+        if (foundLeftBracket != std::string::npos && foundRightBracket != std::string::npos)
+        { // We found a bracket pair
+            if (foundLeftBracket < foundRightBracket)
+            { // Make sure the right bracket is actually right of the left one
+                entry = wildCardMatch(entry);
+            }
+        }
+
         // Check to see if token is a meta character
         MetaCharType checkType = check_meta(entry);
         if (checkType != NotMeta)
@@ -317,7 +364,7 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
         { // The entry is in the dict
             newToken.type = dict.at(entry).keyword;
             if (newToken.type == Internal)
-            { // The entry is is an internal function
+            {                          // The entry is is an internal function
                 newToken.data = entry; // This is really not needed, but it's nice for debugging, to see the command name
                 newToken.function_pointer = dict.at(entry).function_pointer;
             }
@@ -354,7 +401,6 @@ std::vector<Token> lex(std::vector<std::string> splitLineToParse)
 // TODO: Make this actually work. This right now is purely a stop gap that converts tokens back to a string so CRASH can still run.
 void process(std::vector<Token> tokens)
 {
-    
 
     std::string res;
     std::vector<std::string> args;
@@ -363,7 +409,8 @@ void process(std::vector<Token> tokens)
 
     // TODO: Remove this!
     // Temp workaround solution to let CRASH run with new parsing
-    for(size_t i = 0; i < tokens.size(); i++){
+    for (size_t i = 0; i < tokens.size(); i++)
+    {
         args.emplace_back(tokens[i].data);
     }
 
@@ -411,7 +458,7 @@ void process(std::vector<Token> tokens)
     print_prompt();
 }
 
-void format_input(std::string line) //this used to be parse
+void format_input(std::string line) // this used to be parse
 {
     // since the $ signifies variables, we will first find and replace them with their values
     size_t pos = 0;
@@ -438,7 +485,6 @@ void format_input(std::string line) //this used to be parse
 
             // move pos forward
             pos = find;
-
         }
         else
         {
@@ -549,6 +595,6 @@ void format_input(std::string line) //this used to be parse
     {
         std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
     }
-    process(tokens); //TODO: This is also part of the temp workaround that needs removed!
+    process(tokens); // TODO: This is also part of the temp workaround that needs removed!
     return;
 }
