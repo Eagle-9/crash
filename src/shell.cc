@@ -400,6 +400,9 @@ int keyword_if(int argc, char** argv) {
 
   std::vector<std::string> args;
 
+  //this stores the pairs of if, then statements
+  std::vector<std::vector<std::string>> conditionals;
+
   //print out all of the arguments to test
   for (int i = 0; i < argc; i++) {
     //convert char** to string to make it easier to work with
@@ -407,6 +410,67 @@ int keyword_if(int argc, char** argv) {
     args.push_back(tempStr);
     std::cout << args[i] << std::endl;
   }
+
+    std::vector<std::string> tempVec;
+    
+    //parser, counters to keep track of if inside an if statement
+    int ifCounter = 0;
+    int thenCounter = 0;
+    int endCounter = 0;
+    
+    std::cout << "args --" << std::endl;
+    for (unsigned int i = 0; i < args.size(); i++) {
+        std::cout << args[i] << std::endl;
+    }
+    
+    std::cout << std::endl << "parsing --" << std::endl;
+    //for each word in the vector
+    for (unsigned int i = 0; i < args.size(); i++) {
+        
+        //if an if statement, then add to counter
+        if (args[i] == "if") {
+            //increase ifCounter
+            ifCounter++;
+            std::cout << "if --" << std::endl;
+        } else if (args[i] == "then") {
+            //done counting variables
+            conditionals.push_back(tempVec);
+            tempVec.clear();
+            thenCounter++;
+        } else if (args[i] == "elseif") {
+            //new statement
+            conditionals.push_back(tempVec);
+            tempVec.clear();
+            ifCounter++;
+        } else if (args[i] == "else") {
+            //last statement always happens
+            conditionals.push_back(tempVec);
+            tempVec.clear();
+        } else if (args[i] == "endif") {
+            //end of the statement
+            conditionals.push_back(tempVec);
+            tempVec.clear();
+            endCounter++;
+            std::cout << "end --" << std::endl;
+        } else if (args[i] == "]" || args[i] == "[") {
+            //ignore these
+        } else {
+            //not a keyword, so a command
+            tempVec.push_back(args[i]);
+        }
+    }
+    
+    std::cout << std::endl << "conditionals --" << std::endl;
+    for (unsigned long int j = 0; j < conditionals.size(); j++) {
+        std::cout << j << ": ";
+        for (unsigned int i = 0; i < conditionals[j].size(); i++) {
+            std::cout << conditionals[j][i] << ",";
+        }
+        std::cout << std::endl;
+    }
+
+  //loop through each conditional with dictionary
+  //return exit status
 
   return 0;
 }
