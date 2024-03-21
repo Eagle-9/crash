@@ -14,28 +14,10 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-enum MetaCharType
-{
-    NotMeta,
-    Pipe,      // This is '|'
-    Store,     // This is '>'
-    Redirect,  // This is '<'
-    StoreErr,  // This is '2>'
-    Append,    // This is '>>'
-    AppendErr, // This is '2>>'
-};
-
-struct Token
-{
-    TokenType type;                                 // Type of token
-    MetaCharType meta;                              // Meta character type
-    std::string data;                               // String data
-    int (*function_pointer)(int argc, char **argv); // Pointer to the function
-};
-
 //if syntax variables
 std::vector<std::vector<Token>> conditionals;
 std::vector<Token> tempCondition;
+bool returnedTrue = false;
 int ifCounter = 0;
 
 std::unordered_map<std::string, KeywordEntry> dict =
@@ -336,23 +318,18 @@ std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
     return argv;
 }
 
-void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
+int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 {
     // needed to pass to fns
     std::vector<char *> argv = argv_from_tokens(tokens);
+    int result = 1;
 
     // check token type
     if (tokens[0].type == Internal)
     {
         if (tokens[0].function_pointer)
         {
-            int error = tokens[0].function_pointer(argv.size(), argv.data());
-
-            if (crash_exit_on_err && error != 0)
-            {
-                std::cerr << PRINT_SHELL << PRINT_ERROR << ": command failed." << std::endl;
-                exit(error);
-            }
+            result = tokens[0].function_pointer(argv.size(), argv.data());
         }
         else
         {
@@ -370,8 +347,9 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
         if (full_path.empty())
         {
-            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command not found: " << tokens[0].data << "\n";
-            return;
+            std::cout << "Command not found: " << tokens[0].data << "\n";
+            print_prompt();
+            return 1;
         }
         // argv.erase(argv.begin()); This is bad!
 
@@ -406,8 +384,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             // switch execution to new binary
 
-            argv.emplace_back(nullptr); // You might want this in a different spot? Maybe in argv_from_tokens? Idk?
-            execv(full_path.c_str(), argv.data());
+            result = execv(full_path.c_str(), argv.data());
 
             std::cerr << PRINT_SHELL << PRINT_ERROR << ": Child process failure!\n";
             exit(130);
@@ -437,6 +414,8 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     {
         std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command was not of type \"Internal\" or \"External\"!\n";
     }
+
+    return result;
 }
 
 std::vector<Token> lex(std::vector<std::string> inputLine)
@@ -529,18 +508,13 @@ std::vector<Token> lex(std::vector<std::string> inputLine)
     return tokens;
 }
 
-void process(std::vector<Token> tokens)
+int process(std::vector<Token> tokens)
 {
     MetaCharType redirect_type = NotMeta;
     std::vector<Token> lhs;
     std::vector<Token> rhs;
+    int result = 0;
 
-/*
-    //if syntax variables
-    std::vector<std::vector<Token>> conditionals;
-    std::vector<Token> tempCondition;
-    int ifCounter = 0;
-*/
     for (size_t i = 0; i < tokens.size(); i++)
     {
         if (tokens[i].type == MetaChar)
@@ -571,9 +545,9 @@ void process(std::vector<Token> tokens)
 
         } else if (tokens[0].data == "endif") {
             //run all of this stuff
-            //keyword_if();
+            result = keyword_if(conditionals);
 
-            std::cout << "started  :: " << conditionals.size();
+            std::cout << "started  :: size(" << conditionals.size() << std::endl;
             for (unsigned int i = 0; i < conditionals.size(); i++) {
                 for (unsigned int j = 0; j < conditionals[i].size(); j++) {
                     std::cout << conditionals[i][j].data << std::endl;
@@ -586,11 +560,11 @@ void process(std::vector<Token> tokens)
             //reset counter
             print_prompt();
         } else {
-            run_command(tokens, -1, -1, -1);
+            result = run_command(tokens, -1, -1, -1);
             print_prompt();
         }
 
-        return;
+        return result;
     }
 
     char open_mode;
@@ -808,154 +782,26 @@ void format_input(std::string line) // this used to be parse
     return;
 }
 
-int keyword_if(int argc, char** argv) {
+int keyword_if(std::vector<std::vector<Token>> conds) {
   //conditional if statements
-
-
-    std::vector<std::string> args;
-
-    // this stores the pairs of if, then statements
-    std::vector<std::vector<std::string>> conditionals;
-
-  //print out all of the arguments to test
-  for (int i = 0; i < argc; i++) {
-    //convert char** to string to make it easier to work with
-    std::string tempStr = argv[i];
-    args.push_back(tempStr);
-    std::cout << args[i] << std::endl;
-  }
-/*
-    std::vector<std::string> tempVec;
-
-    // parser, counters to keep track of if inside an if statement
-    int ifCounter = 0;
-
-    std::cout << "args --" << std::endl;
-    for (unsigned int i = 0; i < args.size(); i++)
-    {
-        std::cout << args[i] << std::endl;
-    }
-    
-    //parsing
-    //for each word in the vector
-    for (unsigned int i = 0; i < args.size(); i++) {
-        
-        if (args[i] == "if") {
-            //increase ifCounter
-            ifCounter++;
-            if (ifCounter > 1)
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "then")
-        {
-            // done counting variables
-            if (ifCounter <= 1)
-            {
-                // in sub if, ignore keywords
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-            }
-            else
-            {
-                // add to vector arguments
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "elseif")
-        {
-            // new statement
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-                ifCounter++;
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "else")
-        {
-            // last statement always happens
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-
-                // add empty vector to check for when evaluating
-                conditionals.push_back(tempVec);
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "endif")
-        {
-            // end of the statement
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-            ifCounter--;
-        }
-        else if (args[i] == "[")
-        {
-            // begining of elseif
-            if (ifCounter <= 1)
-            {
-                ifCounter--;
-            }
-            else
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "]")
-        {
-            if (ifCounter <= 1)
-            {
-                ifCounter--;
-            }
-            else
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else
-        {
-            // not a keyword, so a command
-            tempVec.push_back(args[i]);
-        }
-    }
-
-    std::cout << std::endl
-              << "conditionals --" << std::endl;
-    for (unsigned long int j = 0; j < conditionals.size(); j++)
-    {
-        std::cout << j << ": ";
-        for (unsigned int i = 0; i < conditionals[j].size(); i++)
-        {
-            std::cout << conditionals[j][i] << ",";
-        }
-        std::cout << std::endl;
-    }
 
   //loop through each conditional with dictionary
   //return exit status
 
-  */
+  bool hasElse = false;
+  if (conds.size() % 2 != 0) {
+    hasElse = true;
+  }
+
+  for (unsigned int i = 0; i < conds.size(); i = i+2) {
+    
+    if(returnedTrue) {
+
+    } else {
+        //keep trying
+        process(conds[i]);
+    }
+  }
 
     return 0;
 }
