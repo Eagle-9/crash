@@ -162,27 +162,12 @@ std::vector<std::string> split_line(std::string inputString)
 {
     std::vector<std::string> splitLine;
     std::string newSplit;
+
     // Check every character
     for (size_t i = 0; i < inputString.length(); i++)
     {
-        // Check if quoted
-        bool quoteLeft = false;
-        bool quoteRight = false;
-        // Make sure position is not at end or start of line.
-        if (i > 0 && i < (inputString.length() - 1))
-        {
-            // Check to see if there is a quote left or right of current char.
-            if (inputString[i - 1] == '"')
-            {
-                quoteLeft = true;
-            }
-            if (inputString[i + 1] == '"')
-            {
-                quoteRight = true;
-            }
-        }
         // We have an unquoted space, so we must split
-        if ((!quoteLeft && !quoteRight) && inputString[i] == ' ')
+        if (!isLocationInStringQuoted(inputString, i) && inputString[i] == ' ')
         {
             if (!newSplit.empty())
             { // Check to make sure the line we are adding isn't empty
@@ -437,7 +422,7 @@ std::vector<Token> lex(std::vector<std::string> inputLine)
         }
     }
 
-    //Start tokenization
+    // Start tokenization
     std::vector<Token> tokens;
     for (std::string entry : splitWildCardLineToParse)
     {
@@ -699,7 +684,7 @@ void format_input(std::string line) // this used to be parse
     }
 
     // not a continuation, as we would've returned
-    
+
     std::vector<Token> tokens = lex(split_line(current_line));
 
     for (size_t i = 0; i < tokens.size(); i++)
@@ -707,10 +692,11 @@ void format_input(std::string line) // this used to be parse
         std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
     }
     // ONLY PROCESS IF TOKENS SIZE IS NOT ZERO. ELSE SEGFAULTS WILL OCCUR.
-    if(tokens.size() != 0){
+    if (tokens.size() != 0)
+    {
         process(tokens); // TODO: This is also part of the temp workaround that needs removed! is it?
     }
-    
+
     return;
 }
 
