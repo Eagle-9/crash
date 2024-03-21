@@ -322,7 +322,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
             print_prompt();
             return;
         }
-        argv.erase(argv.begin());
+        //argv.erase(argv.begin()); This is bad!
 
         // create a child process
         pid_t child = fork();
@@ -355,6 +355,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             // switch execution to new binary
 
+            argv.emplace_back(nullptr); //You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             execv(full_path.c_str(), argv.data());
 
             std::cerr << "[!!] What are we doing here?!\n";
