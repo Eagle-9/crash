@@ -59,6 +59,26 @@ extern std::unordered_map<std::string, std::string> aliases;
 extern std::unordered_map<std::string, std::string> set;
 
 
+//structs
+
+enum MetaCharType
+{
+    NotMeta,
+    Pipe,      // This is '|'
+    Store,     // This is '>'
+    StoreErr,  // This is '2>'
+    Append,    // This is '>>'
+    AppendErr, // This is '2>>'
+};
+
+struct Token
+{
+    TokenType type;                                 // Type of token
+    MetaCharType meta;                              // Meta character type
+    std::string data;                               // String data
+    int (*function_pointer)(int argc, char **argv); // Pointer to the function
+};
+
 // builtin defs
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
@@ -69,5 +89,5 @@ int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
 
 //keywords
-int keyword_if(int argc, char** argv);
+int keyword_if(std::vector<std::vector<Token>> conds);
 bool isIfKeyword(std::string s);
