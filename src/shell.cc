@@ -519,6 +519,9 @@ void process(std::vector<Token> tokens)
     case AppendErr:
         open_mode = 'a';
         break;
+    case Redirect:
+        open_mode = 'r';
+        break;
     }
 
     std::string filename = rhs[0].data.c_str();
@@ -551,6 +554,11 @@ void process(std::vector<Token> tokens)
         close(pipefd[1]);
         run_command(rhs, -1, -1, pipefd[0]);
         close(pipefd[0]);
+        break;
+    case Redirect:
+        fd = fopen(filename.c_str(), &open_mode);
+        run_command(lhs, -1, -1, fileno(fd));
+        fclose(fd);
         break;
     }
 
