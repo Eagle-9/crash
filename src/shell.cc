@@ -23,15 +23,6 @@ enum MetaCharType
     AppendErr, // This is '2>>'
 };
 
-enum TokenType
-{
-    Keyword,
-    Argument,
-    Internal, // Internal command
-    External, // External command
-    MetaChar
-};
-
 struct Token
 {
     TokenType type;                                 // Type of token
@@ -51,7 +42,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"endif", {Keyword, nullptr}},
         {"for", {Keyword, nullptr}},
         {"function", {Keyword, nullptr}},
-        {"if", {Keyword, keyword_if}},
+        {"if", {Keyword, nullptr}},
         {"in", {Keyword, nullptr}},
         {"return", {Keyword, nullptr}},
         {"then", {Keyword, nullptr}},
@@ -507,9 +498,15 @@ void process(std::vector<Token> tokens)
 
     if (redirect_type == NotMeta)
     {
-        run_command(tokens, -1, -1, -1);
-        print_prompt();
-        return;
+        if(tokens[0].data == "if") {
+            //do if stuff, also check for other if related keywords
+        } else if (tokens[0].data == "endif") {
+            //run all of this stuff
+        } else {
+            run_command(tokens, -1, -1, -1);
+            print_prompt();
+            return;
+        }
     }
 
       char open_mode;
@@ -704,6 +701,7 @@ void format_input(std::string line) // this used to be parse
 int keyword_if(int argc, char** argv) {
   //conditional if statements
 
+
   std::vector<std::string> args;
 
   //this stores the pairs of if, then statements
@@ -716,7 +714,7 @@ int keyword_if(int argc, char** argv) {
     args.push_back(tempStr);
     std::cout << args[i] << std::endl;
   }
-
+/*
     std::vector<std::string> tempVec;
     
     //parser, counters to keep track of if inside an if statement
@@ -810,6 +808,8 @@ int keyword_if(int argc, char** argv) {
 
   //loop through each conditional with dictionary
   //return exit status
+
+  */
 
   return 0;
 }
