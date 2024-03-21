@@ -33,6 +33,11 @@ struct Token
     int (*function_pointer)(int argc, char **argv); // Pointer to the function
 };
 
+//if syntax variables
+std::vector<std::vector<Token>> conditionals;
+std::vector<Token> tempCondition;
+int ifCounter = 0;
+
 std::unordered_map<std::string, KeywordEntry> dict =
     {
         {"break", {Keyword, nullptr}},
@@ -530,6 +535,12 @@ void process(std::vector<Token> tokens)
     std::vector<Token> lhs;
     std::vector<Token> rhs;
 
+/*
+    //if syntax variables
+    std::vector<std::vector<Token>> conditionals;
+    std::vector<Token> tempCondition;
+    int ifCounter = 0;
+*/
     for (size_t i = 0; i < tokens.size(); i++)
     {
         if (tokens[i].type == MetaChar)
@@ -547,15 +558,39 @@ void process(std::vector<Token> tokens)
 
     if (redirect_type == NotMeta)
     {
-        if(tokens[0].data == "if") {
+        if(isIfKeyword(tokens[0].data)) {
+            std::cout << isIfKeyword(tokens[0].data) << "TRUE OR FALSE";
             //do if stuff, also check for other if related keywords
+            //sub if
+            tokens.erase(tokens.begin());
+            //push back to conditionals
+            conditionals.push_back(tokens);
+            //increase if counter
+            ifCounter++;
+            //for user
+
         } else if (tokens[0].data == "endif") {
             //run all of this stuff
+            //keyword_if();
+
+            std::cout << "started  :: " << conditionals.size();
+            for (unsigned int i = 0; i < conditionals.size(); i++) {
+                for (unsigned int j = 0; j < conditionals[i].size(); j++) {
+                    std::cout << conditionals[i][j].data << std::endl;
+                }
+            }
+
+
+            //clear conditional
+            conditionals.clear();
+            //reset counter
+            print_prompt();
         } else {
             run_command(tokens, -1, -1, -1);
             print_prompt();
-            return;
         }
+
+        return;
     }
 
     char open_mode;
@@ -923,4 +958,22 @@ int keyword_if(int argc, char** argv) {
   */
 
     return 0;
+}
+
+bool isIfKeyword(std::string s) {
+    //checks if it is a keyword
+    std::unordered_map<std::string, bool> ifsyn = {
+        {"if", true},
+        {"then", true},
+        {"elseif", true},
+        {"else", true}
+    };
+
+    if (ifsyn.find(s) == ifsyn.end()) {
+        // not found
+        return false;
+    } else {
+        // found
+        return true;
+    }
 }
