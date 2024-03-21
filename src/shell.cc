@@ -791,6 +791,7 @@ int keyword_if(std::vector<std::vector<Token>> conds) {
     
         if(returnedTrue) {
             //do nothing, already did something
+            //should have something for just an else (when hasElse is true)
         } else {
             //keep trying
             result = process(conds[i]);
