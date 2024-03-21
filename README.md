@@ -27,18 +27,14 @@ Make Targets:
 
 The program can be used in two major ways:
 
-### Meta characters
-| Character  | Usage |
-| ------ |:-------------:|
-| \      | Continuation         |
-| #      | Comment              |
 
 ### Interactive mode
+Type external or internal commands directly into CRASH.
 
 ```bash
 
-# some example
-this is the example command (todo: fill this)
+# Internal Command
+CRASH $ history 
 
 
 # some example
@@ -63,9 +59,21 @@ To run a script in batch mode, there are 3 possible options.
 #### Script by Name
 - Create a script and run `./bin/main [script location]`
 
+### Meta characters
+| Character  | Usage |
+| ------ |:-------------:|
+| \      | Continuation         |
+| #      | Comment              |
+| ;      | Split line           |
+| >      | Store                |
+| >>     | Append               |
+| <      | Redirect             |
+| 2>     | Store Error          |
+| 2>>    | Append Error         |
+
 ### Wild Card Matching
 
-Wild cards can be used to find a matching file in the current working directory.
+Wild cards can be used to find matching files in the current working directory.
 
 - Question marks (`?`) can be used to match any single character in a file name.
     - Example: `tes?.txt` can be matched to `test.txt`
