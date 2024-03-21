@@ -70,3 +70,4 @@ int builtin_set(int argc, char **argv);
 
 //keywords
 int keyword_if(int argc, char** argv);
+bool isIfKeyword(std::string s);
