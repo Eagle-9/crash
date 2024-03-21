@@ -533,7 +533,6 @@ int process(std::vector<Token> tokens)
     if (redirect_type == NotMeta)
     {
         if(isIfKeyword(tokens[0].data)) {
-            std::cout << isIfKeyword(tokens[0].data) << "TRUE OR FALSE";
             //do if stuff, also check for other if related keywords
             //sub if
             tokens.erase(tokens.begin());
@@ -547,17 +546,10 @@ int process(std::vector<Token> tokens)
             //run all of this stuff
             result = keyword_if(conditionals);
 
-            std::cout << "started  :: size(" << conditionals.size() << std::endl;
-            for (unsigned int i = 0; i < conditionals.size(); i++) {
-                for (unsigned int j = 0; j < conditionals[i].size(); j++) {
-                    std::cout << conditionals[i][j].data << std::endl;
-                }
-            }
-
-
             //clear conditional
             conditionals.clear();
             //reset counter
+            returnedTrue = false;
             print_prompt();
         } else {
             result = run_command(tokens, -1, -1, -1);
@@ -788,22 +780,27 @@ int keyword_if(std::vector<std::vector<Token>> conds) {
   //loop through each conditional with dictionary
   //return exit status
 
-  bool hasElse = false;
-  if (conds.size() % 2 != 0) {
-    hasElse = true;
-  }
+    bool hasElse = false;
+    int result = 1;
 
-  for (unsigned int i = 0; i < conds.size(); i = i+2) {
-    
-    if(returnedTrue) {
-
-    } else {
-        //keep trying
-        process(conds[i]);
+    if (conds.size() % 2 != 0) {
+        hasElse = true;
     }
-  }
 
-    return 0;
+    for (unsigned int i = 0; i < conds.size(); i = i+2) {
+    
+        if(returnedTrue) {
+            //do nothing, already did something
+        } else {
+            //keep trying
+            result = process(conds[i]);
+            if (result == 0) {
+                result = process(conds[i+1]);
+            }
+        }
+    }
+
+  return result;
 }
 
 bool isIfKeyword(std::string s) {
