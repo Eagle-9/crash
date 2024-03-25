@@ -213,8 +213,7 @@ int builtin_history(int argc, char **argv)
     }
     else
     {
-        history_print_history(argc, argv);
-        return 0;
+        return history_print_history(argc, argv);
     }
 
     return 0;

@@ -162,7 +162,7 @@ int builtin_set(int argc, char **argv)
         }
 
         // pass it to our parse function
-        set_parse(line);
+        return set_parse(line);
     }
     return 0;
 }

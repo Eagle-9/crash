@@ -58,7 +58,7 @@ int builtin_help(int argc, char **argv)
     }
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        help_help(argc, argv);
+        return help_help(argc, argv);
     }
     else
     {
@@ -71,6 +71,7 @@ int builtin_help(int argc, char **argv)
         else
         {
             std::cout << argv[1] << " is not a valid flag" << std::endl;
+            return 1;
         }
     }
 
