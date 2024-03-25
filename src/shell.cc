@@ -73,7 +73,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
 
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
-bool crash_debug = true;
+bool crash_debug = false;
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
