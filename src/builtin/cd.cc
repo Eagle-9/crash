@@ -37,6 +37,9 @@ void cd_create_history_file()
         std::cout << "ERROR: Failed to create history file" << std::endl;
     }
     writeFile.close();
+
+    if(crash_debug)
+        std::cout << "[DEBUG]: Created cd history file" << std::endl;
 }
 
 int cd_history_length()

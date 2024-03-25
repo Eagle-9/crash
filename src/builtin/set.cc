@@ -2,7 +2,26 @@
 
 int set_help(int argc, char **argv)
 {
-    std::cout << "TODO: set help msg" << std::endl;
+    // simple help message
+    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] NAME=value";
+
+    // full help message
+    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] NAME=value\n\nGeneral Use\n\nDisplay all CRASH variables\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-d : delete all CRASH variables\n-v : disable verbose (debug) mode\n+v : enable verbose (debug) mode\n";
+
+    // differentiate between simple and complex help message
+    if (strcmp(argv[1], "-h") == 0)
+    {
+        std::cout << simpleHelp << std::endl; // simple help message
+    }
+    else if (strcmp(argv[1], "-H") == 0)
+    {
+        std::cout << fullHelp << std::endl; // full help message
+    }
+    else
+    {
+        std::cout << "not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
+        return 1;
+    }
     return 0;
 }
 
@@ -101,6 +120,18 @@ int builtin_set(int argc, char **argv)
         // delete all variables
         set.clear();
         std::cout << "All vars removed" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "-v") == 0)
+    {
+        // delete all variables
+        crash_debug = false;
+        std::cout << "DEBUG mode disabled" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "+v") == 0)
+    {
+        // delete all variables
+        crash_debug = true;
+        std::cout << "DEBUG mode enabled" << std::endl;
     }
     else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {

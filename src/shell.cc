@@ -73,6 +73,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
 
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
+bool crash_debug = true;
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -81,6 +82,10 @@ void print_prompt()
 {
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
+
+    if(crash_debug)
+        std::cout << "DEBUG_";
+
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
 }
 std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard to file in current directory

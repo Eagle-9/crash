@@ -230,6 +230,9 @@ void history_create_history_file()
         std::cout << "ERROR: Failed to create history file" << std::endl;
     }
     writeFile.close();
+
+    if(crash_debug)
+        std::cout << "[DEBUG]: Created CRASH history file" << std::endl;
 }
 
 void history_write_history_file(const std::string dir)
