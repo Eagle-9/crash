@@ -3,7 +3,7 @@
 int set_help(int argc, char **argv)
 {
     // simple help message
-    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] NAME=value";
+    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] [-t] [+t] NAME=value";
 
     // full help message
     std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] NAME=value\n\nGeneral Use\n\nDisplay all CRASH variables\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-d : delete all CRASH variables\n-v : disable verbose (debug) mode\n+v : enable verbose (debug) mode\n";
@@ -127,11 +127,23 @@ int builtin_set(int argc, char **argv)
         crash_debug = false;
         std::cout << "DEBUG mode disabled" << std::endl;
     }
-    else if (argc >= 2 && strcmp(argv[1], "+v") == 0)
+    else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
     {
         // delete all variables
-        crash_debug = true;
-        std::cout << "DEBUG mode enabled" << std::endl;
+        set.clear();
+        std::cout << "All vars removed" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "-t") == 0)
+    {
+        // delete all variables
+        crash_exit_on_err = false;
+        std::cout << "FRAGILE mode disabled" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "+t") == 0)
+    {
+        // delete all variables
+        crash_exit_on_err = true;
+        std::cout << "FRAGILE mode enabled" << std::endl;
     }
     else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {

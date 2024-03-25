@@ -96,7 +96,7 @@ int builtin_alias(int argc, char **argv)
     // help commands
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        alias_help(argc, argv);
+        return alias_help(argc, argv);
     }
 
     // make an alias
@@ -111,7 +111,7 @@ int builtin_alias(int argc, char **argv)
         }
 
         // pass it to our parse function
-        alias_parse(line);
+        return alias_parse(line);
     }
     return 0;
 }

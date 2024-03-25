@@ -74,6 +74,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
 bool crash_debug = false;
+bool crash_exit_on_err = false;
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -309,8 +310,14 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     {
         if (tokens[0].function_pointer)
         {
-            tokens[0].function_pointer(argv.size(), argv.data());
-        }
+            int error = tokens[0].function_pointer(argv.size(), argv.data());
+
+            if(crash_exit_on_err && error != 0)
+            {
+                std::cout << "ERROR: command failed." << std::endl;
+                exit(error);
+            }
+        }   
         else
         {
             std::cout << "[WARN]: Not yet implemented!\n";

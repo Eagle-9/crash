@@ -58,6 +58,7 @@ extern std::unordered_map<std::string, std::string> aliases;
 // set
 extern std::unordered_map<std::string, std::string> set;
 extern bool crash_debug;
+extern bool crash_exit_on_err;
 
 // builtin defs
 int builtin_cd(int argc, char **argv);
