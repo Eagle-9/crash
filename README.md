@@ -27,23 +27,17 @@ Make Targets:
 
 The program can be used in two major ways:
 
-### Meta characters
-| Character  | Usage |
-| ------ |:-------------:|
-| \      | Continuation         |
-| #      | Comment              |
 
 ### Interactive mode
+Type external or internal commands directly into CRASH.
 
 ```bash
+# Internal Command
+CRASH $ history -l 5
 
-# some example
-this is the example command (todo: fill this)
 
-
-# some example
-this is the example command
-
+# External Command
+CRASH $ lsblk
 ```
 
 ### Batch Mode
@@ -63,9 +57,36 @@ To run a script in batch mode, there are 3 possible options.
 #### Script by Name
 - Create a script and run `./bin/main [script location]`
 
-### Wild Card Matching
+## Character Usage
 
-Wild cards can be used to find a matching file in the current working directory.
+### Meta Characters
+| Character  | Usage |
+| ------ |:-------------:|
+| \      | Continuation         |
+| #      | Comment              |
+| ;      | Split line           |
+| >      | Store                |
+| >>     | Append               |
+| <      | Redirect             |
+| 2>     | Store Error          |
+| 2>>    | Append Error         |
+
+### Meta Character Usage
+- `\`
+- `#`
+- `;` Use semicolons to seperate lines to run multiple commands at once.
+  - To run both the external `lsblk` and `lscpu` commands.
+  - `CRASH $ lsblk ; lscpu`
+- `>` Use a single greater than character to store the output from a command into a file.
+  - To store the output of `lscpu` to a file called `output.txt`
+  - `CRASH $ lscpu > output.txt`
+- `>>` Use two greater than character to append the output from a command to a file.
+  - To append the output of `lsblk` to a file called `output.txt` that already has existing content.
+  - `CRASH $ lsblk >> output.txt`
+
+### Wild Card Character Matching
+
+Wild cards can be used to find matching files in the current working directory.
 
 - Question marks (`?`) can be used to match any single character in a file name.
     - Example: `tes?.txt` can be matched to `test.txt`
@@ -75,3 +96,7 @@ Wild cards can be used to find a matching file in the current working directory.
 
 - Square brackets (`[...]`) can be used to match the characters inside the bracket.
     - Example: `test[0-9].txt` can be matched to `test5.txt`
+
+Wildcards can be also be combined with meta characters for advanced functionality. 
+- To store the names of all files in the current directory to `output.txt`
+- `CRASH $ echo * > output.txt`

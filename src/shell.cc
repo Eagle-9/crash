@@ -83,30 +83,30 @@ void print_prompt()
     getcwd(cwd, sizeof(cwd));
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
 }
-std::string wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
+std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
 {
     glob_t globResult;
+    std::vector<std::string> result;
     int returnValue = glob(wildCard.c_str(), GLOB_TILDE, nullptr, &globResult);
     if (returnValue == 0)
     {
-        return globResult.gl_pathv[0]; // Return first result
+        for (size_t i = 0; i < globResult.gl_pathc; i++)
+        {
+            result.emplace_back(globResult.gl_pathv[i]);
+        }
+        globfree(&globResult);
+        return result;
     }
     if (returnValue == GLOB_NOMATCH)
     {
         std::cout << "Err: no match found for wildcard" << std::endl;
-        return wildCard;
+        return result;
     }
     else
     {
         std::cout << "Err: Failed glob wildcard search: " << returnValue << std::endl;
-        return wildCard;
+        return result;
     }
-    // Loop to get all matches if needed later, can be removed
-    /*for (size_t i = 0; i < globResult.gl_pathc; i++) {
-        std::cout << globResult.gl_pathv[i] << std::endl;
-    }*/
-
-    globfree(&globResult);
 }
 
 std::string kwtype_as_string(TokenType type)
@@ -162,27 +162,12 @@ std::vector<std::string> split_line(std::string inputString)
 {
     std::vector<std::string> splitLine;
     std::string newSplit;
+
     // Check every character
     for (size_t i = 0; i < inputString.length(); i++)
     {
-        // Check if quoted
-        bool quoteLeft = false;
-        bool quoteRight = false;
-        // Make sure position is not at end or start of line.
-        if (i > 0 && i < (inputString.length() - 1))
-        {
-            // Check to see if there is a quote left or right of current char.
-            if (inputString[i - 1] == '"')
-            {
-                quoteLeft = true;
-            }
-            if (inputString[i + 1] == '"')
-            {
-                quoteRight = true;
-            }
-        }
         // We have an unquoted space, so we must split
-        if ((!quoteLeft && !quoteRight) && inputString[i] == ' ')
+        if (!isLocationInStringQuoted(inputString, i) && inputString[i] == ' ')
         {
             if (!newSplit.empty())
             { // Check to make sure the line we are adding isn't empty
@@ -337,7 +322,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
             print_prompt();
             return;
         }
-        argv.erase(argv.begin());
+        //argv.erase(argv.begin()); This is bad!
 
         // create a child process
         pid_t child = fork();
@@ -370,6 +355,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             // switch execution to new binary
 
+            argv.emplace_back(nullptr); //You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             execv(full_path.c_str(), argv.data());
 
             std::cerr << "[!!] What are we doing here?!\n";
@@ -402,34 +388,46 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     }
 }
 
-std::vector<Token> lex(std::vector<std::string> splitLineToParse)
+std::vector<Token> lex(std::vector<std::string> inputLine)
 {
-    std::vector<Token> tokens;
-    for (std::string entry : splitLineToParse)
+    // Check line for wildcards, append selections
+    std::vector<std::string> splitWildCardLineToParse;
+    for (std::string entry : inputLine)
     {
-        Token newToken;
-
         // Check to see if token has a wildcard that needs to be converted
         size_t foundQuestionMark = entry.find('?');
         size_t foundAsterisk = entry.find('*');
         size_t foundLeftBracket = entry.find('[');
         size_t foundRightBracket = entry.find(']');
         // Convert entry to wildcard if needed
-        if (foundQuestionMark != std::string::npos)
+        if (foundQuestionMark != std::string::npos || foundAsterisk != std::string::npos)
         { // We found a question mark
-            entry = wildCardMatch(entry);
+            for (std::string wildCardResult : wildCardMatch(entry))
+            {
+                splitWildCardLineToParse.emplace_back(wildCardResult);
+            }
         }
-        if (foundAsterisk != std::string::npos)
-        { // We found an Asterisk
-            entry = wildCardMatch(entry);
-        }
-        if (foundLeftBracket != std::string::npos && foundRightBracket != std::string::npos)
+        else if (foundLeftBracket != std::string::npos && foundRightBracket != std::string::npos)
         { // We found a bracket pair
             if (foundLeftBracket < foundRightBracket)
             { // Make sure the right bracket is actually right of the left one
-                entry = wildCardMatch(entry);
+                for (std::string wildCardResult : wildCardMatch(entry))
+                {
+                    splitWildCardLineToParse.emplace_back(wildCardResult);
+                }
             }
         }
+        else
+        { // No wildcards in string
+            splitWildCardLineToParse.emplace_back(entry);
+        }
+    }
+
+    // Start tokenization
+    std::vector<Token> tokens;
+    for (std::string entry : splitWildCardLineToParse)
+    {
+        Token newToken;
 
         // Check to see if token is a meta character
         MetaCharType checkType = check_meta(entry);
@@ -508,8 +506,8 @@ void process(std::vector<Token> tokens)
         return;
     }
 
-      char open_mode;
-    switch(redirect_type)
+    char open_mode;
+    switch (redirect_type)
     {
     case Store:
     case StoreErr:
@@ -522,8 +520,8 @@ void process(std::vector<Token> tokens)
     }
 
     std::string filename = rhs[0].data.c_str();
-    FILE* fd = nullptr;
-    switch(redirect_type)
+    FILE *fd = nullptr;
+    switch (redirect_type)
     {
     case NotMeta:
         std::perror("Something went terribly wrong!");
@@ -687,125 +685,172 @@ void format_input(std::string line) // this used to be parse
     }
 
     // not a continuation, as we would've returned
+
     std::vector<Token> tokens = lex(split_line(current_line));
 
     for (size_t i = 0; i < tokens.size(); i++)
     {
         std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
     }
-    process(tokens); // TODO: This is also part of the temp workaround that needs removed!
+    // ONLY PROCESS IF TOKENS SIZE IS NOT ZERO. ELSE SEGFAULTS WILL OCCUR.
+    if (tokens.size() != 0)
+    {
+        process(tokens); // TODO: This is also part of the temp workaround that needs removed! is it?
+    }
+
     return;
 }
 
-int keyword_if(int argc, char** argv) {
-  //conditional if statements
+int keyword_if(int argc, char **argv)
+{
+    // conditional if statements
 
-  std::vector<std::string> args;
+    std::vector<std::string> args;
 
-  //this stores the pairs of if, then statements
-  std::vector<std::vector<std::string>> conditionals;
+    // this stores the pairs of if, then statements
+    std::vector<std::vector<std::string>> conditionals;
 
-  //print out all of the arguments to test
-  for (int i = 0; i < argc; i++) {
-    //convert char** to string to make it easier to work with
-    std::string tempStr = argv[i];
-    args.push_back(tempStr);
-    std::cout << args[i] << std::endl;
-  }
-
-    std::vector<std::string> tempVec;
-    
-    //parser, counters to keep track of if inside an if statement
-    int ifCounter = 0;
-    
-    std::cout << "args --" << std::endl;
-    for (unsigned int i = 0; i < args.size(); i++) {
+    // print out all of the arguments to test
+    for (int i = 0; i < argc; i++)
+    {
+        // convert char** to string to make it easier to work with
+        std::string tempStr = argv[i];
+        args.push_back(tempStr);
         std::cout << args[i] << std::endl;
     }
-    
-    std::cout << std::endl << "parsing --" << std::endl;
-    //for each word in the vector
-    for (unsigned int i = 0; i < args.size(); i++) {
-        
-        if (args[i] == "if") {
-            //increase ifCounter
+
+    std::vector<std::string> tempVec;
+
+    // parser, counters to keep track of if inside an if statement
+    int ifCounter = 0;
+
+    std::cout << "args --" << std::endl;
+    for (unsigned int i = 0; i < args.size(); i++)
+    {
+        std::cout << args[i] << std::endl;
+    }
+
+    std::cout << std::endl
+              << "parsing --" << std::endl;
+    // for each word in the vector
+    for (unsigned int i = 0; i < args.size(); i++)
+    {
+
+        if (args[i] == "if")
+        {
+            // increase ifCounter
             ifCounter++;
-            if(ifCounter > 1) {
+            if (ifCounter > 1)
+            {
                 tempVec.push_back(args[i]);
             }
-        } else if (args[i] == "then") {
-            //done counting variables
-            if(ifCounter <= 1) {
-                //in sub if, ignore keywords
+        }
+        else if (args[i] == "then")
+        {
+            // done counting variables
+            if (ifCounter <= 1)
+            {
+                // in sub if, ignore keywords
                 conditionals.push_back(tempVec);
                 tempVec.clear();
-            } else {
-                //add to vector arguments
+            }
+            else
+            {
+                // add to vector arguments
                 tempVec.push_back(args[i]);
             }
-        } else if (args[i] == "elseif") {
-            //new statement
-            if(ifCounter <= 1) {
+        }
+        else if (args[i] == "elseif")
+        {
+            // new statement
+            if (ifCounter <= 1)
+            {
                 conditionals.push_back(tempVec);
                 tempVec.clear();
                 ifCounter++;
-            } else {
-                //end of sub if
+            }
+            else
+            {
+                // end of sub if
                 tempVec.push_back(args[i]);
             }
-        } else if (args[i] == "else") {
-            //last statement always happens
-            if(ifCounter <= 1) {
+        }
+        else if (args[i] == "else")
+        {
+            // last statement always happens
+            if (ifCounter <= 1)
+            {
                 conditionals.push_back(tempVec);
                 tempVec.clear();
-                
-                //add empty vector to check for when evaluating
+
+                // add empty vector to check for when evaluating
                 conditionals.push_back(tempVec);
-            } else {
-                //end of sub if
+            }
+            else
+            {
+                // end of sub if
                 tempVec.push_back(args[i]);
             }
-            
-        } else if (args[i] == "endif") {
-            //end of the statement
-            if(ifCounter <= 1) {
+        }
+        else if (args[i] == "endif")
+        {
+            // end of the statement
+            if (ifCounter <= 1)
+            {
                 conditionals.push_back(tempVec);
                 tempVec.clear();
-            } else {
-                //end of sub if
+            }
+            else
+            {
+                // end of sub if
                 tempVec.push_back(args[i]);
             }
             ifCounter--;
-        } else if (args[i] == "[") {
-            //begining of elseif
-            if(ifCounter <= 1) {
-                ifCounter--;   
-            } else {
+        }
+        else if (args[i] == "[")
+        {
+            // begining of elseif
+            if (ifCounter <= 1)
+            {
+                ifCounter--;
+            }
+            else
+            {
                 tempVec.push_back(args[i]);
             }
-        } else if (args[i] == "]") {
-            if(ifCounter <= 1) {
-                ifCounter--;   
-            } else {
+        }
+        else if (args[i] == "]")
+        {
+            if (ifCounter <= 1)
+            {
+                ifCounter--;
+            }
+            else
+            {
                 tempVec.push_back(args[i]);
             }
-        } else {
-            //not a keyword, so a command
+        }
+        else
+        {
+            // not a keyword, so a command
             tempVec.push_back(args[i]);
         }
     }
-    
-    std::cout << std::endl << "conditionals --" << std::endl;
-    for (unsigned long int j = 0; j < conditionals.size(); j++) {
+
+    std::cout << std::endl
+              << "conditionals --" << std::endl;
+    for (unsigned long int j = 0; j < conditionals.size(); j++)
+    {
         std::cout << j << ": ";
-        for (unsigned int i = 0; i < conditionals[j].size(); i++) {
+        for (unsigned int i = 0; i < conditionals[j].size(); i++)
+        {
             std::cout << conditionals[j][i] << ",";
         }
         std::cout << std::endl;
     }
 
-  //loop through each conditional with dictionary
-  //return exit status
+    // loop through each conditional with dictionary
+    // return exit status
 
-  return 0;
+    return 0;
 }
