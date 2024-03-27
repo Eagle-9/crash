@@ -22,6 +22,17 @@
 #define HOME getenv("HOME")
 #define HISTORY_FILE_PATH (std::string(HOME) + "/crash_history.txt").c_str()
 
+//Colors
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"      /* Black */
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define BLUE    "\033[34m"      /* Blue */
+#define MAGENTA "\033[35m"      /* Magenta */
+#define CYAN    "\033[36m"      /* Cyan */
+#define WHITE   "\033[37m"      /* White */
+
 const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
