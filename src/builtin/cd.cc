@@ -21,7 +21,7 @@ int cd_help_message(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
+        std::cout << "[CD][ERROR]: Not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -34,9 +34,12 @@ void cd_create_history_file()
     writeFile.open(CD_HISTORY_FILE_PATH);
     if (writeFile.fail())
     {
-        std::cout << "ERROR: Failed to create history file" << std::endl;
+        std::cout << "[CD][ERROR]: Failed to create history file" << std::endl;
     }
     writeFile.close();
+
+    if(crash_debug)
+        std::cout << "[CD][DEBUG]: Created cd history file" << std::endl;
 }
 
 int cd_history_length()
@@ -177,7 +180,7 @@ int cd_nth_history(int argc, char **argv)
         // if the chdir failed, report error. otherwise, log the cwd
         if (chdir(dir.c_str()) != 0)
         {
-            std::cout << "ERROR: Failed to change directory: " << dir << std::endl;
+            std::cout << "[CD][ERROR]: Failed to change directory: " << dir << std::endl;
         }
         else
         {
@@ -189,7 +192,7 @@ int cd_nth_history(int argc, char **argv)
     }
     else
     {
-        std::cout << "INVALID NUMBER" << std::endl;
+        std::cout << "[CD][ERROR]: INVALID NUMBER" << std::endl;
         return 1;
     }
     return 0;
@@ -277,7 +280,7 @@ int builtin_cd(int argc, char **argv)
     {
         if (chdir(key.c_str()) != 0)
         {
-            std::cout << "ERROR: Invalid Directory: " << key << "\n";
+            std::cout << "[CD][ERROR]: Invalid Directory: " << key << "\n";
             return 1;
         }
         else
@@ -290,7 +293,7 @@ int builtin_cd(int argc, char **argv)
     else
     {
         // not in table
-        std::cout << "The flag " << key << " is not an argument of cd" << std::endl;
+        std::cout << "[CD][ERROR]: The flag " << key << " is not an argument of cd" << std::endl;
         return 1;
     }
 

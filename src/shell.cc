@@ -73,6 +73,8 @@ std::unordered_map<std::string, KeywordEntry> dict =
 
 std::unordered_map<std::string, std::string> aliases = {};
 std::unordered_map<std::string, std::string> set = {};
+bool crash_debug = false;
+bool crash_exit_on_err = false;
 /********************************************************************/
 /*  Utility functions                                               */
 /********************************************************************/
@@ -81,6 +83,10 @@ void print_prompt()
 {
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
+
+    if(crash_debug)
+        std::cout << "DEBUG_";
+
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
 }
 std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
@@ -99,12 +105,12 @@ std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard t
     }
     if (returnValue == GLOB_NOMATCH)
     {
-        std::cout << "Err: no match found for wildcard" << std::endl;
+        std::cout << "[SHELL][ERROR]: No match found for wildcard: " << wildCard << std::endl;
         return result;
     }
     else
     {
-        std::cout << "Err: Failed glob wildcard search: " << returnValue << std::endl;
+        std::cout << "[SHELL][ERROR]: Failed glob wildcard search: " << returnValue << std::endl;
         return result;
     }
 }
@@ -250,7 +256,7 @@ std::string get_from_path(std::string command)
     const char *env_p = std::getenv("PATH");
     if (!env_p)
     {
-        std::cout << "[WARN]: Failed to get $PATH!\n";
+        std::cout << "[SHELL][WARN]: Failed to get $PATH!\n";
         return {};
     }
 
@@ -304,22 +310,30 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     {
         if (tokens[0].function_pointer)
         {
-            tokens[0].function_pointer(argv.size(), argv.data());
-        }
+            int error = tokens[0].function_pointer(argv.size(), argv.data());
+
+            if(crash_exit_on_err && error != 0)
+            {
+                std::cout << "[SHELL][ERROR]: command failed." << std::endl;
+                exit(error);
+            }
+        }   
         else
         {
-            std::cout << "[WARN]: Not yet implemented!\n";
+            std::cout << "[SHELL][WARN]: Not yet implemented!\n";
         }
         // todo: free members of `argv`
     }
     else if (tokens[0].type == External)
     {
         std::string full_path = get_from_path(tokens[0].data);
-        std::cout << full_path << std::endl;
+        if(crash_debug){
+            std::cout << "[SHELL][DEBUG]: External Path: " << full_path << std::endl;
+        }
+        
         if (full_path.empty())
         {
-            std::cout << "Command not found: " << tokens[0].data << "\n";
-            print_prompt();
+            std::cout << "[SHELL][ERROR]: Command not found: " << tokens[0].data << "\n";
             return;
         }
         //argv.erase(argv.begin()); This is bad!
@@ -358,7 +372,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
             argv.emplace_back(nullptr); //You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             execv(full_path.c_str(), argv.data());
 
-            std::cerr << "[!!] What are we doing here?!\n";
+            std::cerr << "[SHELL][ERROR]: Child process failure!\n";
             exit(130);
         }
         else
@@ -390,6 +404,15 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
 std::vector<Token> lex(std::vector<std::string> inputLine)
 {
+    // Check line for aliases, if so, replace
+    for(size_t i = 0; i < inputLine.size(); i++)
+    { //For every entry
+        if(aliases.find(inputLine[i]) != aliases.end())
+        { //We found an alias, so replace the entry with the alias
+            inputLine.at(i) = aliases.at(inputLine[i]);
+        }
+    }
+
     // Check line for wildcards, append selections
     std::vector<std::string> splitWildCardLineToParse;
     for (std::string entry : inputLine)
@@ -485,7 +508,6 @@ void process(std::vector<Token> tokens)
 
     for (size_t i = 0; i < tokens.size(); i++)
     {
-        std::cout << kwtype_as_string(tokens[i].type) << "\n";
         if (tokens[i].type == MetaChar)
         {
             if (redirect_type != NotMeta)
@@ -545,7 +567,7 @@ void process(std::vector<Token> tokens)
         int pipefd[2];
         if (pipe(pipefd) == -1)
         {
-            std::cerr << "Pipe error!" << std::endl;
+            std::cerr << "[SHELL][ERROR]: Pipe error!" << std::endl;
             exit(1);
         }
         run_command(lhs, pipefd[1], -1, -1);
@@ -695,15 +717,16 @@ void format_input(std::string line) // this used to be parse
     // not a continuation, as we would've returned
 
     std::vector<Token> tokens = lex(split_line(current_line));
-
-    for (size_t i = 0; i < tokens.size(); i++)
-    {
-        std::cout << "Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
+    if(crash_debug){
+        for (size_t i = 0; i < tokens.size(); i++)
+        {
+            std::cout << "[SHELL][DEBUG]: Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
+        }
     }
     // ONLY PROCESS IF TOKENS SIZE IS NOT ZERO. ELSE SEGFAULTS WILL OCCUR.
     if (tokens.size() != 0)
     {
-        process(tokens); // TODO: This is also part of the temp workaround that needs removed! is it?
+        process(tokens);
     }
 
     return;

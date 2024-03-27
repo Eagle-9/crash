@@ -2,7 +2,38 @@
 
 int set_help(int argc, char **argv)
 {
-    std::cout << "TODO: set help msg" << std::endl;
+    // simple help message
+    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] [-a] [-t] [+t] variableName=value";
+
+    // full help message
+    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] variableName=value"
+    "\n\nGeneral Use\n\n"
+    "Display all CRASH variables when run without arguments\n"
+    "\n"
+    "Arguments\n\n"
+    "-h : Display simple help message\n"
+    "-H : Display full help message\n"
+    "-d : delete a specified CRASH variable\n"
+    "-a : delete all CRASH variables\n"
+    "-v : disable verbose (debug) mode\n"
+    "+v : enable verbose (debug) mode\n"
+    "-t : disable fragile mode (program will not exit on error)\n"
+    "+t : enable fragile mode (program will exit on error)";
+
+    // differentiate between simple and complex help message
+    if (strcmp(argv[1], "-h") == 0)
+    {
+        std::cout << simpleHelp << std::endl; // simple help message
+    }
+    else if (strcmp(argv[1], "-H") == 0)
+    {
+        std::cout << fullHelp << std::endl; // full help message
+    }
+    else
+    {
+        std::cout << "[SET][ERROR]: Not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
+        return 1;
+    }
     return 0;
 }
 
@@ -14,7 +45,7 @@ int set_parse(std::string line)
     // check for invalid string
     if (find == std::string::npos)
     {
-        std::cout << "INVALID SET" << std::endl;
+        std::cout << "[SET][ERROR]: INVALID SET" << std::endl;
         return 1; 
     }
 
@@ -46,7 +77,7 @@ int set_parse(std::string line)
     // if it exists, return an error
     if (set.count(name))
     {
-        std::cout << "NOTE: "<< name <<" already exists and is being overwritten" << std::endl;
+        std::cout << "[SET][WARN]: "<< name <<" already exists and is being overwritten" << std::endl;
         set.erase(name);
     }
     // insert the new variable
@@ -65,12 +96,12 @@ void set_remove(int argc, char **argv)
         if (set.count(name))
         {
             set.erase(name);
-            std::cout << "Removed " << name << std::endl;
+            std::cout << "[SET]: Removed " << name << std::endl;
         }
         else
         {
             // error if alias is not found
-            std::cout << "WARN: " << name << " not found" << std::endl;
+            std::cout << "[SET][WARN]: " << name << " not found" << std::endl;
         }
     }
 }
@@ -80,7 +111,7 @@ void set_print(void)
     // print out each set
     for (auto iter = set.begin(); iter != set.end(); iter++)
     {
-        std::cout << iter->first << "='" << iter->second << "'" << std::endl;
+        std::cout << "[SET]: " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 int builtin_set(int argc, char **argv)
@@ -100,11 +131,35 @@ int builtin_set(int argc, char **argv)
     {
         // delete all variables
         set.clear();
-        std::cout << "All vars removed" << std::endl;
+        std::cout << "[SET]: All vars removed" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "-v") == 0)
+    {
+        // delete all variables
+        crash_debug = false;
+        std::cout << "[SET]: DEBUG mode disabled" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "+v") == 0)
+    {
+        // enable debug mode
+        crash_debug = true;
+        std::cout << "[SET]: DEBUG mode enabled" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "-t") == 0)
+    {
+        // delete all variables
+        crash_exit_on_err = false;
+        std::cout << "[SET]: FRAGILE mode disabled" << std::endl;
+    }
+    else if (argc >= 2 && strcmp(argv[1], "+t") == 0)
+    {
+        // delete all variables
+        crash_exit_on_err = true;
+        std::cout << "[SET]: FRAGILE mode enabled" << std::endl;
     }
     else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {
-        // delete all variables
+        // delete a variables
         set_remove(argc, argv);
     }
     // make an var
@@ -119,7 +174,7 @@ int builtin_set(int argc, char **argv)
         }
 
         // pass it to our parse function
-        set_parse(line);
+        return set_parse(line);
     }
     return 0;
 }

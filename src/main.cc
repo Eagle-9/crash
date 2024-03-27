@@ -16,7 +16,7 @@ int main(int argc, char **argv)
         // make sure the file opened properly
         if (!content.is_open())
         {
-            std::cerr << "Failed to open file: " << argv[1] << std::endl;
+            std::cerr << "[MAIN][ERROR]: Failed to open file: " << argv[1] << std::endl;
             return 1;
         }
 

@@ -19,7 +19,7 @@ int alias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean alias -h or alias -H ?" << std::endl; // not a known command
+        std::cout << "[ALIAS][ERROR]: Not a known command. Did you mean alias -h or alias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -30,7 +30,7 @@ void alias_print(void)
     // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
     {
-        std::cout << "alias " << iter->first << "='" << iter->second << "'" << std::endl;
+        std::cout << "[ALIAS]: " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 
@@ -42,7 +42,7 @@ int alias_parse(std::string line)
     // check for invalid string
     if (find == std::string::npos)
     {
-        std::cout << "INVALID ALIAS" << std::endl;
+        std::cout << "[ALIAS][ERROR]: INVALID ALIAS" << std::endl;
         return 1;
     }
 
@@ -74,7 +74,7 @@ int alias_parse(std::string line)
     // if it exists, return an error
     if (aliases.count(name))
     {
-        std::cout << "ERROR: Alias name already exists.  Please use unalias to remove it before making a new one" << std::endl;
+        std::cout << "[ALIAS][ERROR]: Alias name already exists. Please use unalias to remove it before making a new one" << std::endl;
 
         return 1;
     }
@@ -96,7 +96,7 @@ int builtin_alias(int argc, char **argv)
     // help commands
     else if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        alias_help(argc, argv);
+        return alias_help(argc, argv);
     }
 
     // make an alias
@@ -111,7 +111,7 @@ int builtin_alias(int argc, char **argv)
         }
 
         // pass it to our parse function
-        alias_parse(line);
+        return alias_parse(line);
     }
     return 0;
 }

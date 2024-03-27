@@ -23,7 +23,7 @@ int unalias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean unalias -h or unalias -H ?" << std::endl; // not a known command
+        std::cout << "[UNALIAS][ERROR]: Not a known command. Did you mean unalias -h or unalias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -39,12 +39,12 @@ void unalias_parse(int argc, char **argv)
         if (aliases.count(name))
         {
             aliases.erase(name);
-            std::cout << "Removed " << name << std::endl;
+            std::cout << "[UNALIAS]:Removed " << name << std::endl;
         }
         else
         {
             // error if alias is not found
-            std::cout << "ERROR: " << name << " not found" << std::endl;
+            std::cout << "[UNALIAS][ERROR]: " << name << " not found" << std::endl;
         }
     }
     else
@@ -60,13 +60,13 @@ int builtin_unalias(int argc, char **argv)
     // help commands
     if (argc >= 2 && (strcmp(argv[1], "-H") == 0 || strcmp(argv[1], "-h") == 0))
     {
-        unalias_help(argc, argv);
+        return unalias_help(argc, argv);
     }
     else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
     {
         // delete all aliases
         aliases.clear();
-        std::cout << "All aliases removed" << std::endl;
+        std::cout << "[UNALIAS]: All aliases removed" << std::endl;
     }
     else
     {
