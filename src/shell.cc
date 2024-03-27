@@ -331,7 +331,6 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         if (full_path.empty())
         {
             std::cout << "Command not found: " << tokens[0].data << "\n";
-            print_prompt();
             return;
         }
         //argv.erase(argv.begin()); This is bad!
@@ -402,6 +401,15 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
 std::vector<Token> lex(std::vector<std::string> inputLine)
 {
+    // Check line for aliases, if so, replace
+    for(size_t i = 0; i < inputLine.size(); i++)
+    { //For every entry
+        if(aliases.find(inputLine[i]) != aliases.end())
+        { //We found an alias, so replace the entry with the alias
+            inputLine.at(i) = aliases.at(inputLine[i]);
+        }
+    }
+
     // Check line for wildcards, append selections
     std::vector<std::string> splitWildCardLineToParse;
     for (std::string entry : inputLine)
