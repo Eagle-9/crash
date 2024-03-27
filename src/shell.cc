@@ -1,4 +1,5 @@
 #include <crash.hh>
+#define PRINT_SHELL GREEN << "[SHELL]" << RESET
 
 /********************************************************************/
 /*  State initialization                                            */
@@ -85,9 +86,9 @@ void print_prompt()
     getcwd(cwd, sizeof(cwd));
 
     if (crash_debug)
-        std::cout << "DEBUG_";
+        std::cout << CYAN << "DEBUG_" << RESET;
 
-    std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
+    std::cout << MAGENTA << "CRASH " << BLUE << std::string(cwd) << RESET << " " << PROMPT_NEW;
 }
 std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard to file in current directory
 {
@@ -105,12 +106,12 @@ std::vector<std::string> wildCardMatch(std::string wildCard) // Match wildcard t
     }
     if (returnValue == GLOB_NOMATCH)
     {
-        std::cout << "[SHELL][ERROR]: No match found for wildcard: " << wildCard << std::endl;
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": No match found for wildcard: " << wildCard << std::endl;
         return result;
     }
     else
     {
-        std::cout << "[SHELL][ERROR]: Failed glob wildcard search: " << returnValue << std::endl;
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Failed glob wildcard search: " << returnValue << std::endl;
         return result;
     }
 }
@@ -256,7 +257,7 @@ std::string get_from_path(std::string command)
     const char *env_p = std::getenv("PATH");
     if (!env_p)
     {
-        std::cout << "[SHELL][WARN]: Failed to get $PATH!\n";
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Failed to get $PATH!\n";
         return {};
     }
 
@@ -314,13 +315,13 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             if (crash_exit_on_err && error != 0)
             {
-                std::cout << "[SHELL][ERROR]: command failed." << std::endl;
+                std::cerr << PRINT_SHELL << PRINT_ERROR << ": command failed." << std::endl;
                 exit(error);
             }
         }
         else
         {
-            std::cout << "[SHELL][WARN]: Not yet implemented!\n";
+            std::cout << PRINT_SHELL << PRINT_WARN << ": Not yet implemented!\n";
         }
         // todo: free members of `argv`
     }
@@ -329,12 +330,12 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         std::string full_path = get_from_path(tokens[0].data);
         if (crash_debug)
         {
-            std::cout << "[SHELL][DEBUG]: External Path: " << full_path << std::endl;
+            std::cout << PRINT_SHELL << PRINT_DEBUG <<": External Path: " << full_path << std::endl;
         }
 
         if (full_path.empty())
         {
-            std::cout << "[SHELL][ERROR]: Command not found: " << tokens[0].data << "\n";
+            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command not found: " << tokens[0].data << "\n";
             return;
         }
         // argv.erase(argv.begin()); This is bad!
@@ -373,7 +374,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
             argv.emplace_back(nullptr); // You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             execv(full_path.c_str(), argv.data());
 
-            std::cerr << "[SHELL][ERROR]: Child process failure!\n";
+            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Child process failure!\n";
             exit(130);
         }
         else
@@ -399,7 +400,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     }
     else
     {
-        std::cout << "[ERROR]: Command was not of type \"Internal\" or \"External\"!\n";
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command was not of type \"Internal\" or \"External\"!\n";
     }
 }
 
@@ -512,7 +513,7 @@ void process(std::vector<Token> tokens)
         if (tokens[i].type == MetaChar)
         {
             if (redirect_type != NotMeta)
-                std::cout << "[WARN]: Multiple operators on one line are not supported!\n";
+                std::cout << PRINT_SHELL << PRINT_WARN <<": Multiple operators on one line are not supported!\n";
             else
             {
                 redirect_type = tokens[i].meta;
@@ -568,7 +569,7 @@ void process(std::vector<Token> tokens)
         int pipefd[2];
         if (pipe(pipefd) == -1)
         {
-            std::cerr << "[SHELL][ERROR]: Pipe error!" << std::endl;
+            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Pipe error!" << std::endl;
             exit(1);
         }
         run_command(lhs, pipefd[1], -1, -1);
@@ -585,7 +586,7 @@ void process(std::vector<Token> tokens)
         }
         else
         {
-            std::cerr << "[SHELL][ERROR]: Redirect error! Failed to open " << filename << std::endl;
+            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Redirect error! Failed to open " << filename << std::endl;
         }
 
         break;
@@ -730,7 +731,7 @@ void format_input(std::string line) // this used to be parse
     {
         for (size_t i = 0; i < tokens.size(); i++)
         {
-            std::cout << "[SHELL][DEBUG]: Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
+            std::cout << PRINT_SHELL << PRINT_DEBUG << ": Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
         }
     }
     // ONLY PROCESS IF TOKENS SIZE IS NOT ZERO. ELSE SEGFAULTS WILL OCCUR.

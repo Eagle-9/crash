@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <crash.hh>
+#define PRINT_EXIT GREEN << "[EXIT]" << RESET
 
 int builtin_exit(int argc, char **argv)
 {
@@ -17,6 +18,6 @@ int builtin_exit(int argc, char **argv)
         }
     }
     if(crash_debug)
-        std::cout << "[EXIT][DEBUG]: EXIT" << std::endl;
+        std::cout << PRINT_EXIT << PRINT_DEBUG << ": EXIT" << std::endl;
     exit(0);
 }

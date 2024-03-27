@@ -32,6 +32,9 @@
 #define MAGENTA "\033[35m"      /* Magenta */
 #define CYAN    "\033[36m"      /* Cyan */
 #define WHITE   "\033[37m"      /* White */
+#define PRINT_ERROR RED << "[ERROR]" << RESET
+#define PRINT_WARN YELLOW << "[WARN]" << RESET
+#define PRINT_DEBUG CYAN << "[DEBUG]" << RESET
 
 const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";

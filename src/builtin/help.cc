@@ -1,4 +1,5 @@
 #include <crash.hh>
+#define PRINT_HELP GREEN << "[HELP]" << RESET
 
 int help_help(int argc, char **argv)
 {
@@ -19,7 +20,7 @@ int help_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "[HELP][ERROR]: Not a known flag. Did you mean help -h or help -H ?" << std::endl; // not a known command
+        std::cerr << PRINT_HELP << PRINT_ERROR << ": Not a known flag. Did you mean help -h or help -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -70,7 +71,7 @@ int builtin_help(int argc, char **argv)
         }
         else
         {
-            std::cout << "[HELP][ERROR]: " << argv[1] << " is not a valid flag" << std::endl;
+            std::cerr << PRINT_HELP << PRINT_ERROR << ": " << argv[1] << " is not a valid flag" << std::endl;
             return 1;
         }
     }
