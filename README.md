@@ -72,8 +72,8 @@ To run a script in batch mode, there are 3 possible options.
 | 2>>    | Append Error         |
 
 ### Meta Character Usage
-- `\`
-- `#`
+- `\` Use backslack to continue a line
+- `#` Use hashtags to add comments
 - `;` Use semicolons to seperate lines to run multiple commands at once.
   - To run both the external `lsblk` and `lscpu` commands.
   - `CRASH $ lsblk ; lscpu`
@@ -83,6 +83,12 @@ To run a script in batch mode, there are 3 possible options.
 - `>>` Use two greater than character to append the output from a command to a file.
   - To append the output of `lsblk` to a file called `output.txt` that already has existing content.
   - `CRASH $ lsblk >> output.txt`
+- `|` Use a vertical bar to pipe the output of one program to another.
+  - To pipe the output of `lscpu` to `sort` to have the output in alphabetical order.
+  - `CRASH $ lscpu | sort`
+- `<` Use a less than character to redirect the input of  program to a file.
+  - To display the contents of a file called `test5.txt`
+  - `CRASH $ cat < test5.txt`
 
 ### Wild Card Character Matching
 
