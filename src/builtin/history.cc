@@ -20,7 +20,7 @@ int history_help_message(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
+        std::cout << "[HISTORY][ERROR]: Not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -127,7 +127,7 @@ int history_nth_history(int argc, char **argv)
     }
     else
     {
-        std::cout << "INVALID NUMBER" << std::endl;
+        std::cout << "[HISTORY][ERROR]: INVALID NUMBER" << std::endl;
         return 1;
     }
     return 0;
@@ -226,12 +226,12 @@ void history_create_history_file()
     writeFile.open(HISTORY_FILE_PATH);
     if (writeFile.fail())
     {
-        std::cout << "ERROR: Failed to create history file" << std::endl;
+        std::cout << "[HISTORY][ERROR]: Failed to create history file" << std::endl;
     }
     writeFile.close();
 
     if(crash_debug)
-        std::cout << "[DEBUG]: Created CRASH history file" << std::endl;
+        std::cout << "[HISTORY][DEBUG]: Created CRASH history file" << std::endl;
 }
 
 void history_write_history_file(const std::string dir)

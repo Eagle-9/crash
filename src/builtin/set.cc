@@ -31,7 +31,7 @@ int set_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
+        std::cout << "[SET][ERROR]: Not a known command. Did you mean history -h or cd -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -45,7 +45,7 @@ int set_parse(std::string line)
     // check for invalid string
     if (find == std::string::npos)
     {
-        std::cout << "INVALID SET" << std::endl;
+        std::cout << "[SET][ERROR]: INVALID SET" << std::endl;
         return 1; 
     }
 
@@ -77,7 +77,7 @@ int set_parse(std::string line)
     // if it exists, return an error
     if (set.count(name))
     {
-        std::cout << "NOTE: "<< name <<" already exists and is being overwritten" << std::endl;
+        std::cout << "[SET][WARN]: "<< name <<" already exists and is being overwritten" << std::endl;
         set.erase(name);
     }
     // insert the new variable
@@ -96,12 +96,12 @@ void set_remove(int argc, char **argv)
         if (set.count(name))
         {
             set.erase(name);
-            std::cout << "Removed " << name << std::endl;
+            std::cout << "[SET]: Removed " << name << std::endl;
         }
         else
         {
             // error if alias is not found
-            std::cout << "WARN: " << name << " not found" << std::endl;
+            std::cout << "[SET][WARN]: " << name << " not found" << std::endl;
         }
     }
 }
@@ -111,7 +111,7 @@ void set_print(void)
     // print out each set
     for (auto iter = set.begin(); iter != set.end(); iter++)
     {
-        std::cout << iter->first << "='" << iter->second << "'" << std::endl;
+        std::cout << "[SET]: " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 int builtin_set(int argc, char **argv)
@@ -131,31 +131,31 @@ int builtin_set(int argc, char **argv)
     {
         // delete all variables
         set.clear();
-        std::cout << "All vars removed" << std::endl;
+        std::cout << "[SET]: All vars removed" << std::endl;
     }
     else if (argc >= 2 && strcmp(argv[1], "-v") == 0)
     {
         // delete all variables
         crash_debug = false;
-        std::cout << "DEBUG mode disabled" << std::endl;
+        std::cout << "[SET]: DEBUG mode disabled" << std::endl;
     }
     else if (argc >= 2 && strcmp(argv[1], "+v") == 0)
     {
         // enable debug mode
         crash_debug = true;
-        std::cout << "DEBUG mode enabled" << std::endl;
+        std::cout << "[SET]: DEBUG mode enabled" << std::endl;
     }
     else if (argc >= 2 && strcmp(argv[1], "-t") == 0)
     {
         // delete all variables
         crash_exit_on_err = false;
-        std::cout << "FRAGILE mode disabled" << std::endl;
+        std::cout << "[SET]: FRAGILE mode disabled" << std::endl;
     }
     else if (argc >= 2 && strcmp(argv[1], "+t") == 0)
     {
         // delete all variables
         crash_exit_on_err = true;
-        std::cout << "FRAGILE mode enabled" << std::endl;
+        std::cout << "[SET]: FRAGILE mode enabled" << std::endl;
     }
     else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {

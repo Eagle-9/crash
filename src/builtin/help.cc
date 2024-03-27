@@ -19,7 +19,7 @@ int help_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "not a known flag. Did you mean help -h or help -H ?" << std::endl; // not a known command
+        std::cout << "[HELP][ERROR]: Not a known flag. Did you mean help -h or help -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -70,7 +70,7 @@ int builtin_help(int argc, char **argv)
         }
         else
         {
-            std::cout << argv[1] << " is not a valid flag" << std::endl;
+            std::cout << "[HELP][ERROR]: " << argv[1] << " is not a valid flag" << std::endl;
             return 1;
         }
     }
