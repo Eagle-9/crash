@@ -4,6 +4,7 @@
 #include <unistd.h>
 // include implementation
 #include <crash.hh>
+#define PRINT_MAIN GREEN << "[MAIN]" << RESET
 
 int main(int argc, char **argv)
 {
@@ -16,7 +17,7 @@ int main(int argc, char **argv)
         // make sure the file opened properly
         if (!content.is_open())
         {
-            std::cerr << "[MAIN][ERROR]: Failed to open file: " << argv[1] << std::endl;
+            std::cerr << PRINT_MAIN << PRINT_ERROR <<": Failed to open file: " << argv[1] << std::endl;
             return 1;
         }
 

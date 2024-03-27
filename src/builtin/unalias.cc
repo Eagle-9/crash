@@ -1,4 +1,5 @@
 #include <crash.hh>
+#define PRINT_UNALIAS GREEN << "[UNALIAS]" << RESET
 
 int unalias_help(int argc, char **argv)
 {
@@ -23,7 +24,7 @@ int unalias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "[UNALIAS][ERROR]: Not a known command. Did you mean unalias -h or unalias -H ?" << std::endl; // not a known command
+        std::cerr << PRINT_UNALIAS << PRINT_ERROR << ": Not a known command. Did you mean unalias -h or unalias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -39,12 +40,12 @@ void unalias_parse(int argc, char **argv)
         if (aliases.count(name))
         {
             aliases.erase(name);
-            std::cout << "[UNALIAS]:Removed " << name << std::endl;
+            std::cout << PRINT_UNALIAS << ": Removed " << name << std::endl;
         }
         else
         {
             // error if alias is not found
-            std::cout << "[UNALIAS][ERROR]: " << name << " not found" << std::endl;
+            std::cerr << PRINT_UNALIAS << PRINT_ERROR << ": " << name << " not found" << std::endl;
         }
     }
     else
@@ -66,7 +67,7 @@ int builtin_unalias(int argc, char **argv)
     {
         // delete all aliases
         aliases.clear();
-        std::cout << "[UNALIAS]: All aliases removed" << std::endl;
+        std::cout << PRINT_UNALIAS << ": All aliases removed" << std::endl;
     }
     else
     {

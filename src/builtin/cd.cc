@@ -1,5 +1,6 @@
 #include <crash.hh>
 #define CD_HISTORY_FILE_PATH (std::string(HOME) + "/cd_history.txt").c_str()
+#define PRINT_CD GREEN << "[CD]" << RESET
 
 int cd_help_message(int argc, char **argv)
 {
@@ -21,7 +22,7 @@ int cd_help_message(int argc, char **argv)
     }
     else
     {
-        std::cout << "[CD][ERROR]: Not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
+        std::cerr << PRINT_CD << PRINT_ERROR << ": Not a known command. Did you mean cd -h or cd -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -34,12 +35,12 @@ void cd_create_history_file()
     writeFile.open(CD_HISTORY_FILE_PATH);
     if (writeFile.fail())
     {
-        std::cout << "[CD][ERROR]: Failed to create history file" << std::endl;
+        std::cerr << PRINT_CD << PRINT_ERROR << ": Failed to create history file" << std::endl;
     }
     writeFile.close();
 
     if(crash_debug)
-        std::cout << "[CD][DEBUG]: Created cd history file" << std::endl;
+        std::cout << PRINT_CD << PRINT_DEBUG << ": Created cd history file" << std::endl;
 }
 
 int cd_history_length()
@@ -180,7 +181,7 @@ int cd_nth_history(int argc, char **argv)
         // if the chdir failed, report error. otherwise, log the cwd
         if (chdir(dir.c_str()) != 0)
         {
-            std::cout << "[CD][ERROR]: Failed to change directory: " << dir << std::endl;
+            std::cerr << PRINT_CD << PRINT_ERROR << ": Failed to change directory: " << dir << std::endl;
         }
         else
         {
@@ -192,7 +193,7 @@ int cd_nth_history(int argc, char **argv)
     }
     else
     {
-        std::cout << "[CD][ERROR]: INVALID NUMBER" << std::endl;
+        std::cerr << PRINT_CD << PRINT_ERROR << ": INVALID NUMBER" << std::endl;
         return 1;
     }
     return 0;
@@ -280,7 +281,7 @@ int builtin_cd(int argc, char **argv)
     {
         if (chdir(key.c_str()) != 0)
         {
-            std::cout << "[CD][ERROR]: Invalid Directory: " << key << "\n";
+            std::cerr << PRINT_CD << PRINT_ERROR << ": Invalid Directory: " << key << "\n";
             return 1;
         }
         else
@@ -293,7 +294,7 @@ int builtin_cd(int argc, char **argv)
     else
     {
         // not in table
-        std::cout << "[CD][ERROR]: The flag " << key << " is not an argument of cd" << std::endl;
+        std::cerr << PRINT_CD << PRINT_ERROR << ": The flag " << key << " is not an argument of cd" << std::endl;
         return 1;
     }
 

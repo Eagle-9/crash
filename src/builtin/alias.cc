@@ -1,4 +1,5 @@
 #include <crash.hh>
+#define PRINT_ALIAS GREEN << "[ALIAS]" << RESET
 
 int alias_help(int argc, char **argv)
 {
@@ -19,7 +20,7 @@ int alias_help(int argc, char **argv)
     }
     else
     {
-        std::cout << "[ALIAS][ERROR]: Not a known command. Did you mean alias -h or alias -H ?" << std::endl; // not a known command
+        std::cerr << PRINT_ALIAS << PRINT_ERROR << ": Not a known command. Did you mean alias -h or alias -H ?" << std::endl; // not a known command
         return 1;
     }
     return 0;
@@ -30,7 +31,7 @@ void alias_print(void)
     // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
     {
-        std::cout << "[ALIAS]: " << iter->first << "='" << iter->second << "'" << std::endl;
+        std::cout << PRINT_ALIAS <<": " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 
@@ -42,7 +43,7 @@ int alias_parse(std::string line)
     // check for invalid string
     if (find == std::string::npos)
     {
-        std::cout << "[ALIAS][ERROR]: INVALID ALIAS" << std::endl;
+        std::cerr << PRINT_ALIAS << PRINT_ERROR << ": INVALID ALIAS" << std::endl;
         return 1;
     }
 
@@ -74,7 +75,7 @@ int alias_parse(std::string line)
     // if it exists, return an error
     if (aliases.count(name))
     {
-        std::cout << "[ALIAS][ERROR]: Alias name already exists. Please use unalias to remove it before making a new one" << std::endl;
+        std::cerr << PRINT_ALIAS << PRINT_ERROR << ": Alias name already exists. Please use unalias to remove it before making a new one" << std::endl;
 
         return 1;
     }
