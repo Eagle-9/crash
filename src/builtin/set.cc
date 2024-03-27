@@ -3,10 +3,22 @@
 int set_help(int argc, char **argv)
 {
     // simple help message
-    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] [-t] [+t] NAME=value";
+    std::string simpleHelp = "set [-h] [-H] [-v] [+v] [-d] [-a] [-t] [+t] variableName=value";
 
     // full help message
-    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] NAME=value\n\nGeneral Use\n\nDisplay all CRASH variables\n\nArguments\n\n-h : Display simple help message\n-H : Display full help message\n-d : delete all CRASH variables\n-v : disable verbose (debug) mode\n+v : enable verbose (debug) mode\n";
+    std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] variableName=value"
+    "\n\nGeneral Use\n\n"
+    "Display all CRASH variables when run without arguments\n"
+    "\n"
+    "Arguments\n\n"
+    "-h : Display simple help message\n"
+    "-H : Display full help message\n"
+    "-d : delete a specified CRASH variable\n"
+    "-a : delete all CRASH variables\n"
+    "-v : disable verbose (debug) mode\n"
+    "+v : enable verbose (debug) mode\n"
+    "-t : disable fragile mode (program will not exit on error)\n"
+    "+t : enable fragile mode (program will exit on error)";
 
     // differentiate between simple and complex help message
     if (strcmp(argv[1], "-h") == 0)
@@ -147,7 +159,7 @@ int builtin_set(int argc, char **argv)
     }
     else if (argc >= 3 && strcmp(argv[1], "-d") == 0)
     {
-        // delete all variables
+        // delete a variables
         set_remove(argc, argv);
     }
     // make an var
