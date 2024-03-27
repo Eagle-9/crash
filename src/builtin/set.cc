@@ -127,7 +127,7 @@ int builtin_set(int argc, char **argv)
         crash_debug = false;
         std::cout << "DEBUG mode disabled" << std::endl;
     }
-    else if (argc >= 2 && strcmp(argv[1], "+a") == 0)
+    else if (argc >= 2 && strcmp(argv[1], "+v") == 0)
     {
         // enable debug mode
         crash_debug = true;
