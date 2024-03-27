@@ -127,11 +127,11 @@ int builtin_set(int argc, char **argv)
         crash_debug = false;
         std::cout << "DEBUG mode disabled" << std::endl;
     }
-    else if (argc >= 2 && strcmp(argv[1], "-a") == 0)
+    else if (argc >= 2 && strcmp(argv[1], "+a") == 0)
     {
-        // delete all variables
-        set.clear();
-        std::cout << "All vars removed" << std::endl;
+        // enable debug mode
+        crash_debug = true;
+        std::cout << "DEBUG mode enabled" << std::endl;
     }
     else if (argc >= 2 && strcmp(argv[1], "-t") == 0)
     {
