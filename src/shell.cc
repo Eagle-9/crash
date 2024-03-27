@@ -84,7 +84,7 @@ void print_prompt()
     char cwd[PATH_MAX];
     getcwd(cwd, sizeof(cwd));
 
-    if(crash_debug)
+    if (crash_debug)
         std::cout << "DEBUG_";
 
     std::cout << "CRASH " << std::string(cwd) << " " << PROMPT_NEW;
@@ -312,12 +312,12 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         {
             int error = tokens[0].function_pointer(argv.size(), argv.data());
 
-            if(crash_exit_on_err && error != 0)
+            if (crash_exit_on_err && error != 0)
             {
                 std::cout << "[SHELL][ERROR]: command failed." << std::endl;
                 exit(error);
             }
-        }   
+        }
         else
         {
             std::cout << "[SHELL][WARN]: Not yet implemented!\n";
@@ -327,16 +327,17 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     else if (tokens[0].type == External)
     {
         std::string full_path = get_from_path(tokens[0].data);
-        if(crash_debug){
+        if (crash_debug)
+        {
             std::cout << "[SHELL][DEBUG]: External Path: " << full_path << std::endl;
         }
-        
+
         if (full_path.empty())
         {
             std::cout << "[SHELL][ERROR]: Command not found: " << tokens[0].data << "\n";
             return;
         }
-        //argv.erase(argv.begin()); This is bad!
+        // argv.erase(argv.begin()); This is bad!
 
         // create a child process
         pid_t child = fork();
@@ -369,7 +370,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             // switch execution to new binary
 
-            argv.emplace_back(nullptr); //You might want this in a different spot? Maybe in argv_from_tokens? Idk?
+            argv.emplace_back(nullptr); // You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             execv(full_path.c_str(), argv.data());
 
             std::cerr << "[SHELL][ERROR]: Child process failure!\n";
@@ -405,10 +406,10 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 std::vector<Token> lex(std::vector<std::string> inputLine)
 {
     // Check line for aliases, if so, replace
-    for(size_t i = 0; i < inputLine.size(); i++)
-    { //For every entry
-        if(aliases.find(inputLine[i]) != aliases.end())
-        { //We found an alias, so replace the entry with the alias
+    for (size_t i = 0; i < inputLine.size(); i++)
+    { // For every entry
+        if (aliases.find(inputLine[i]) != aliases.end())
+        { // We found an alias, so replace the entry with the alias
             inputLine.at(i) = aliases.at(inputLine[i]);
         }
     }
@@ -577,8 +578,16 @@ void process(std::vector<Token> tokens)
         break;
     case Redirect:
         fd = fopen(filename.c_str(), &open_mode);
-        run_command(lhs, -1, -1, fileno(fd));
-        fclose(fd);
+        if (fd != nullptr)
+        {
+            run_command(lhs, -1, -1, fileno(fd));
+            fclose(fd);
+        }
+        else
+        {
+            std::cerr << "[SHELL][ERROR]: Redirect error! Failed to open " << filename << std::endl;
+        }
+
         break;
     }
 
@@ -717,7 +726,8 @@ void format_input(std::string line) // this used to be parse
     // not a continuation, as we would've returned
 
     std::vector<Token> tokens = lex(split_line(current_line));
-    if(crash_debug){
+    if (crash_debug)
+    {
         for (size_t i = 0; i < tokens.size(); i++)
         {
             std::cout << "[SHELL][DEBUG]: Token: " << i << " " << kwtype_as_string(tokens[i].type) << " Data: " << tokens[i].data << "\n";
