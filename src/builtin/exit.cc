@@ -17,7 +17,7 @@ int builtin_exit(int argc, char **argv)
             return 0;
         }
     }
-    if(crash_debug)
+    if (crash_debug)
         std::cout << PRINT_EXIT << PRINT_DEBUG << ": EXIT" << std::endl;
     exit(0);
 }

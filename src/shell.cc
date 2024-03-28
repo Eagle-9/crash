@@ -197,14 +197,15 @@ std::vector<std::string> split_line(std::string inputString)
 
 std::vector<std::string> findReplaceAlias(std::vector<std::string> inputVector)
 {
-    //Check if there is unalias, if so, do not replace!
+    // Check if there is unalias, if so, do not replace!
     for (size_t i = 0; i < inputVector.size(); i++)
     {
-        if(inputVector.at(i) == "unalias"){
+        if (inputVector.at(i) == "unalias")
+        {
             return inputVector;
         }
     }
-    
+
     std::vector<std::string> outputVector;
     // Check line for aliases, if so, replace
     for (size_t i = 0; i < inputVector.size(); i++)

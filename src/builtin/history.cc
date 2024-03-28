@@ -231,7 +231,7 @@ void history_create_history_file()
     }
     writeFile.close();
 
-    if(crash_debug)
+    if (crash_debug)
         std::cout << PRINT_HISTORY << PRINT_DEBUG << ": Created CRASH history file" << std::endl;
 }
 

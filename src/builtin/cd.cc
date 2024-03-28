@@ -39,7 +39,7 @@ void cd_create_history_file()
     }
     writeFile.close();
 
-    if(crash_debug)
+    if (crash_debug)
         std::cout << PRINT_CD << PRINT_DEBUG << ": Created cd history file" << std::endl;
 }
 

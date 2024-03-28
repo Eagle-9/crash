@@ -22,16 +22,16 @@
 #define HOME getenv("HOME")
 #define HISTORY_FILE_PATH (std::string(HOME) + "/crash_history.txt").c_str()
 
-//Colors
-#define RESET   "\033[0m"
-#define BLACK   "\033[30m"      /* Black */
-#define RED     "\033[31m"      /* Red */
-#define GREEN   "\033[32m"      /* Green */
-#define YELLOW  "\033[33m"      /* Yellow */
-#define BLUE    "\033[34m"      /* Blue */
-#define MAGENTA "\033[35m"      /* Magenta */
-#define CYAN    "\033[36m"      /* Cyan */
-#define WHITE   "\033[37m"      /* White */
+// Colors
+#define RESET "\033[0m"
+#define BLACK "\033[30m"   /* Black */
+#define RED "\033[31m"     /* Red */
+#define GREEN "\033[32m"   /* Green */
+#define YELLOW "\033[33m"  /* Yellow */
+#define BLUE "\033[34m"    /* Blue */
+#define MAGENTA "\033[35m" /* Magenta */
+#define CYAN "\033[36m"    /* Cyan */
+#define WHITE "\033[37m"   /* White */
 #define PRINT_ERROR RED << "[ERROR]" << RESET
 #define PRINT_WARN YELLOW << "[WARN]" << RESET
 #define PRINT_DEBUG CYAN << "[DEBUG]" << RESET
@@ -83,5 +83,5 @@ int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
 
-//keywords
-int keyword_if(int argc, char** argv);
+// keywords
+int keyword_if(int argc, char **argv);

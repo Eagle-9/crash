@@ -17,7 +17,7 @@ int main(int argc, char **argv)
         // make sure the file opened properly
         if (!content.is_open())
         {
-            std::cerr << PRINT_MAIN << PRINT_ERROR <<": Failed to open file: " << argv[1] << std::endl;
+            std::cerr << PRINT_MAIN << PRINT_ERROR << ": Failed to open file: " << argv[1] << std::endl;
             return 1;
         }
 
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
         for (size_t i = 0; i < lines.size(); i++)
         {
             // todo: print what we're doing (echo) (do we need this?)
-            //format_input(lines[i]);
+            // format_input(lines[i]);
 
             std::string currentLine = lines[i];
             std::string lineToInput;
@@ -47,7 +47,7 @@ int main(int argc, char **argv)
             {
                 // Check if character is unquoted semicolon
                 if (currentLine[i] == ';' && !isLocationInStringQuoted(currentLine, i))
-                { // We found a semicolon, parse line and clear
+                {                              // We found a semicolon, parse line and clear
                     format_input(lineToInput); // parse the line
                     lineToInput.clear();
                 }
@@ -77,7 +77,7 @@ int main(int argc, char **argv)
         {
             // Check if character is unquoted semicolon
             if (line[i] == ';' && !isLocationInStringQuoted(line, i))
-            { // We found a semicolon, parse line and clear
+            {                              // We found a semicolon, parse line and clear
                 format_input(lineToInput); // parse the line
                 lineToInput.clear();
             }
