@@ -195,6 +195,35 @@ std::vector<std::string> split_line(std::string inputString)
     return splitLine;
 }
 
+std::vector<std::string> findReplaceAlias(std::vector<std::string> inputVector)
+{
+    //Check if there is unalias, if so, do not replace!
+    for (size_t i = 0; i < inputVector.size(); i++)
+    {
+        if(inputVector.at(i) == "unalias"){
+            return inputVector;
+        }
+    }
+    
+    std::vector<std::string> outputVector;
+    // Check line for aliases, if so, replace
+    for (size_t i = 0; i < inputVector.size(); i++)
+    { // For every entry
+        if (aliases.find(inputVector[i]) != aliases.end())
+        { // We found an alias, so replace the entry with the alias
+            for (std::string entry : split_line(aliases.at(inputVector[i])))
+            {
+                outputVector.emplace_back(entry);
+            }
+        }
+        else
+        { // We didn't find an alias, append
+            outputVector.emplace_back(inputVector[i]);
+        }
+    }
+    return outputVector;
+}
+
 MetaCharType check_meta(std::string inputString)
 {
     // Check if quoted
@@ -330,7 +359,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         std::string full_path = get_from_path(tokens[0].data);
         if (crash_debug)
         {
-            std::cout << PRINT_SHELL << PRINT_DEBUG <<": External Path: " << full_path << std::endl;
+            std::cout << PRINT_SHELL << PRINT_DEBUG << ": External Path: " << full_path << std::endl;
         }
 
         if (full_path.empty())
@@ -406,14 +435,6 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
 std::vector<Token> lex(std::vector<std::string> inputLine)
 {
-    // Check line for aliases, if so, replace
-    for (size_t i = 0; i < inputLine.size(); i++)
-    { // For every entry
-        if (aliases.find(inputLine[i]) != aliases.end())
-        { // We found an alias, so replace the entry with the alias
-            inputLine.at(i) = aliases.at(inputLine[i]);
-        }
-    }
 
     // Check line for wildcards, append selections
     std::vector<std::string> splitWildCardLineToParse;
@@ -513,7 +534,7 @@ void process(std::vector<Token> tokens)
         if (tokens[i].type == MetaChar)
         {
             if (redirect_type != NotMeta)
-                std::cout << PRINT_SHELL << PRINT_WARN <<": Multiple operators on one line are not supported!\n";
+                std::cout << PRINT_SHELL << PRINT_WARN << ": Multiple operators on one line are not supported!\n";
             else
             {
                 redirect_type = tokens[i].meta;
@@ -725,8 +746,10 @@ void format_input(std::string line) // this used to be parse
     }
 
     // not a continuation, as we would've returned
+    std::vector<std::string> splitCurrentLine = split_line(current_line);
+    std::vector<std::string> splitAliasLine = findReplaceAlias(splitCurrentLine);
 
-    std::vector<Token> tokens = lex(split_line(current_line));
+    std::vector<Token> tokens = lex(splitAliasLine);
     if (crash_debug)
     {
         for (size_t i = 0; i < tokens.size(); i++)
