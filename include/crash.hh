@@ -81,6 +81,7 @@ enum MetaCharType
     NotMeta,
     Pipe,      // This is '|'
     Store,     // This is '>'
+    Redirect,  // This is '<'
     StoreErr,  // This is '2>'
     Append,    // This is '>>'
     AppendErr, // This is '2>>'

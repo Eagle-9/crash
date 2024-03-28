@@ -551,6 +551,7 @@ int process(std::vector<Token> tokens)
             //reset counter
             returnedTrue = false;
             print_prompt();
+            
         } else {
             result = run_command(tokens, -1, -1, -1);
             print_prompt();
