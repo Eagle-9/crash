@@ -31,7 +31,7 @@ void alias_print(void)
     // print out each alias
     for (auto iter = aliases.begin(); iter != aliases.end(); iter++)
     {
-        std::cout << PRINT_ALIAS <<": " << iter->first << "='" << iter->second << "'" << std::endl;
+        std::cout << PRINT_ALIAS << ": " << iter->first << "='" << iter->second << "'" << std::endl;
     }
 }
 

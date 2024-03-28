@@ -8,18 +8,18 @@ int set_help(int argc, char **argv)
 
     // full help message
     std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] variableName=value"
-    "\n\nGeneral Use\n\n"
-    "Display all CRASH variables when run without arguments\n"
-    "\n"
-    "Arguments\n\n"
-    "-h : Display simple help message\n"
-    "-H : Display full help message\n"
-    "-d : delete a specified CRASH variable\n"
-    "-a : delete all CRASH variables\n"
-    "-v : disable verbose (debug) mode\n"
-    "+v : enable verbose (debug) mode\n"
-    "-t : disable fragile mode (program will not exit on error)\n"
-    "+t : enable fragile mode (program will exit on error)";
+                           "\n\nGeneral Use\n\n"
+                           "Display all CRASH variables when run without arguments\n"
+                           "\n"
+                           "Arguments\n\n"
+                           "-h : Display simple help message\n"
+                           "-H : Display full help message\n"
+                           "-d : delete a specified CRASH variable\n"
+                           "-a : delete all CRASH variables\n"
+                           "-v : disable verbose (debug) mode\n"
+                           "+v : enable verbose (debug) mode\n"
+                           "-t : disable fragile mode (program will not exit on error)\n"
+                           "+t : enable fragile mode (program will exit on error)";
 
     // differentiate between simple and complex help message
     if (strcmp(argv[1], "-h") == 0)
@@ -47,7 +47,7 @@ int set_parse(std::string line)
     if (find == std::string::npos)
     {
         std::cerr << PRINT_SET << PRINT_ERROR << ": INVALID SET" << std::endl;
-        return 1; 
+        return 1;
     }
 
     // the name will be from the beginning to the = sign
@@ -78,7 +78,7 @@ int set_parse(std::string line)
     // if it exists, return an error
     if (set.count(name))
     {
-        std::cout << PRINT_SET << PRINT_WARN <<": "<< name <<" already exists and is being overwritten" << std::endl;
+        std::cout << PRINT_SET << PRINT_WARN << ": " << name << " already exists and is being overwritten" << std::endl;
         set.erase(name);
     }
     // insert the new variable
