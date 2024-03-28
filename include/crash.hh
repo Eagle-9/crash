@@ -94,6 +94,26 @@ struct Token
     int (*function_pointer)(int argc, char **argv); // Pointer to the function
 };
 
+//structs
+
+enum MetaCharType
+{
+    NotMeta,
+    Pipe,      // This is '|'
+    Store,     // This is '>'
+    StoreErr,  // This is '2>'
+    Append,    // This is '>>'
+    AppendErr, // This is '2>>'
+};
+
+struct Token
+{
+    TokenType type;                                 // Type of token
+    MetaCharType meta;                              // Meta character type
+    std::string data;                               // String data
+    int (*function_pointer)(int argc, char **argv); // Pointer to the function
+};
+
 // builtin defs
 int builtin_cd(int argc, char **argv);
 int builtin_exit(int argc, char **argv);
