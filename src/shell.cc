@@ -534,35 +534,35 @@ int process(std::vector<Token> tokens)
         }
     }
 
+    if (isIfKeyword(tokens[0].data))
+    {
+        // do if stuff, also check for other if related keywords
+        // sub if
+        tokens.erase(tokens.begin());
+        // push back to conditionals
+        conditionals.push_back(tokens);
+        // increase if counter
+        ifCounter++;
+        // for user
+    }
+    else if (tokens[0].data == "endif")
+    {
+        // run all of this stuff
+        result = keyword_if(conditionals);
+
+        // clear conditional
+        conditionals.clear();
+        // reset counter
+        returnedTrue = false;
+    }
+    else if (redirect_type == NotMeta)
+    {
+        result = run_command(tokens, -1, -1, -1);
+        print_prompt();
+    }
+
     if (redirect_type == NotMeta)
     {
-        if (isIfKeyword(tokens[0].data))
-        {
-            // do if stuff, also check for other if related keywords
-            // sub if
-            tokens.erase(tokens.begin());
-            // push back to conditionals
-            conditionals.push_back(tokens);
-            // increase if counter
-            ifCounter++;
-            // for user
-        }
-        else if (tokens[0].data == "endif")
-        {
-            // run all of this stuff
-            result = keyword_if(conditionals);
-
-            // clear conditional
-            conditionals.clear();
-            // reset counter
-            returnedTrue = false;
-        }
-        else
-        {
-            result = run_command(tokens, -1, -1, -1);
-            print_prompt();
-        }
-
         return result;
     }
 
