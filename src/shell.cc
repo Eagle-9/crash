@@ -14,24 +14,11 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-enum MetaCharType
-{
-    NotMeta,
-    Pipe,      // This is '|'
-    Store,     // This is '>'
-    Redirect,  // This is '<'
-    StoreErr,  // This is '2>'
-    Append,    // This is '>>'
-    AppendErr, // This is '2>>'
-};
-
-struct Token
-{
-    TokenType type;                                 // Type of token
-    MetaCharType meta;                              // Meta character type
-    std::string data;                               // String data
-    int (*function_pointer)(int argc, char **argv); // Pointer to the function
-};
+// if syntax variables
+std::vector<std::vector<Token>> conditionals;
+std::vector<Token> tempCondition;
+bool returnedTrue = false;
+int ifCounter = 0;
 
 std::unordered_map<std::string, KeywordEntry> dict =
     {
@@ -44,7 +31,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"endif", {Keyword, nullptr}},
         {"for", {Keyword, nullptr}},
         {"function", {Keyword, nullptr}},
-        {"if", {Keyword, keyword_if}},
+        {"if", {Keyword, nullptr}},
         {"in", {Keyword, nullptr}},
         {"return", {Keyword, nullptr}},
         {"then", {Keyword, nullptr}},
@@ -331,22 +318,22 @@ std::vector<char *> argv_from_tokens(std::vector<Token> tokens)
     return argv;
 }
 
-void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
+int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 {
     // needed to pass to fns
     std::vector<char *> argv = argv_from_tokens(tokens);
+    int result = 1;
 
     // check token type
     if (tokens[0].type == Internal)
     {
         if (tokens[0].function_pointer)
         {
-            int error = tokens[0].function_pointer(argv.size(), argv.data());
-
-            if (crash_exit_on_err && error != 0)
+            result = tokens[0].function_pointer(argv.size(), argv.data());
+            if (crash_exit_on_err && result != 0)
             {
                 std::cerr << PRINT_SHELL << PRINT_ERROR << ": command failed." << std::endl;
-                exit(error);
+                exit(result);
             }
         }
         else
@@ -366,9 +353,8 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         if (full_path.empty())
         {
             std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command not found: " << tokens[0].data << "\n";
-            return;
+            return 1;
         }
-        // argv.erase(argv.begin()); This is bad!
 
         // create a child process
         pid_t child = fork();
@@ -402,7 +388,7 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
             // switch execution to new binary
 
             argv.emplace_back(nullptr); // You might want this in a different spot? Maybe in argv_from_tokens? Idk?
-            execv(full_path.c_str(), argv.data());
+            result = execv(full_path.c_str(), argv.data());
 
             std::cerr << PRINT_SHELL << PRINT_ERROR << ": Child process failure!\n";
             exit(130);
@@ -430,8 +416,10 @@ void run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     }
     else
     {
-        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command was not of type \"Internal\" or \"External\"!\n";
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command " << tokens[0].data << " was not of type \"Internal\" or \"External\"!\n";
     }
+
+    return result;
 }
 
 std::vector<Token> lex(std::vector<std::string> inputLine)
@@ -524,11 +512,12 @@ std::vector<Token> lex(std::vector<std::string> inputLine)
     return tokens;
 }
 
-void process(std::vector<Token> tokens)
+int process(std::vector<Token> tokens)
 {
     MetaCharType redirect_type = NotMeta;
     std::vector<Token> lhs;
     std::vector<Token> rhs;
+    int result = 0;
 
     for (size_t i = 0; i < tokens.size(); i++)
     {
@@ -545,11 +534,36 @@ void process(std::vector<Token> tokens)
         }
     }
 
+    if (isIfKeyword(tokens[0].data))
+    {
+        // do if stuff, also check for other if related keywords
+        // sub if
+        tokens.erase(tokens.begin());
+        // push back to conditionals
+        conditionals.push_back(tokens);
+        // increase if counter
+        ifCounter++;
+        // for user
+    }
+    else if (tokens[0].data == "endif")
+    {
+        // run all of this stuff
+        result = keyword_if(conditionals);
+
+        // clear conditional
+        conditionals.clear();
+        // reset counter
+        returnedTrue = false;
+    }
+    else if (redirect_type == NotMeta)
+    {
+        result = run_command(tokens, -1, -1, -1);
+        print_prompt();
+    }
+
     if (redirect_type == NotMeta)
     {
-        run_command(tokens, -1, -1, -1);
-        print_prompt();
-        return;
+        return result;
     }
 
     char open_mode;
@@ -767,156 +781,75 @@ void format_input(std::string line) // this used to be parse
     return;
 }
 
-int keyword_if(int argc, char **argv)
+int keyword_if(std::vector<std::vector<Token>> conds)
 {
     // conditional if statements
-
-    std::vector<std::string> args;
-
-    // this stores the pairs of if, then statements
-    std::vector<std::vector<std::string>> conditionals;
-
-    // print out all of the arguments to test
-    for (int i = 0; i < argc; i++)
-    {
-        // convert char** to string to make it easier to work with
-        std::string tempStr = argv[i];
-        args.push_back(tempStr);
-        std::cout << args[i] << std::endl;
-    }
-
-    std::vector<std::string> tempVec;
-
-    // parser, counters to keep track of if inside an if statement
-    int ifCounter = 0;
-
-    std::cout << "args --" << std::endl;
-    for (unsigned int i = 0; i < args.size(); i++)
-    {
-        std::cout << args[i] << std::endl;
-    }
-
-    std::cout << std::endl
-              << "parsing --" << std::endl;
-    // for each word in the vector
-    for (unsigned int i = 0; i < args.size(); i++)
-    {
-
-        if (args[i] == "if")
-        {
-            // increase ifCounter
-            ifCounter++;
-            if (ifCounter > 1)
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "then")
-        {
-            // done counting variables
-            if (ifCounter <= 1)
-            {
-                // in sub if, ignore keywords
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-            }
-            else
-            {
-                // add to vector arguments
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "elseif")
-        {
-            // new statement
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-                ifCounter++;
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "else")
-        {
-            // last statement always happens
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-
-                // add empty vector to check for when evaluating
-                conditionals.push_back(tempVec);
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "endif")
-        {
-            // end of the statement
-            if (ifCounter <= 1)
-            {
-                conditionals.push_back(tempVec);
-                tempVec.clear();
-            }
-            else
-            {
-                // end of sub if
-                tempVec.push_back(args[i]);
-            }
-            ifCounter--;
-        }
-        else if (args[i] == "[")
-        {
-            // begining of elseif
-            if (ifCounter <= 1)
-            {
-                ifCounter--;
-            }
-            else
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else if (args[i] == "]")
-        {
-            if (ifCounter <= 1)
-            {
-                ifCounter--;
-            }
-            else
-            {
-                tempVec.push_back(args[i]);
-            }
-        }
-        else
-        {
-            // not a keyword, so a command
-            tempVec.push_back(args[i]);
-        }
-    }
-
-    std::cout << std::endl
-              << "conditionals --" << std::endl;
-    for (unsigned long int j = 0; j < conditionals.size(); j++)
-    {
-        std::cout << j << ": ";
-        for (unsigned int i = 0; i < conditionals[j].size(); i++)
-        {
-            std::cout << conditionals[j][i] << ",";
-        }
-        std::cout << std::endl;
-    }
 
     // loop through each conditional with dictionary
     // return exit status
 
-    return 0;
+    bool hasElse = false;
+    int result = 1;
+
+    if (conds.size() % 2 != 0)
+    {
+        hasElse = true;
+    }
+
+    for (unsigned int i = 0; i < conds.size(); i++)
+    {
+
+        if (returnedTrue)
+        {
+            // do nothing, already did something
+            // should have something for just an else (when hasElse is true)
+        }
+        else if (i % 2 == 0)
+        {
+
+            if (hasElse && i == conds.size() - 1)
+            {
+                // else statement, just run it
+                result = process(conds[i]);
+            }
+            else
+            {
+                // run
+                // keep trying
+                result = process(conds[i]);
+                if (result == 0)
+                {
+                    returnedTrue = true;
+                    result = process(conds[i + 1]);
+                }
+            }
+        }
+        else
+        {
+            // do nothing
+        }
+    }
+
+    return result;
+}
+
+bool isIfKeyword(std::string s)
+{
+    // checks if it is a keyword
+    std::unordered_map<std::string, bool> ifsyn = {
+        {"if", true},
+        {"then", true},
+        {"elseif", true},
+        {"else", true}};
+
+    if (ifsyn.find(s) == ifsyn.end())
+    {
+        // not found
+        return false;
+    }
+    else
+    {
+        // found
+        return true;
+    }
 }
