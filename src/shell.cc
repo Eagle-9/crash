@@ -551,7 +551,7 @@ int process(std::vector<Token> tokens)
             //reset counter
             returnedTrue = false;
             print_prompt();
-            
+
         } else {
             result = run_command(tokens, -1, -1, -1);
             print_prompt();
@@ -788,17 +788,27 @@ int keyword_if(std::vector<std::vector<Token>> conds) {
         hasElse = true;
     }
 
-    for (unsigned int i = 0; i < conds.size(); i = i+2) {
+    for (unsigned int i = 0; i < conds.size(); i++) {
     
         if(returnedTrue) {
             //do nothing, already did something
             //should have something for just an else (when hasElse is true)
-        } else {
-            //keep trying
-            result = process(conds[i]);
-            if (result == 0) {
-                result = process(conds[i+1]);
+        } else if (i % 2 == 0) {
+            
+            if(hasElse && i == conds.size() - 1) {
+                //else statement, just run it
+                result = process(conds[i]);
+            } else {
+                //run
+                //keep trying
+                result = process(conds[i]);
+                if (result == 0) {
+                    returnedTrue = true;
+                    result = process(conds[i+1]);
+                }
             }
+        } else {
+            //do nothing
         }
     }
 
