@@ -14,7 +14,7 @@ std::string current_line;
 /*  Type/Data initialization                                        */
 /********************************************************************/
 
-//if syntax variables
+// if syntax variables
 std::vector<std::vector<Token>> conditionals;
 std::vector<Token> tempCondition;
 bool returnedTrue = false;
@@ -416,7 +416,7 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
     }
     else
     {
-        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command was not of type \"Internal\" or \"External\"!\n";
+        std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command " << tokens[0].data << " was not of type \"Internal\" or \"External\"!\n";
     }
 
     return result;
@@ -536,26 +536,29 @@ int process(std::vector<Token> tokens)
 
     if (redirect_type == NotMeta)
     {
-        if(isIfKeyword(tokens[0].data)) {
-            //do if stuff, also check for other if related keywords
-            //sub if
+        if (isIfKeyword(tokens[0].data))
+        {
+            // do if stuff, also check for other if related keywords
+            // sub if
             tokens.erase(tokens.begin());
-            //push back to conditionals
+            // push back to conditionals
             conditionals.push_back(tokens);
-            //increase if counter
+            // increase if counter
             ifCounter++;
-            //for user
-
-        } else if (tokens[0].data == "endif") {
-            //run all of this stuff
+            // for user
+        }
+        else if (tokens[0].data == "endif")
+        {
+            // run all of this stuff
             result = keyword_if(conditionals);
 
-            //clear conditional
+            // clear conditional
             conditionals.clear();
-            //reset counter
+            // reset counter
             returnedTrue = false;
-
-        } else {
+        }
+        else
+        {
             result = run_command(tokens, -1, -1, -1);
             print_prompt();
         }
@@ -778,59 +781,74 @@ void format_input(std::string line) // this used to be parse
     return;
 }
 
-int keyword_if(std::vector<std::vector<Token>> conds) {
-  //conditional if statements
+int keyword_if(std::vector<std::vector<Token>> conds)
+{
+    // conditional if statements
 
-  //loop through each conditional with dictionary
-  //return exit status
+    // loop through each conditional with dictionary
+    // return exit status
 
     bool hasElse = false;
     int result = 1;
 
-    if (conds.size() % 2 != 0) {
+    if (conds.size() % 2 != 0)
+    {
         hasElse = true;
     }
 
-    for (unsigned int i = 0; i < conds.size(); i++) {
-    
-        if(returnedTrue) {
-            //do nothing, already did something
-            //should have something for just an else (when hasElse is true)
-        } else if (i % 2 == 0) {
-            
-            if(hasElse && i == conds.size() - 1) {
-                //else statement, just run it
+    for (unsigned int i = 0; i < conds.size(); i++)
+    {
+
+        if (returnedTrue)
+        {
+            // do nothing, already did something
+            // should have something for just an else (when hasElse is true)
+        }
+        else if (i % 2 == 0)
+        {
+
+            if (hasElse && i == conds.size() - 1)
+            {
+                // else statement, just run it
                 result = process(conds[i]);
-            } else {
-                //run
-                //keep trying
+            }
+            else
+            {
+                // run
+                // keep trying
                 result = process(conds[i]);
-                if (result == 0) {
+                if (result == 0)
+                {
                     returnedTrue = true;
-                    result = process(conds[i+1]);
+                    result = process(conds[i + 1]);
                 }
             }
-        } else {
-            //do nothing
+        }
+        else
+        {
+            // do nothing
         }
     }
 
-  return result;
+    return result;
 }
 
-bool isIfKeyword(std::string s) {
-    //checks if it is a keyword
+bool isIfKeyword(std::string s)
+{
+    // checks if it is a keyword
     std::unordered_map<std::string, bool> ifsyn = {
         {"if", true},
         {"then", true},
         {"elseif", true},
-        {"else", true}
-    };
+        {"else", true}};
 
-    if (ifsyn.find(s) == ifsyn.end()) {
+    if (ifsyn.find(s) == ifsyn.end())
+    {
         // not found
         return false;
-    } else {
+    }
+    else
+    {
         // found
         return true;
     }
