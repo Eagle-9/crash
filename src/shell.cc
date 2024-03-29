@@ -330,6 +330,11 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
         if (tokens[0].function_pointer)
         {
             result = tokens[0].function_pointer(argv.size(), argv.data());
+            if (crash_exit_on_err && result != 0)
+            {
+                std::cerr << PRINT_SHELL << PRINT_ERROR << ": command failed." << std::endl;
+                exit(result);
+            }
         }
         else
         {
@@ -347,11 +352,9 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
         if (full_path.empty())
         {
-            std::cout << "Command not found: " << tokens[0].data << "\n";
-            print_prompt();
+            std::cerr << PRINT_SHELL << PRINT_ERROR << ": Command not found: " << tokens[0].data << "\n";
             return 1;
         }
-        // argv.erase(argv.begin()); This is bad!
 
         // create a child process
         pid_t child = fork();
@@ -384,6 +387,7 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
             // switch execution to new binary
 
+            argv.emplace_back(nullptr); // You might want this in a different spot? Maybe in argv_from_tokens? Idk?
             result = execv(full_path.c_str(), argv.data());
 
             std::cerr << PRINT_SHELL << PRINT_ERROR << ": Child process failure!\n";
@@ -550,7 +554,6 @@ int process(std::vector<Token> tokens)
             conditionals.clear();
             //reset counter
             returnedTrue = false;
-            print_prompt();
 
         } else {
             result = run_command(tokens, -1, -1, -1);
