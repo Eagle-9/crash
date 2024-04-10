@@ -56,7 +56,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"set", {Internal, builtin_set}},
         {"shift", {Internal, nullptr}},
         {"shopt", {Internal, nullptr}},
-        {"source", {Internal, nullptr}},
+        {"source", {Internal, buitlin_source}},
         {"unalias", {Internal, builtin_unalias}}};
 
 std::unordered_map<std::string, std::string> aliases = {};
