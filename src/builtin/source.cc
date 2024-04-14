@@ -26,10 +26,9 @@ int source_help_message(int argc, char **argv)
     return 0;
 };
 
-
 int builtin_source(int argc, char **argv)
 {
-    
+
     if (argc == 2)
     {
         // help message
@@ -88,6 +87,6 @@ int builtin_source(int argc, char **argv)
         }
         return 0;
     }
-    std::cerr << PRINT_SOURCE << PRINT_ERROR <<": NO FILE PROVIDED" << std::endl;
+    std::cerr << PRINT_SOURCE << PRINT_ERROR << ": NO FILE PROVIDED" << std::endl;
     return 1;
 }
