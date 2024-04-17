@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <crash.hh>
 #define PRINT_SOURCE GREEN << "[SOURCE]" << RESET
+
 int source_help_message(int argc, char **argv)
 {
     // simple help message
@@ -61,6 +62,7 @@ int builtin_source(int argc, char **argv)
         // all lines are now in memory, in 'lines'
         content.close();
 
+        isProcessingFile = true;
         for (size_t i = 0; i < lines.size(); i++)
         {
             // todo: print what we're doing (echo) (do we need this?)
@@ -85,6 +87,7 @@ int builtin_source(int argc, char **argv)
             format_input(lineToInput); // This is needed because the above loop only runs input if there is a semicolon, we need to run the first part always
             lineToInput.clear();
         }
+        isProcessingFile = false;
         return 0;
     }
     std::cerr << PRINT_SOURCE << PRINT_ERROR << ": NO FILE PROVIDED" << std::endl;

@@ -1,3 +1,2 @@
-alias HELLO=cd
-set HELLO_WORLD=Never gonna give you up
-alias QUIT=exit
+lsblk
+lscpu

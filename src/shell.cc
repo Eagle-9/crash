@@ -558,7 +558,9 @@ int process(std::vector<Token> tokens)
     else if (redirect_type == NotMeta)
     {
         result = run_command(tokens, -1, -1, -1);
-        print_prompt();
+        if(!isProcessingFile){
+            print_prompt();
+        }
     }
 
     if (redirect_type == NotMeta)

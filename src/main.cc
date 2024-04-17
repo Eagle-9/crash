@@ -5,11 +5,14 @@
 // include implementation
 #include <crash.hh>
 #define PRINT_MAIN GREEN << "[MAIN]" << RESET
+bool isProcessingFile;
 
 int main(int argc, char **argv)
 {
+    isProcessingFile = false;
     if (argc == 2)
     {
+        
         // open the file
         std::ifstream content;
         content.open(argv[1]);
@@ -34,7 +37,7 @@ int main(int argc, char **argv)
         // close the file;
         // all lines are now in memory, in 'lines'
         content.close();
-
+        isProcessingFile = true;
         for (size_t i = 0; i < lines.size(); i++)
         {
             // todo: print what we're doing (echo) (do we need this?)
@@ -56,10 +59,11 @@ int main(int argc, char **argv)
                     lineToInput = lineToInput + currentLine[i];
                 }
             }
+            
             format_input(lineToInput); // This is needed because the above loop only runs input if there is a semicolon, we need to run the first part always
             lineToInput.clear();
         }
-
+        isProcessingFile = false;
         return 0;
     }
 
