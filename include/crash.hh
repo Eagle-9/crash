@@ -40,6 +40,8 @@ const std::string PROMPT_NEW = "$ ";
 const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
 
+extern bool isProcessingFile; // Used to determine if the program is running from command line or file.
+
 // shell fns
 bool isLocationInStringQuoted(std::string, size_t); // Quote detection is needed in main.cc
 void format_input(std::string line);
@@ -51,7 +53,6 @@ void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
 // aliases and dict
-
 enum TokenType
 {
     Keyword,
