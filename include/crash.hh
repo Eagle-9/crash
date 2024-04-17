@@ -74,7 +74,7 @@ extern std::unordered_map<std::string, std::string> set;
 extern bool crash_debug;
 extern bool crash_exit_on_err;
 
-//structs
+// structs
 
 enum MetaCharType
 {
@@ -103,7 +103,8 @@ int builtin_history(int argc, char **argv);
 int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
+int builtin_source(int argc, char **argv);
 
-//keywords
+// keywords
 int keyword_if(std::vector<std::vector<Token>> conds);
 bool isIfKeyword(std::string s);
