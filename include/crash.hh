@@ -52,8 +52,6 @@ int history_history_length(void);
 void history_create_history_file(void);
 void history_write_history_file(const std::string dir);
 
-
-
 // aliases and dict
 enum TokenType
 {

@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <crash.hh>
 #define PRINT_SOURCE GREEN << "[SOURCE]" << RESET
-
 int source_help_message(int argc, char **argv)
 {
     // simple help message
