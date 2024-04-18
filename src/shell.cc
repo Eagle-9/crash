@@ -151,6 +151,26 @@ bool isLocationInStringQuoted(std::string inputString, size_t locationToCheck)
     }
     return quoted;
 }
+bool isLocationInStringInsideParenthesis(std::string inputString, size_t locationToCheck)
+{
+    bool insideParenthesis = false;
+    // Search for left and right
+    std::size_t leftParenthesisLocation = inputString.find('(');
+    std::size_t rightParenthesisLocation = inputString.rfind(')');
+    // Check if we found a left and right parenthesis
+    if (leftParenthesisLocation == std::string::npos || rightParenthesisLocation == std::string::npos)
+    {
+        return insideParenthesis; // We don't have a "(" or ")", so return.
+    }
+    // Check if the given location is inside the bounds of the parenthesis
+    if (locationToCheck > leftParenthesisLocation && locationToCheck < rightParenthesisLocation)
+    {
+        insideParenthesis = true;
+        if(crash_debug) std::cout << PRINT_SHELL << PRINT_DEBUG << " " <<inputString[locationToCheck] << " is inside of parenthesis" << std::endl;
+    }
+
+    return insideParenthesis;
+}
 
 std::vector<std::string> split_line(std::string inputString)
 {
@@ -558,7 +578,8 @@ int process(std::vector<Token> tokens)
     else if (redirect_type == NotMeta)
     {
         result = run_command(tokens, -1, -1, -1);
-        if(!isProcessingFile){
+        if (!isProcessingFile)
+        {
             print_prompt();
         }
     }
@@ -634,22 +655,22 @@ int process(std::vector<Token> tokens)
 }
 
 /** @brief Takes raw input and formats it to be furthur used by CRASH
-*
-*   Format Input must work in a specific order of processing input. The order is as follows
-*   1. Remove extra whitespace
-*   2. Check if the line is empty or just whitespace, if so return instantly
-*   3. Check if line is surrounded parenthesis, if so fork
-*   4. Split on semi-colons
-*   5. Process comments
-*   6. Replace any set variables
-*   7. Process continuation
-*   8. Split line
-*   9. Replace aliases
-*   10. Generate tokens
-*   11. Finally, process tokens
-*
-*   @param line: The raw line to input into CRASH
-*/ 
+ *
+ *   Format Input must work in a specific order of processing input. The order is as follows
+ *   1. Remove extra whitespace
+ *   2. Check if the line is empty or just whitespace, if so return instantly
+ *   3. Check if line is surrounded parenthesis, if so fork
+ *   4. Split on semi-colons
+ *   5. Process comments
+ *   6. Replace any set variables
+ *   7. Process continuation
+ *   8. Split line
+ *   9. Replace aliases
+ *   10. Generate tokens
+ *   11. Finally, process tokens
+ *
+ *   @param line: The raw line to input into CRASH
+ */
 void format_input(std::string line) // this used to be parse
 {
     // 1. Remove extra whitespace from the line.
@@ -684,6 +705,11 @@ void format_input(std::string line) // this used to be parse
         return;
     }
     // 3. Check if line is surrounded parenthesis, if so fork
+    for (size_t i = 0; i < line.length(); i++)
+    {
+        isLocationInStringInsideParenthesis(line, i);
+    }
+    
 
     // 4. Split on semi-colons
     tempLine.clear();
@@ -694,7 +720,9 @@ void format_input(std::string line) // this used to be parse
         {
             format_input(tempLine);
             tempLine.clear();
-        }else{
+        }
+        else
+        {
             tempLine = tempLine + line[i];
         }
     }
@@ -736,7 +764,7 @@ void format_input(std::string line) // this used to be parse
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
-    
+
     // to store the comment start location
     size_t comment_start = std::string::npos;
     // for char in line, search for a comment start location
@@ -774,8 +802,6 @@ void format_input(std::string line) // this used to be parse
             line = line.substr(0, comment_start);
         }
     }
-
-    
 
     // if there's a continuation
     if (line != "" && line[line.length() - 1] == '\\')
