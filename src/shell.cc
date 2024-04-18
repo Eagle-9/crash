@@ -661,8 +661,8 @@ int process(std::vector<Token> tokens)
  *   2. Check if the line is empty or just whitespace, if so return instantly
  *   3. Check if line is surrounded parenthesis, if so fork
  *   4. Split on semi-colons
- *   5. Process comments
- *   6. Replace any set variables
+ *   5. Replace any set variables
+ *   6. Process comments
  *   7. Process continuation
  *   8. Split line
  *   9. Replace aliases
@@ -705,11 +705,26 @@ void format_input(std::string line) // this used to be parse
         return;
     }
     // 3. Check if line is surrounded parenthesis, if so fork
+    tempLine.clear();
+    std::string parenthesisLine;
     for (size_t i = 0; i < line.length(); i++)
     {
-        isLocationInStringInsideParenthesis(line, i);
+        if (isLocationInStringInsideParenthesis(line, i))
+        {
+            parenthesisLine = parenthesisLine + line[i]; // Add characters that are inside parenthesis to line.
+        }
+        else
+        {
+            if (line[i] != '(' && line[i] != ')')
+            {
+                tempLine = tempLine + line[i]; // Everything outside the parenthesis for crash to run
+            }
+        }
     }
-    
+    std::cout << "We should fork: " << parenthesisLine << std::endl;
+    std::cout << "We should run normally: " << tempLine << std::endl;
+    // TODO: Fork here? @mason
+    line = tempLine;
 
     // 4. Split on semi-colons
     tempLine.clear();
