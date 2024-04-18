@@ -633,8 +633,73 @@ int process(std::vector<Token> tokens)
     print_prompt();
 }
 
+/** @brief Takes raw input and formats it to be furthur used by CRASH
+*
+*   Format Input must work in a specific order of processing input. The order is as follows
+*   1. Remove extra whitespace
+*   2. Check if the line is empty or just whitespace, if so return instantly
+*   3. Check if line is surrounded parenthesis, if so fork
+*   4. Split on semi-colons
+*   5. Process comments
+*   6. Replace any set variables
+*   7. Process continuation
+*   8. Split line
+*   9. Replace aliases
+*   10. Generate tokens
+*   11. Finally, process tokens
+*
+*   @param line: The raw line to input into CRASH
+*/ 
 void format_input(std::string line) // this used to be parse
 {
+    // 1. Remove extra whitespace from the line.
+    std::string tempLine;
+    bool encounteredFirstChar = false;
+    for (size_t i = 0; i < line.length(); i++)
+    {
+        if (line[i] == ' ' || line[i] == '\t')
+        { // Check and see if we have found a space or tab.
+            // First check to make sure we are not at the end of the line and we have had a character
+            if (i + 1 < line.length() && encounteredFirstChar)
+            {
+                // If the next character is not a space/tab, we can add a space.
+                if (line[i + 1] != ' ' && line[i + 1] != '\t')
+                {
+                    tempLine += ' ';
+                }
+            }
+        }
+        else
+        { // The character was not a space or tab, so just add it
+            tempLine += line[i];
+            encounteredFirstChar = true;
+        }
+    }
+    line = tempLine;
+
+    // 2. If there's a blank line, return prompt
+    if (line.length() == 0 || line == " ")
+    {
+        print_prompt();
+        return;
+    }
+    // 3. Check if line is surrounded parenthesis, if so fork
+
+    // 4. Split on semi-colons
+    tempLine.clear();
+    for (size_t i = 0; i < line.length(); i++)
+    {
+        // Check if character is unquoted semicolon
+        if (line[i] == ';' && !isLocationInStringQuoted(line, i))
+        {
+            format_input(tempLine);
+            tempLine.clear();
+        }else{
+            tempLine = tempLine + line[i];
+        }
+    }
+    line = tempLine;
+
     // since the $ signifies variables, we will first find and replace them with their values
     size_t pos = 0;
     bool keepGoing = true;
@@ -671,14 +736,7 @@ void format_input(std::string line) // this used to be parse
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
-
-    // if there's a blank line, return prompt
-    if (line.length() == 0)
-    {
-        print_prompt();
-        return;
-    }
-
+    
     // to store the comment start location
     size_t comment_start = std::string::npos;
     // for char in line, search for a comment start location
@@ -717,30 +775,7 @@ void format_input(std::string line) // this used to be parse
         }
     }
 
-    // remove extra whitespace from the line.
-    std::string tempLine;
-    bool encounteredFirstChar = false;
-    for (size_t i = 0; i < line.length(); i++)
-    {
-        if (line[i] == ' ' || line[i] == '\t')
-        { // Check and see if we have found a space or tab.
-            // First check to make sure we are not at the end of the line and we have had a character
-            if (i + 1 < line.length() && encounteredFirstChar)
-            {
-                // If the next character is not a space/tab, we can add a space.
-                if (line[i + 1] != ' ' && line[i + 1] != '\t')
-                {
-                    tempLine += ' ';
-                }
-            }
-        }
-        else
-        { // The character was not a space or tab, so just add it
-            tempLine += line[i];
-            encounteredFirstChar = true;
-        }
-    }
-    line = tempLine;
+    
 
     // if there's a continuation
     if (line != "" && line[line.length() - 1] == '\\')

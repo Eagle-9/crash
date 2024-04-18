@@ -1,2 +1,2 @@
-lsblk
-lscpu
+lsblk; lscpu
+pwd
