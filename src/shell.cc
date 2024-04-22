@@ -291,6 +291,14 @@ void sigint_handler(int sig)
 
 std::string get_from_path(std::string command)
 {
+    struct stat sb;
+
+    // check absolute path
+    if (stat(command.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
+    {
+        return command;
+    }
+
     const char *env_p = std::getenv("PATH");
     if (!env_p)
     {
@@ -315,7 +323,6 @@ std::string get_from_path(std::string command)
         std::string test_path = segment + "/" + command;
 
         // check if the path is a valid file
-        struct stat sb;
         if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
         {
             return test_path;
@@ -378,6 +385,13 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
         // create a child process
         pid_t child = fork();
+
+        // check error
+        if (child < 0)
+        {
+            std::cout << PRINT_ERROR << " Failed to start child process!\n";
+            exit(1);
+        }
 
         //  check if we're the child or the parent
         if (child == 0)
@@ -580,7 +594,7 @@ int process(std::vector<Token> tokens)
         result = run_command(tokens, -1, -1, -1);
         if (!isProcessingFile)
         {
-            print_prompt();
+            return 0;
         }
     }
 
@@ -650,8 +664,6 @@ int process(std::vector<Token> tokens)
 
         break;
     }
-
-    print_prompt();
 }
 
 /** @brief Takes raw input and formats it to be furthur used by CRASH
@@ -724,6 +736,54 @@ void format_input(std::string line) // this used to be parse
     std::cout << "We should fork: " << parenthesisLine << std::endl;
     std::cout << "We should run normally: " << tempLine << std::endl;
     // TODO: Fork here? @mason
+
+    if (!parenthesisLine.empty())
+    {
+        // create a child process
+        pid_t child = fork();
+
+        if (child == -1)
+        {
+            std::cout << PRINT_ERROR << " Failure creating subshell child!\n";
+            return;
+        }
+
+        if (child == 0)
+        {
+            std::cout << PRINT_DEBUG << " Hello from subshell!";
+            // we're the child
+            // allow kill
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+
+            // switch execution paren line
+            format_input(parenthesisLine);
+            exit(0);
+        } else {
+            // we're the parent
+            // prevent kill while bearing children
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = SIG_IGN;
+            sigaction(SIGINT, &action, NULL);
+
+            std::cout << "[*] waiting for subshell...\n";
+
+            // wait for the child to finish running (or was cancelled by user)
+            int status;
+            waitpid(child, &status, 0);
+
+            // allow kill after children exit
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+            return;
+        }
+        std::cout << PRINT_ERROR << " Achievement unlocked: How did we get here?\n";
+    }
+
     line = tempLine;
 
     // 4. Split on semi-colons
@@ -856,6 +916,7 @@ void format_input(std::string line) // this used to be parse
         process(tokens);
     }
 
+    print_prompt();
     return;
 }
 
