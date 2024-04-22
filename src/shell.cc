@@ -18,6 +18,7 @@ std::string current_line;
 std::vector<std::vector<Token>> conditionals;
 std::vector<Token> tempCondition;
 bool returnedTrue = false;
+bool isSubShell = false;
 int ifCounter = 0;
 
 std::unordered_map<std::string, KeywordEntry> dict =
@@ -151,6 +152,26 @@ bool isLocationInStringQuoted(std::string inputString, size_t locationToCheck)
     }
     return quoted;
 }
+bool isLocationInStringInsideParenthesis(std::string inputString, size_t locationToCheck)
+{
+    bool insideParenthesis = false;
+    // Search for left and right
+    std::size_t leftParenthesisLocation = inputString.find('(');
+    std::size_t rightParenthesisLocation = inputString.rfind(')');
+    // Check if we found a left and right parenthesis
+    if (leftParenthesisLocation == std::string::npos || rightParenthesisLocation == std::string::npos)
+    {
+        return insideParenthesis; // We don't have a "(" or ")", so return.
+    }
+    // Check if the given location is inside the bounds of the parenthesis
+    if (locationToCheck > leftParenthesisLocation && locationToCheck < rightParenthesisLocation)
+    {
+        insideParenthesis = true;
+        if(crash_debug) std::cout << PRINT_SHELL << PRINT_DEBUG << " " <<inputString[locationToCheck] << " is inside of parenthesis" << std::endl;
+    }
+
+    return insideParenthesis;
+}
 
 std::vector<std::string> split_line(std::string inputString)
 {
@@ -271,6 +292,14 @@ void sigint_handler(int sig)
 
 std::string get_from_path(std::string command)
 {
+    struct stat sb;
+
+    // check absolute path
+    if (stat(command.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
+    {
+        return command;
+    }
+
     const char *env_p = std::getenv("PATH");
     if (!env_p)
     {
@@ -295,7 +324,6 @@ std::string get_from_path(std::string command)
         std::string test_path = segment + "/" + command;
 
         // check if the path is a valid file
-        struct stat sb;
         if (stat(test_path.c_str(), &sb) == 0 && !(sb.st_mode & S_IFDIR))
         {
             return test_path;
@@ -358,6 +386,13 @@ int run_command(std::vector<Token> tokens, int outfd, int errfd, int infd)
 
         // create a child process
         pid_t child = fork();
+
+        // check error
+        if (child < 0)
+        {
+            std::cout << PRINT_ERROR << " Failed to start child process!\n";
+            exit(1);
+        }
 
         //  check if we're the child or the parent
         if (child == 0)
@@ -558,8 +593,9 @@ int process(std::vector<Token> tokens)
     else if (redirect_type == NotMeta)
     {
         result = run_command(tokens, -1, -1, -1);
-        if(!isProcessingFile){
-            print_prompt();
+        if (!isProcessingFile)
+        {
+            return 0;
         }
     }
 
@@ -629,27 +665,25 @@ int process(std::vector<Token> tokens)
 
         break;
     }
-
-    print_prompt();
 }
 
 /** @brief Takes raw input and formats it to be furthur used by CRASH
-*
-*   Format Input must work in a specific order of processing input. The order is as follows
-*   1. Remove extra whitespace
-*   2. Check if the line is empty or just whitespace, if so return instantly
-*   3. Check if line is surrounded parenthesis, if so fork
-*   4. Split on semi-colons
-*   5. Process comments
-*   6. Replace any set variables
-*   7. Process continuation
-*   8. Split line
-*   9. Replace aliases
-*   10. Generate tokens
-*   11. Finally, process tokens
-*
-*   @param line: The raw line to input into CRASH
-*/ 
+ *
+ *   Format Input must work in a specific order of processing input. The order is as follows
+ *   1. Remove extra whitespace
+ *   2. Check if the line is empty or just whitespace, if so return instantly
+ *   3. Check if line is surrounded parenthesis, if so fork
+ *   4. Split on semi-colons
+ *   5. Replace any set variables
+ *   6. Process comments
+ *   7. Process continuation
+ *   8. Split line
+ *   9. Replace aliases
+ *   10. Generate tokens
+ *   11. Finally, process tokens
+ *
+ *   @param line: The raw line to input into CRASH
+ */
 void format_input(std::string line) // this used to be parse
 {
     // 1. Remove extra whitespace from the line.
@@ -684,6 +718,81 @@ void format_input(std::string line) // this used to be parse
         return;
     }
     // 3. Check if line is surrounded parenthesis, if so fork
+    tempLine.clear();
+    std::string parenthesisLine;
+    for (size_t i = 0; i < line.length(); i++)
+    {
+        if (isLocationInStringInsideParenthesis(line, i))
+        {
+            parenthesisLine = parenthesisLine + line[i]; // Add characters that are inside parenthesis to line.
+        }
+        else
+        {
+            if (line[i] != '(' && line[i] != ')')
+            {
+                tempLine = tempLine + line[i]; // Everything outside the parenthesis for crash to run
+            }
+        }
+    }
+    if(crash_debug)
+    {
+        std::cout << "We should fork: " << parenthesisLine << std::endl;
+        std::cout << "We should run normally: " << tempLine << std::endl;
+    }
+    
+    // TODO: Fork here? @mason
+
+    if (!parenthesisLine.empty())
+    {
+        // create a child process
+        pid_t child = fork();
+
+        if (child == -1)
+        {
+            std::cout << PRINT_ERROR << " Failure creating subshell child!\n";
+            return;
+        }
+
+        if (child == 0)
+        {
+            isSubShell = true;
+            if(crash_debug)std::cout << PRINT_DEBUG << " Hello from subshell!";
+            // we're the child
+            // allow kill
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+
+            // switch execution paren line
+            format_input(parenthesisLine);
+            exit(0);
+        } else {
+            isSubShell = false;
+            // we're the parent
+            // prevent kill while bearing children
+            struct sigaction action;
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = SIG_IGN;
+            sigaction(SIGINT, &action, NULL);
+
+            std::cout << "[*] waiting for subshell...\n";
+
+            // wait for the child to finish running (or was cancelled by user)
+            int status;
+            waitpid(child, &status, 0);
+
+            // allow kill after children exit
+            print_prompt(); //child is dead, print prompt
+            memset(&action, 0, sizeof(action));
+            action.sa_handler = sigint_handler;
+            sigaction(SIGINT, &action, NULL);
+            return;
+        }
+        std::cout << PRINT_ERROR << " Achievement unlocked: How did we get here?\n";
+    }
+
+    line = tempLine;
 
     // 4. Split on semi-colons
     tempLine.clear();
@@ -694,7 +803,9 @@ void format_input(std::string line) // this used to be parse
         {
             format_input(tempLine);
             tempLine.clear();
-        }else{
+        }
+        else
+        {
             tempLine = tempLine + line[i];
         }
     }
@@ -736,7 +847,7 @@ void format_input(std::string line) // this used to be parse
     history_write_history_file(line);
     // clear the current line before parsing
     current_line.clear();
-    
+
     // to store the comment start location
     size_t comment_start = std::string::npos;
     // for char in line, search for a comment start location
@@ -775,8 +886,6 @@ void format_input(std::string line) // this used to be parse
         }
     }
 
-    
-
     // if there's a continuation
     if (line != "" && line[line.length() - 1] == '\\')
     {
@@ -814,7 +923,10 @@ void format_input(std::string line) // this used to be parse
     {
         process(tokens);
     }
-
+    if(!isSubShell) // Only print promt if not a sub shell
+    {
+        print_prompt();
+    }
     return;
 }
 
