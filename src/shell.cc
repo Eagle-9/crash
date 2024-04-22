@@ -18,6 +18,7 @@ std::string current_line;
 std::vector<std::vector<Token>> conditionals;
 std::vector<Token> tempCondition;
 bool returnedTrue = false;
+bool isSubShell = false;
 int ifCounter = 0;
 
 std::unordered_map<std::string, KeywordEntry> dict =
@@ -733,8 +734,12 @@ void format_input(std::string line) // this used to be parse
             }
         }
     }
-    std::cout << "We should fork: " << parenthesisLine << std::endl;
-    std::cout << "We should run normally: " << tempLine << std::endl;
+    if(crash_debug)
+    {
+        std::cout << "We should fork: " << parenthesisLine << std::endl;
+        std::cout << "We should run normally: " << tempLine << std::endl;
+    }
+    
     // TODO: Fork here? @mason
 
     if (!parenthesisLine.empty())
@@ -750,7 +755,8 @@ void format_input(std::string line) // this used to be parse
 
         if (child == 0)
         {
-            std::cout << PRINT_DEBUG << " Hello from subshell!";
+            isSubShell = true;
+            if(crash_debug)std::cout << PRINT_DEBUG << " Hello from subshell!";
             // we're the child
             // allow kill
             struct sigaction action;
@@ -762,6 +768,7 @@ void format_input(std::string line) // this used to be parse
             format_input(parenthesisLine);
             exit(0);
         } else {
+            isSubShell = false;
             // we're the parent
             // prevent kill while bearing children
             struct sigaction action;
@@ -776,6 +783,7 @@ void format_input(std::string line) // this used to be parse
             waitpid(child, &status, 0);
 
             // allow kill after children exit
+            print_prompt(); //child is dead, print prompt
             memset(&action, 0, sizeof(action));
             action.sa_handler = sigint_handler;
             sigaction(SIGINT, &action, NULL);
@@ -915,8 +923,10 @@ void format_input(std::string line) // this used to be parse
     {
         process(tokens);
     }
-
-    print_prompt();
+    if(!isSubShell) // Only print promt if not a sub shell
+    {
+        print_prompt();
+    }
     return;
 }
 
