@@ -4,6 +4,6 @@ cd ..
 
 echo Args
 
-echo $2
+echo $#
 
-echo $0
+echo $*

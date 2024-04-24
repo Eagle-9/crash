@@ -43,6 +43,13 @@ int main(int argc, char **argv)
             lines.push_back(line);
         }
 
+
+        //storing whether $ is called
+        bool isSubsitute = false;
+
+        //temp nth argument index
+        std::string tmpArgIndex = "";
+
         //for each line
         for (unsigned int l = 0; l < lines.size(); l++) {
             std::cout << lines[l] << std::endl;
@@ -50,8 +57,12 @@ int main(int argc, char **argv)
             for (unsigned int k = 0; k < lines[l].length(); k++) {
                 //if character is $
                 if (lines[l][k] == '$') {
-                    //if number is next ********
+                    //need to check others
+                    isSubsitute = true;
                     
+
+
+                    /*
                     //store number given
                     int tmpNum = lines[l][k+1] - '0';
                     
@@ -66,6 +77,36 @@ int main(int argc, char **argv)
                     lines[l].insert(k, tmpArg);
 
                     std::cout << tmpArg;
+                    */
+                } else if (isSubsitute == true) {
+                    //check for kind
+                    if (lines[l][k] == '#') {
+                        //replace with argc
+                        lines[l].erase(k-1, 2);
+                        int numOfArgs = fileArgs.size();
+                        std::string converted = std::to_string(numOfArgs);
+                        lines[l].insert(k-1, converted);
+
+                        //no longer sub
+                        isSubsitute = false;
+                    } else if (lines[l][k] == '*') {
+                        //sub every argument
+                        lines[l].erase(k-1, 2);
+
+                        std::string allArgs = "";
+
+                        //join the vector to make one giant string
+                        for (unsigned int m = 0; m < fileArgs.size(); m++) {
+                            allArgs.append(fileArgs[m]);
+                            allArgs.append(" ");
+                        }
+
+                        //sub this in for $*
+                        lines[l].insert(k-1, allArgs);
+
+                        //no longer sub
+                        isSubsitute = false;
+                    }
                 }
             }
         }
