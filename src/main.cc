@@ -6,6 +6,7 @@
 #include <crash.hh>
 #define PRINT_MAIN GREEN << "[MAIN]" << RESET
 bool isProcessingFile;
+std::vector<std::string> fileArgs;
 
 int main(int argc, char **argv)
 {
@@ -15,7 +16,6 @@ int main(int argc, char **argv)
         // If there are more than 2 args, add them to a vector
         if (argc > 2)
         {
-            std::vector<std::string> fileArgs;
             for(int i = 1; i < argc; i++)
             {
                 fileArgs.emplace_back(argv[i]);
