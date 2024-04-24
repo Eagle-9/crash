@@ -1,0 +1,9 @@
+#!../project-one/bin/main
+
+cd ..
+
+echo Args
+
+echo $2
+
+echo $0

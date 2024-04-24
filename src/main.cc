@@ -43,6 +43,36 @@ int main(int argc, char **argv)
             lines.push_back(line);
         }
 
+        //for each line
+        for (unsigned int l = 0; l < lines.size(); l++) {
+            std::cout << lines[l] << std::endl;
+            //for each character
+            for (unsigned int k = 0; k < lines[l].length(); k++) {
+                //if character is $
+                if (lines[l][k] == '$') {
+                    //if number is next ********
+                    
+                    //store number given
+                    int tmpNum = lines[l][k+1] - '0';
+                    
+                    //sub it with argument {n}
+                    std::cout << "Num!!";
+                    
+                    //erase $ and {n}
+                    lines[l].erase(k, 2);
+
+                    //insert argument
+                    std::string tmpArg = fileArgs[tmpNum];
+
+                    std::cout << tmpArg;
+                }
+            }
+        }
+
+        //subsitute any ${n} for the argument
+        //              $* for every argument
+        //              $# for number of arguments
+
         // close the file;
         // all lines are now in memory, in 'lines'
         content.close();
