@@ -10,8 +10,18 @@ bool isProcessingFile;
 int main(int argc, char **argv)
 {
     isProcessingFile = false;
-    if (argc == 2)
+    if (argc > 1)
     {
+        // If there are more than 2 args, add them to a vector
+        if (argc > 2)
+        {
+            std::vector<std::string> fileArgs;
+            for(int i = 1; i < argc; i++)
+            {
+                fileArgs.emplace_back(argv[i]);
+                std::cout << "ADDING: " << argv[i] << std::endl;
+            }
+        }
         // open the file
         std::ifstream content;
         content.open(argv[1]);
