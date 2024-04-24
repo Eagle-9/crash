@@ -106,6 +106,7 @@ int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
 int builtin_source(int argc, char **argv);
+int builtin_shift(int argc, char **argv);
 
 // keywords
 int keyword_if(std::vector<std::vector<Token>> conds);

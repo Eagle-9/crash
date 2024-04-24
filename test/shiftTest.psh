@@ -1,11 +1,15 @@
 #!../project-one/bin/main
 
-cd ..
+echo ArgsToChange
 
-echo Args
+echo $1
 
-echo $#
+echo $2
 
-echo $*
+shift
 
-echo $10
+echo SHIFT
+
+echo $1
+
+echo $2
