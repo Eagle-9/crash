@@ -62,24 +62,6 @@ int main(int argc, char **argv)
                     //need to check others
                     isSubsitute = true;
                     
-
-
-                    /*
-                    //store number given
-                    int tmpNum = lines[l][k+1] - '0';
-                    
-                    //sub it with argument {n}
-                    std::cout << "Num!!";
-                    
-                    //erase $ and {n}
-                    lines[l].erase(k, 2);
-
-                    //insert argument
-                    std::string tmpArg = fileArgs[tmpNum];
-                    lines[l].insert(k, tmpArg);
-
-                    std::cout << tmpArg;
-                    */
                 } else if (isSubsitute == true) {
                     //check for kind
                     if (lines[l][k] == '#') {
