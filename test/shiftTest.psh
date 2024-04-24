@@ -1,15 +1,23 @@
 #!../project-one/bin/main
 
-echo ArgsToChange
+echo Number of items: $#
+echo All items: $*
 
-echo $1
+echo
 
-echo $2
+echo ARG 1: $1
+
+echo ARG 2: $2
 
 shift
 
-echo SHIFT
+echo shifting
 
-echo $1
+echo Number of items: $#
+echo All items: $*
 
-echo $2
+echo
+
+echo ARG 1: $1
+
+echo ARG 2: $2

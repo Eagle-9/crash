@@ -16,7 +16,6 @@ int builtin_shift(int argc, char **argv) {
     if (shiftAmt <= fileArgs.size()) {
         for (unsigned int i = 0; i < shiftAmt; i++) {
             fileArgs.erase(fileArgs.begin());
-            std::cout << "WHY ARE YOU RUNNING" << std::endl;
         }
     } else {
         return 1;

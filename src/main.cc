@@ -19,7 +19,6 @@ int main(int argc, char **argv)
             for(int i = 1; i < argc; i++)
             {
                 fileArgs.emplace_back(argv[i]);
-                std::cout << "ADDING: " << argv[i] << std::endl;
             }
         }
         // open the file
@@ -52,30 +51,33 @@ int main(int argc, char **argv)
         //temp nth argument index
         std::string tmpArgIndex = "";
 
-        //for each line
-        for (unsigned int l = 0; l < lines.size(); l++) {
-            std::cout << lines[l] << std::endl;
-            //for each character
-            for (unsigned int k = 0; k < lines[l].length(); k++) {
+        // close the file;
+        // all lines are now in memory, in 'lines'
+        content.close();
+        isProcessingFile = true;
+        for (size_t i = 0; i < lines.size(); i++)
+        {
+            //subsitute the current line
+            for (unsigned int k = 0; k < lines[i].length(); k++) {
                 //if character is $
-                if (lines[l][k] == '$') {
+                if (lines[i][k] == '$') {
                     //need to check others
                     isSubsitute = true;
                     
                 } else if (isSubsitute == true) {
                     //check for kind
-                    if (lines[l][k] == '#') {
+                    if (lines[i][k] == '#') {
                         //replace with argc
-                        lines[l].erase(k-1, 2);
+                        lines[i].erase(k-1, 2);
                         int numOfArgs = fileArgs.size();
                         std::string converted = std::to_string(numOfArgs);
-                        lines[l].insert(k-1, converted);
+                        lines[i].insert(k-1, converted);
 
                         //no longer sub
                         isSubsitute = false;
-                    } else if (lines[l][k] == '*') {
+                    } else if (lines[i][k] == '*') {
                         //sub every argument
-                        lines[l].erase(k-1, 2);
+                        lines[i].erase(k-1, 2);
 
                         std::string allArgs = "";
 
@@ -86,13 +88,12 @@ int main(int argc, char **argv)
                         }
 
                         //sub this in for $*
-                        lines[l].insert(k-1, allArgs);
+                        lines[i].insert(k-1, allArgs);
 
                         //no longer sub
                         isSubsitute = false;
-                    } else if (isdigit(lines[l][k])) {
+                    } else if (isdigit(lines[i][k])) {
                         //is a number
-                        std::cout << "I am a number" << std::endl;
 
                         //store k value where start
                         if (start == 0){
@@ -100,13 +101,13 @@ int main(int argc, char **argv)
                         }
 
                         //add to tmp
-                        tmpArgIndex += lines[l][k];
+                        tmpArgIndex += lines[i][k];
 
                         //exception if this is last line
-                        if (k+1 >= lines[l].length()) {
+                        if (k+1 >= lines[i].length()) {
                             //erase start to end
                             end = k;
-                            lines[l].erase(start, end-start+1);
+                            lines[i].erase(start, end-start+1);
 
                             //convert string to number
                             int iArgIndex = std::stoi(tmpArgIndex);
@@ -115,7 +116,7 @@ int main(int argc, char **argv)
                             std::string tmpArgument = fileArgs[iArgIndex];
 
                             //insert into line
-                            lines[l].insert(start, tmpArgument);
+                            lines[i].insert(start, tmpArgument);
 
                             //clear tmpArgIndex, start and end
                             tmpArgIndex = "";
@@ -132,7 +133,7 @@ int main(int argc, char **argv)
                         if (tmpArgIndex != "") {
                             //erase start to end
                             end = k;
-                            lines[l].erase(start, end-start);
+                            lines[i].erase(start, end-start);
 
                             //convert string to number
                             int iArgIndex = std::stoi(tmpArgIndex);
@@ -141,7 +142,7 @@ int main(int argc, char **argv)
                             std::string tmpArgument = fileArgs[iArgIndex];
 
                             //insert into line
-                            lines[l].insert(start, tmpArgument);
+                            lines[i].insert(start, tmpArgument);
 
                         }
 
@@ -155,24 +156,8 @@ int main(int argc, char **argv)
                     }
                 }
             }
-        }
 
-        std::cout << "CHANGED" << std::endl;
-
-        for (unsigned int l = 0; l < lines.size(); l++) {
-            std::cout << lines[l] << std::endl;
-        }
-
-        //subsitute any ${n} for the argument
-        //              $* for every argument
-        //              $# for number of arguments
-
-        // close the file;
-        // all lines are now in memory, in 'lines'
-        content.close();
-        isProcessingFile = true;
-        for (size_t i = 0; i < lines.size(); i++)
-        {
+            //format the input
             format_input(lines[i]);
         }
         isProcessingFile = false;
