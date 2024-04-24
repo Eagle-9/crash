@@ -1,0 +1,23 @@
+#!../project-one/bin/main
+
+echo Number of items: $#
+echo All items: $*
+
+echo
+
+echo ARG 1: $1
+
+echo ARG 2: $2
+
+shift
+
+echo shifting
+
+echo Number of items: $#
+echo All items: $*
+
+echo
+
+echo ARG 1: $1
+
+echo ARG 2: $2

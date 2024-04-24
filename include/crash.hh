@@ -41,6 +41,7 @@ const std::string PROMPT_CNT = ">>> ";
 #define PATH_MAX 1024
 
 extern bool isProcessingFile; // Used to determine if the program is running from command line or file.
+extern std::vector<std::string> fileArgs;
 
 // shell fns
 bool isLocationInStringQuoted(std::string, size_t); // Quote detection is needed in main.cc
@@ -105,6 +106,7 @@ int builtin_alias(int argc, char **argv);
 int builtin_unalias(int argc, char **argv);
 int builtin_set(int argc, char **argv);
 int builtin_source(int argc, char **argv);
+int builtin_shift(int argc, char **argv);
 
 // keywords
 int keyword_if(std::vector<std::vector<Token>> conds);

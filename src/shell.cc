@@ -55,7 +55,7 @@ std::unordered_map<std::string, KeywordEntry> dict =
         {"logout", {Internal, nullptr}},
         {"read", {Internal, nullptr}},
         {"set", {Internal, builtin_set}},
-        {"shift", {Internal, nullptr}},
+        {"shift", {Internal, builtin_shift}},
         {"shopt", {Internal, nullptr}},
         {"source", {Internal, builtin_source}},
         {"unalias", {Internal, builtin_unalias}}};
