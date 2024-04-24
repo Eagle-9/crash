@@ -7,3 +7,5 @@ echo Args
 echo $#
 
 echo $*
+
+echo $10

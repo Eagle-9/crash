@@ -46,6 +46,8 @@ int main(int argc, char **argv)
 
         //storing whether $ is called
         bool isSubsitute = false;
+        int start = 0;
+        int end = 0;
 
         //temp nth argument index
         std::string tmpArgIndex = "";
@@ -105,6 +107,68 @@ int main(int argc, char **argv)
                         lines[l].insert(k-1, allArgs);
 
                         //no longer sub
+                        isSubsitute = false;
+                    } else if (isdigit(lines[l][k])) {
+                        //is a number
+                        std::cout << "I am a number" << std::endl;
+
+                        //store k value where start
+                        if (start == 0){
+                            start = k-1;
+                        }
+
+                        //add to tmp
+                        tmpArgIndex += lines[l][k];
+
+                        //exception if this is last line
+                        if (k+1 >= lines[l].length()) {
+                            //erase start to end
+                            end = k;
+                            lines[l].erase(start, end-start+1);
+
+                            //convert string to number
+                            int iArgIndex = std::stoi(tmpArgIndex);
+
+                            //use this number for array
+                            std::string tmpArgument = fileArgs[iArgIndex];
+
+                            //insert into line
+                            lines[l].insert(start, tmpArgument);
+
+                            //clear tmpArgIndex, start and end
+                            tmpArgIndex = "";
+                            start = 0;
+                            end = 0;
+
+                            //none of these !DONT CHECK
+                            isSubsitute = false;
+                        }
+
+                    } else {
+
+                        //if tmpArgIndex is not null, we need to process!
+                        if (tmpArgIndex != "") {
+                            //erase start to end
+                            end = k;
+                            lines[l].erase(start, end-start);
+
+                            //convert string to number
+                            int iArgIndex = std::stoi(tmpArgIndex);
+
+                            //use this number for array
+                            std::string tmpArgument = fileArgs[iArgIndex];
+
+                            //insert into line
+                            lines[l].insert(start, tmpArgument);
+
+                        }
+
+                        //clear tmpArgIndex, start and end
+                        tmpArgIndex = "";
+                        start = 0;
+                        end = 0;
+
+                        //none of these !DONT CHECK
                         isSubsitute = false;
                     }
                 }
