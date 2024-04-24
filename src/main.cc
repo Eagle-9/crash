@@ -63,10 +63,17 @@ int main(int argc, char **argv)
 
                     //insert argument
                     std::string tmpArg = fileArgs[tmpNum];
+                    lines[l].insert(k, tmpArg);
 
                     std::cout << tmpArg;
                 }
             }
+        }
+
+        std::cout << "CHANGED" << std::endl;
+
+        for (unsigned int l = 0; l < lines.size(); l++) {
+            std::cout << lines[l] << std::endl;
         }
 
         //subsitute any ${n} for the argument
