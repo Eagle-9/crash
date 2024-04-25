@@ -9,6 +9,8 @@
 bool is_continuation = false;
 // the current line
 std::string current_line;
+// previous line
+std::string previous_line;
 
 /********************************************************************/
 /*  Type/Data initialization                                        */
@@ -671,6 +673,7 @@ int process(std::vector<Token> tokens)
 /** @brief Takes raw input and formats it to be furthur used by CRASH
  *
  *   Format Input must work in a specific order of processing input. The order is as follows
+ *   0. If there was a previous continuation, add to start of current line.
  *   1. Remove extra whitespace
  *   2. Check if the line is empty or just whitespace, if so return instantly
  *   3. Check if line is surrounded parenthesis, if so fork
@@ -687,6 +690,12 @@ int process(std::vector<Token> tokens)
  */
 void format_input(std::string line) // this used to be parse
 {
+    //0. Add previous line
+    if(!previous_line.empty())
+    {
+        line = previous_line + line;
+        previous_line.clear();
+    }
     // 1. Remove extra whitespace from the line.
     std::string tempLine;
     bool encounteredFirstChar = false;
@@ -906,6 +915,7 @@ void format_input(std::string line) // this used to be parse
     // is this a continuation?
     if (is_continuation)
     {
+        previous_line = line; // store line for use later
         std::cout << PROMPT_CNT << "\n";
         return;
     }
