@@ -1,4 +1,4 @@
-#!../project-one/bin/main
+#!../bin/main
 
 echo Number of items: $#
 echo All items: $*
