@@ -31,6 +31,12 @@ int builtin_source(int argc, char **argv)
 
     if (argc > 1)
     {
+        // help message
+        if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-H") == 0)
+        {
+            return source_help_message(argc, argv);
+        }
+
         // If there are more than 2 args, add them to a vector
         if (argc > 2)
         {
