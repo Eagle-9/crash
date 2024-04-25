@@ -10,6 +10,7 @@ int set_help(int argc, char **argv)
     std::string fullHelp = "CRASH MANUAL -- HOW TO USE 'set'\n\nset [-h] [-H] [-v] [+v] [-d] variableName=value"
                            "\n\nGeneral Use\n\n"
                            "Display all CRASH variables when run without arguments\n"
+                           "\nPut a dollar sign '$' in front of the variable name to use it.\n"
                            "\n"
                            "Arguments\n\n"
                            "-h : Display simple help message\n"
